@@ -26,16 +26,12 @@
             </a>
         </h1>
 
-        <p>This room doesn't use the room's state. It just broadcast messages through "broadcast" method.</p>
+        <strong>Your name</strong><br />
 
-        <strong>Messages</strong><br />
-
-        <form id="form">
-            <input type="text" id="input" value="" autofocus />
+        <form id="nameForm">
+            <input type="text" id="nameInput" value="" autofocus />
             <input type="submit" value="send" />
         </form>
-
-        <div id="messages"></div>
 
         <script>
             var host = window.document.location.host.replace(/:.*/, "");
@@ -43,7 +39,7 @@
             var client = new Colyseus.Client(
                 location.protocol.replace("http", "ws") + "//" + host + (location.port ? ":" + location.port : "")
             );
-            client.joinOrCreate("chat").then(room => {
+            client.joinOrCreate("my_room").then(room => {
                 console.log("joined");
                 room.onStateChange.once(function(state) {
                     console.log("initial room state:", state);
@@ -62,15 +58,15 @@
                 });
 
                 // send message to room on submit
-                document.querySelector("#form").onsubmit = function(e) {
+                document.querySelector("#nameForm").onsubmit = function(e) {
                     e.preventDefault();
 
-                    var input = document.querySelector("#input");
+                    var input = document.querySelector("#nameInput");
 
-                    console.log("input:", input.value);
+                    console.log("sending new name to server:", input.value);
 
                     // send data to room
-                    room.send({ message: input.value });
+                    room.send({ command: "setName", params: {name: input.value }});
 
                     // clear input
                     input.value = "";
