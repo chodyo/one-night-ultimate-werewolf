@@ -11,9 +11,9 @@ export class MyRoom extends Room {
     this.broadcast(`${client.sessionId} joined.`);
   }
 
-  onMessage(client: Client, message: any) {
-    console.log("MyRoom received message from", client.sessionId, ":", message);
-    this.broadcast(`[${client.sessionId}] $message`);
+  onMessage(client: Client, data: any) {
+    console.log("MyRoom received message from", client.sessionId, ":", data);
+    this.broadcast(`[${client.sessionId}] ${data.message}`);
   }
 
   onLeave(client: Client, consented: boolean) {
