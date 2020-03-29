@@ -17,7 +17,7 @@
     </head>
     <body>
         <h1>
-            <a href="https://github.com/colyseus/colyseus-examples"></a>
+            <a href="https://github.com/colyseus/colyseus-examples">
                 <img
                     src="https://dl1.cbsistatic.com/i/2016/08/10/9efe9336-d20f-4f17-b79a-9d46644df6c3/bdd48ea08a22aaeaf554aff5b1cbc8e2/imgingest-5645171081042638537.png"
                     height="100"
@@ -33,7 +33,7 @@
             <input type="submit" value="send" />
         </form>
 
-        <hr/>
+        <hr />
 
         <strong>Players</strong><br />
 
@@ -46,31 +46,37 @@
                 location.protocol.replace("http", "ws") + "//" + host + (location.port ? ":" + location.port : "")
             );
 
-            let playersDiv = document.querySelector("#players");
-            const listPlayers = (function(players) {
-              for (let id in players) {
-                const player = players[id];
-                console.log(id, player);
+            const listPlayers = function(players) {
+                let playersDiv = document.querySelector("#players");
+                playersDiv.innerHTML = "";
+                for (let id in players) {
+                    const player = players[id];
+                    console.debug(id, player);
 
-                if (player.name && !playersDiv.querySelector(`#${id}`)) {
-                  let p = document.createElement("p");
-                  p.id = id;
-                  p.innerText = player.name;
-                  playersDiv.appendChild(p);
+                    // eventually i'd like to make this thing similar to jackbox, where it has some kind of placeholder
+                    // (maybe even animated) indicating the player has joined but is still setting their name
+                    if (!player.name) {
+                        player.name = "...";
+                    }
+
+                    let playerDiv = document.createElement("div");
+                    playerDiv.innerText = player.name;
+                    playerDiv.id = id;
+                    playersDiv.appendChild(playerDiv);
                 }
-              }
-            });
+            };
 
             client.joinOrCreate("my_room").then(room => {
                 console.log("joined");
                 room.onStateChange.once(function(state) {
-                    console.log("initial room state:", state);
+                    console.debug("initial room state:", state);
                     listPlayers(state.players);
                 });
 
                 // new room state
                 room.onStateChange(function(state) {
                     // this signal is triggered on each patch
+                    console.debug("new state from server:", state);
                     listPlayers(state.players);
                 });
 
@@ -87,10 +93,10 @@
 
                     let input = document.querySelector("#nameInput");
 
-                    console.log("sending new name to server:", input.value);
+                    console.debug("sending new name to server:", input.value);
 
                     // send data to room
-                    room.send({ command: "setName", params: { name: input.value }});
+                    room.send({ command: "setName", params: { name: input.value } });
 
                     // clear input
                     input.value = "";
