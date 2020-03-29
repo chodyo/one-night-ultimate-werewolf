@@ -47,23 +47,33 @@
             const client = new Colyseus.Client(
                 location.protocol.replace("http", "ws") + "//" + host + (location.port ? ":" + location.port : "")
             );
+
+            let playersDiv = document.querySelector("#players");
+            const listPlayers = (function(players) {
+              for (let id in players) {
+                const player = players[id];
+                console.log(id, player);
+
+                if (player.name && !playersDiv.querySelector(`#${id}`)) {
+                  let p = document.createElement("p");
+                  p.id = id;
+                  p.innerText = player.name;
+                  playersDiv.appendChild(p);
+                }
+              }
+            });
+
             client.joinOrCreate("my_room").then(room => {
                 console.log("joined");
                 room.onStateChange.once(function(state) {
                     console.log("initial room state:", state);
-                    let players = state.players;
-                    if (players.length > 0) {
-                        players.forEach(function(player) {
-                          let p = document.createElement("p");
-                          p.innerText = player.name;
-                          document.querySelector("#players").appendChild(p);
-                        })
-                    }
+                    listPlayers(state.players);
                 });
 
                 // new room state
                 room.onStateChange(function(state) {
                     // this signal is triggered on each patch
+                    listPlayers(state.players);
                 });
 
                 // listen to patches coming from the server
