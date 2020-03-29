@@ -105,7 +105,10 @@ export class MyRoom extends Room {
         const player = this.state.players[client.sessionId];
         let oldName = player.name;
         player.name = params.name;
-        console.debug(`Updated player ${client.sessionId}'s name from "${oldName}" to "${player.name}"`);
+
+        let updateNameMessage = `Updated player ${client.sessionId}'s name from "${oldName}" to "${player.name}"`;
+        console.debug(updateNameMessage);
+        this.broadcast(updateNameMessage);
     }
 
     updateRole(client: Client, params: any) {

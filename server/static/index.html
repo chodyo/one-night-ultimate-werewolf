@@ -19,9 +19,9 @@
         <h1>
             <a href="https://github.com/colyseus/colyseus-examples"></a>
                 <img
-                    src="https://cdn.jsdelivr.net/gh/colyseus/colyseus@master/media/header.png"
+                    src="https://dl1.cbsistatic.com/i/2016/08/10/9efe9336-d20f-4f17-b79a-9d46644df6c3/bdd48ea08a22aaeaf554aff5b1cbc8e2/imgingest-5645171081042638537.png"
                     height="100"
-                    alt="colyseus"
+                    alt="One Night Ultimate Werewolf"
                 />
             </a>
         </h1>
@@ -33,16 +33,32 @@
             <input type="submit" value="send" />
         </form>
 
-        <script>
-            var host = window.document.location.host.replace(/:.*/, "");
+        <div id="messages"></div>
 
-            var client = new Colyseus.Client(
+        <hr/>
+
+        <strong>Players</strong><br />
+
+        <div id="players"></div>
+
+        <script>
+            const host = window.document.location.host.replace(/:.*/, "");
+
+            const client = new Colyseus.Client(
                 location.protocol.replace("http", "ws") + "//" + host + (location.port ? ":" + location.port : "")
             );
             client.joinOrCreate("my_room").then(room => {
                 console.log("joined");
                 room.onStateChange.once(function(state) {
                     console.log("initial room state:", state);
+                    let players = state.players;
+                    if (players.length > 0) {
+                        players.forEach(function(player) {
+                          let p = document.createElement("p");
+                          p.innerText = player.name;
+                          document.querySelector("#players").appendChild(p);
+                        })
+                    }
                 });
 
                 // new room state
@@ -52,7 +68,7 @@
 
                 // listen to patches coming from the server
                 room.onMessage(function(message) {
-                    var p = document.createElement("p");
+                    let p = document.createElement("p");
                     p.innerText = message;
                     document.querySelector("#messages").appendChild(p);
                 });
@@ -61,12 +77,12 @@
                 document.querySelector("#nameForm").onsubmit = function(e) {
                     e.preventDefault();
 
-                    var input = document.querySelector("#nameInput");
+                    let input = document.querySelector("#nameInput");
 
                     console.log("sending new name to server:", input.value);
 
                     // send data to room
-                    room.send({ command: "setName", params: {name: input.value }});
+                    room.send({ command: "setName", params: { name: input.value }});
 
                     // clear input
                     input.value = "";
