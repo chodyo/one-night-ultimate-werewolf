@@ -1,13 +1,29 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types'
 import { Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
 import { Button } from 'react-native-web';
 
+const onuwRoles = [
+  'doppelganger',
+  'drunk',
+  'hunter',
+  'insomniac',
+  'mason',
+  'minion',
+  'robber',
+  'seer',
+  'tanner',
+  'troublemaker',
+  'villager',
+  'werewolf'
+];
+
 class RoleSelectionScreen extends Component {
 
   static propTypes = {
-    room: PropTypes.object.isRequired,
+    //    room: PropTypes.object.isRequired,
   };
   constructor(props) {
     super(props);
@@ -20,7 +36,8 @@ class RoleSelectionScreen extends Component {
 
   async componentDidMount() {
     try {
-      await this.getRoles();
+      //      await this.getRoles();
+      this.setState({ onuwRoles });
     }
     catch (e) {
       console.error('Could not retrieve roles.');
@@ -28,27 +45,33 @@ class RoleSelectionScreen extends Component {
   }
 
   async getRoles() {
-    const { roles } = this.props.room;
+    //    const { roles } = this.props.room;
 
-    this.setState({ roles });
+    this.setState({ onuwRoles });
   }
+
+  activateRole = (role) => {
+    this.setState((s) => { s.activeRoles.push(role) });
+  }
+
   render() {
+    const { roles, activeRoles } = this.state;
     return (
       <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={require('../assets/images/werewolf.png')}
-              style={styles.welcomeImage}
-            />
-          </View>
-
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.contentContainer}
+        >
           <View style={styles.getStartedContainer}>
-            <Text style={styles.getStartedText}>Enter room code:</Text>
-            <TextInput />
+            <Text style={styles.getStartedText}>
+              Select which roles you wish to include:
+            </Text>
+            {roles.length > 0 && roles.map(role => {
+              <Button onPress={() => { this.activateRole }} title={role} />
+            })}
           </View>
         </ScrollView>
-        <Button onPress={} title="Start Game" />
+        {/* <Button onPress={} title="Start Game" /> */}
       </View>
     );
   }
@@ -56,7 +79,7 @@ class RoleSelectionScreen extends Component {
 
 export default RoleSelectionScreen;
 
-HomeScreen.navigationOptions = {
+RoleSelectionScreen.navigationOptions = {
   header: null,
 };
 
