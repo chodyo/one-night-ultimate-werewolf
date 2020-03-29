@@ -38,7 +38,7 @@ class Player extends Schema {
     }
 }
 
-export class State extends Schema {
+class State extends Schema {
     // Represents the players that are participating in the round.
     @type({ map: Player })
     players = new MapSchema<Player>();
