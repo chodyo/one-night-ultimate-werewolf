@@ -1,29 +1,31 @@
 import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
+import roles from "./static/assets/onenight.json";
 
-// Define the roles and the max number of occurrences of that role in a round.
-const roleMaximum: Record<string, number> = {
-    doppelganger: 1,
-    drunk: 1,
-    hunter: 1,
-    insomniac: 1,
-    mason: 2,
-    minion: 1,
-    robber: 1,
-    seer: 1,
-    tanner: 1,
-    troublemaker: 1,
-    villager: 3,
-    werewolf: 2
-};
+type RoleID = keyof typeof roles;
 
-type RoleID = keyof typeof roleMaximum;
-
-const roleIDs = Object.keys(roleMaximum) as RoleID[];
+const roleIDs = Object.keys(roles) as RoleID[];
 
 class Role extends Schema {
     @type("string")
-    name: RoleID = "";
+    name: RoleID;
+
+    @type("boolean")
+    active: boolean = false;
+
+    @type("string")
+    team: string = "";
+
+    @type("number")
+    wakeOrder: number;
+
+    constructor(name?: RoleID, team?: string, wakeOrder?: number) {
+        super();
+
+        this.name = name || "villager";
+        this.team = team || "";
+        this.wakeOrder = wakeOrder || -1;
+    }
 }
 
 class Player extends Schema {
@@ -43,9 +45,27 @@ export class State extends Schema {
     @type({ map: Player })
     players = new MapSchema<Player>();
 
-    // The players select the roles that will be assigned to the players when the round starts.
-    @type({ map: "string" })
-    roleCount = new MapSchema<RoleID>();
+    // All possible roles that can be in the game.
+    @type({ map: Role })
+    roles = new MapSchema<RoleID>();
+
+    constructor() {
+        super();
+
+        this.createRoleMapping();
+    }
+
+    createRoleMapping() {
+        roleIDs.forEach(roleID => {
+            let roleDef = roles[roleID];
+
+            for (let i = 0; i < roleDef.maximum; i++) {
+                let roleKey = roleID + i;
+                let role = new Role(roleID, roleDef.team, roleDef.wakeOrder);
+                this.roles[roleKey] = role;
+            }
+        });
+    }
 
     addPlayer(id: string) {
         this.players[id] = new Player();
@@ -57,21 +77,28 @@ export class State extends Schema {
 
     initRoles() {
         for (let roleID in roleIDs) {
-            this.roleCount.set(roleID, 0);
+            this.roles.set(roleID, 0);
         }
     }
 
-    addRole(roleID: RoleID) {
-        let count = this.roleCount.get(roleID);
-        if (count < roleMaximum[roleID]) {
-            this.roleCount.set(roleID, count++);
-        }
-    }
+    setRoleActive(roleID: RoleID, active: boolean) {
+        this.roles[roleID].active = active;
 
-    removeRole(roleID: RoleID) {
-        let count = this.roleCount.get(roleID);
-        if (count > 0) {
-            this.roleCount.set(roleID, count--);
+        if (
+            active &&
+            roleID.startsWith("minion") &&
+            !this.roles["werewolf0"].active &&
+            !this.roles["werewolf1"].active
+        ) {
+            console.debug("Activated minion with no werewolves. Also activating werewolf0.");
+
+            this.roles["werewolf0"].active = true;
+        } else if (roleID.startsWith("mason")) {
+            let otherMason = parseInt(roleID.slice(-1)) ^ 1;
+
+            console.debug(`Toggled ${roleID}. Also toggling mason${otherMason}.`);
+
+            this.roles["mason" + otherMason].active = active;
         }
     }
 }
@@ -81,8 +108,8 @@ export class State extends Schema {
 //     command: string,
 //     params: {
 //         name: string, (setName),
-//         role: string, (updateRole),
-//         roleAction: string, (updateRole) ["add", "remove"]
+//         roleID: string, (updateRole),
+//         roleEnabled: boolean, (updateRole)
 //     }
 // }
 
@@ -95,7 +122,7 @@ export class MyRoom extends Room {
 
     commands = new Map([
         ["setName", this.updatePlayerName.bind(this)],
-        ["updateRole", this.updateRole.bind(this)],
+        ["updateSelectedRole", this.updateSelectedRole.bind(this)],
         ["startGame", this.startGame.bind(this)]
     ]);
 
@@ -108,12 +135,8 @@ export class MyRoom extends Room {
         console.debug(`Updated player ${client.sessionId}'s name from "${oldName}" to "${player.name}"`);
     }
 
-    updateRole(client: Client, params: any) {
-        if (params.roleAction === "add") {
-            this.state.addRole(params.role);
-        } else {
-            this.state.removeRole(params.role);
-        }
+    updateSelectedRole(client: Client, params: any) {
+        this.state.setRoleActive(params.roleID, params.roleEnabled);
     }
 
     startGame(client: Client, params: any) {}
