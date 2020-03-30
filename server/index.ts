@@ -17,7 +17,7 @@ app.use(express.json());
 
 const server = http.createServer(app);
 const gameServer = new Server({
-  server
+    server
 });
 
 // register your room handlers
@@ -38,7 +38,7 @@ app.use("/", express.static(path.join(__dirname, "static")));
 app.use("/colyseus", monitor());
 
 gameServer.onShutdown(function() {
-  console.log(`game server is going down.`);
+    console.log(`game server is going down.`);
 });
 
 gameServer.listen(port);
