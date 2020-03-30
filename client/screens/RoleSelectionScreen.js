@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types'
-import { Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
-import { Button } from 'react-native-web';
 
 const onuwRoles = [
   'doppelganger',
@@ -37,7 +36,7 @@ class RoleSelectionScreen extends Component {
   async componentDidMount() {
     try {
       //      await this.getRoles();
-      this.setState({ onuwRoles });
+      this.setState({ roles: onuwRoles });
     }
     catch (e) {
       console.error('Could not retrieve roles.');
@@ -66,12 +65,13 @@ class RoleSelectionScreen extends Component {
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
-            {roles.length > 0 && roles.map(role => {
-              <Button onPress={() => { this.activateRole }} title={role} />
-            })}
+            {roles.map(role => (
+              <Button id={role} onPress={() => { this.activateRole() }} title={role} />
+            ))}
+
           </View>
         </ScrollView>
-        {/* <Button onPress={} title="Start Game" /> */}
+        <Button onPress={() => this.activateRole(null)} title="Start Game" />
       </View>
     );
   }

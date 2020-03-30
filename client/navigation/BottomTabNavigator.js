@@ -51,8 +51,8 @@ function getHeaderTitle(route) {
   switch (routeName) {
     case 'Home':
       return 'One Night Ultimate Werewolf';
-    case 'Rules':
-      return 'Rules of Play';
+    case 'Roles':
+      return 'Roles to Play';
     case 'Settings':
       return 'Settings';
   }
