@@ -1,11 +1,17 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types'
 import { Button, Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
+import Colyseus from 'colyseus.js'
+import { AsyncStorage } from 'react-native';
+import { Buffer } from “buffer”;
+
+// import { render, findDOMNode } from 'react-dom';
 
 const onuwRoles = [
   'doppelganger',
+  'werewolf',
   'drunk',
   'hunter',
   'insomniac',
@@ -16,16 +22,29 @@ const onuwRoles = [
   'tanner',
   'troublemaker',
   'villager',
-  'werewolf'
 ];
 
-class RoleSelectionScreen extends Component {
+class RoleSelectionScreen extends React.Component {
 
   static propTypes = {
     //    room: PropTypes.object.isRequired,
   };
   constructor(props) {
     super(props);
+
+    window.localStorage = AsyncStorage;
+    global.Buffer = Buffer;
+
+    // use current hostname/port as colyseus server endpoint
+    var endpoint = location.protocol.replace("http", "ws") + "//" + location.hostname;
+
+    // development server
+    if (location.port && location.port !== "80") { endpoint += ":2657" }
+
+    this.colyseus = new Colyseus(endpoint)
+    this.chatRoom = this.colyseus.join('chat', { channel: window.location.hash || "#default" })
+    this.chatRoom.on('update', this.onUpdateRemote.bind(this))
+
     this.state = {
       roles: [],
       activeRoles: [],
