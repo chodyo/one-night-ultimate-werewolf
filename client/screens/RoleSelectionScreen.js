@@ -1,79 +1,38 @@
 import React from 'react';
 import PropTypes from 'prop-types'
-import { Button, Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, Image, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
-import Colyseus from 'colyseus.js'
-import { AsyncStorage } from 'react-native';
-import { Buffer } from “buffer”;
-
-// import { render, findDOMNode } from 'react-dom';
-
-const onuwRoles = [
-  'doppelganger',
-  'werewolf',
-  'drunk',
-  'hunter',
-  'insomniac',
-  'mason',
-  'minion',
-  'robber',
-  'seer',
-  'tanner',
-  'troublemaker',
-  'villager',
-];
+import { roleDefinitions } from "../constants/RoleDefinitions";
 
 class RoleSelectionScreen extends React.Component {
-
   static propTypes = {
     //    room: PropTypes.object.isRequired,
   };
+
   constructor(props) {
     super(props);
 
-    window.localStorage = AsyncStorage;
-    global.Buffer = Buffer;
-
-    // use current hostname/port as colyseus server endpoint
-    var endpoint = location.protocol.replace("http", "ws") + "//" + location.hostname;
-
-    // development server
-    if (location.port && location.port !== "80") { endpoint += ":2657" }
-
-    this.colyseus = new Colyseus(endpoint)
-    this.chatRoom = this.colyseus.join('chat', { channel: window.location.hash || "#default" })
-    this.chatRoom.on('update', this.onUpdateRemote.bind(this))
-
     this.state = {
-      roles: [],
+      roleDefinitions: null,
       activeRoles: [],
-      isLoading: true,
     };
   }
 
   async componentDidMount() {
-    try {
-      //      await this.getRoles();
-      this.setState({ roles: onuwRoles });
-    }
-    catch (e) {
-      console.error('Could not retrieve roles.');
-    }
+    await this.loadRoles();
   }
 
-  async getRoles() {
-    //    const { roles } = this.props.room;
-
-    this.setState({ onuwRoles });
+  async loadRoles() {
+    this.setState({ roleDefinitions: roleDefinitions });
   }
 
   activateRole = (role) => {
     this.setState((s) => { s.activeRoles.push(role) });
-  }
+  };
 
   render() {
-    const { roles, activeRoles } = this.state;
+    // const { roleDefinitions } = this.state;
     return (
       <View style={styles.container}>
         <ScrollView
@@ -84,8 +43,15 @@ class RoleSelectionScreen extends React.Component {
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
-            {roles.map(role => (
-              <Button id={role} onPress={() => { this.activateRole() }} title={role} />
+            {Object.entries(roleDefinitions).map(([role, definition]) => (
+              <Button
+                key={role}
+                title={role}
+                onPress={() => {
+                  alert(`You clicked ${role}`);
+                  // this.activateRole(role);
+                }}
+              />
             ))}
 
           </View>
