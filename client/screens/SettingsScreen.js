@@ -1,12 +1,15 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Font } from 'react-native';
-import { createIconSetFromIcoMoon } from 'react-native-vector-icons/Icons';
-import icoMoonSelection from '../selection.json';
+import { StyleSheet, Text, View } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
+import * as Font from 'expo-font';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 import Colors from "../constants/Colors";
 
-const MoonIcon = createIconSetFromIcoMoon(icoMoonSelection);
+import { createIconSetFromIcoMoon } from '@expo/vector-icons';
+import icoMoonConfig from '../assets/fonts/selection.json';
+
+const expoAssetId = require("../assets/fonts/Werewolf.ttf");
+const MoonIcon = createIconSetFromIcoMoon(icoMoonConfig, 'werewolf', expoAssetId);
 
 export default function SettingsScreen() {
   return (
@@ -17,6 +20,31 @@ export default function SettingsScreen() {
       <OptionButton
         icon="werewolf-token"
         label="Werewolf"
+        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+      />
+      <OptionButton
+        icon="doppelganger-token"
+        label="Doppelganger"
+        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+      />
+      <OptionButton
+        icon="drunk-token"
+        label="Drunk"
+        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+      />
+      <OptionButton
+        icon="hunter-token"
+        label="Hunter"
+        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+      />
+      <OptionButton
+        icon="mason-token"
+        label="Werewolf"
+        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+      />
+      <OptionButton
+        icon="robber-token"
+        label="Robber"
         onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
       />
 
