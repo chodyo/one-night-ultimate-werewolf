@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types'
-import { Button, Image, Platform, StyleSheet, Text, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { Button, Image, Platform, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
+import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
 import { roleDefinitions } from "../constants/RoleDefinitions";
+import OptionButton from '../components/OptionButton';
+
 
 class RoleSelectionScreen extends React.Component {
   static propTypes = {
@@ -24,39 +26,48 @@ class RoleSelectionScreen extends React.Component {
   }
 
   async loadRoles() {
+
     this.setState({ roleDefinitions: roleDefinitions });
   }
 
-  activateRole = (role) => {
-    this.setState((s) => { s.activeRoles.push(role) });
+  activateRole = (roletoggle) => {
+    //These are the roles selected to play
+    const { activeRoles } = this.state;
+    //Check whether the clicked role has already been selected (or exists in active roles)
+    const roleExists = activeRoles.includes(roletoggle);
+    //New list of roles which checks whether to add or remove the role to Active Roles selected to play
+    let newRoles = roleExists ? activeRoles.filter(role => roletoggle !== role) : activeRoles.concat(roletoggle);
+    //Updates Active Roles to the expected roles to include
+    this.setState({ activeRoles: newRoles });
   };
 
   render() {
-    // const { roleDefinitions } = this.state;
+    const { activeRoles } = this.state;
+
     return (
       <View style={styles.container}>
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.contentContainer}
         >
-          <View style={styles.getStartedContainer}>
+          <View style={styles.button}>
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
             {Object.entries(roleDefinitions).map(([role, definition]) => (
-              <Button
-                key={role}
-                title={role}
-                onPress={() => {
-                  alert(`You clicked ${role}`);
-                  // this.activateRole(role);
-                }}
-              />
+              <TouchableOpacity style={activeRoles.includes(role) ? styles.selectedButtonStyle : styles.button}>
+                <OptionButton
+                  icon={definition.imageToken}
+                  label={role}
+                  onPress={() => { this.activateRole(role); console.log(activeRoles); console.log(role) }}
+                // onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+                />
+              </TouchableOpacity>
             ))}
 
           </View>
         </ScrollView>
-        <Button onPress={() => this.activateRole(null)} title="Start Game" />
+        <Button style={styles.unSelectedButton} onPress={() => this.activateRole(null)} title="Start Game" />
       </View>
     );
   }
@@ -74,20 +85,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.werewolfBlue,
   },
   contentContainer: {
+    alignItems: 'center',
+    flex: 10,
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     paddingTop: 30,
-  },
-  welcomeContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  welcomeImage: {
-    resizeMode: 'contain',
-    marginTop: 3,
-  },
-  getStartedContainer: {
-    alignItems: 'center',
-    marginHorizontal: 50,
   },
   homeScreenFilename: {
     marginVertical: 7,
@@ -140,6 +143,24 @@ const styles = StyleSheet.create({
   },
   helpLink: {
     paddingVertical: 15,
+  },
+  selectedButtonStyle: {
+    textAlign: 'center',
+    backgroundColor: '#939FA0',
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    // borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.buttonSelectedBorder,
+    color: Colors.inactiveText,
+  },
+  unSelectedButton: {
+    textAlign: 'center',
+    backgroundColor: Colors.buttonBackground,
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    borderWidth: StyleSheet.borderWidth,
+    color: Colors.activeText,
   },
   helpLinkText: {
     fontSize: 14,
