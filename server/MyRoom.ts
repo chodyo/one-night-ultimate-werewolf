@@ -1,6 +1,7 @@
 import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
 import roles from "./static/assets/onenight.json";
+import * as Messages from "./Message";
 
 // Enforces strict values for role names
 
@@ -131,76 +132,6 @@ type Action = keyof typeof actions;
 //     }
 // }
 
-// Server => Client
-// {
-//     messageType: "notification" | "debug" | "message" | "broadcast",
-//     message: string
-// }
-
-enum messageTypes {
-    message = "message", // one player to all players
-    privateMessage = "privateMessage", // one player to one other player
-
-    notification = "notification", // server to single client, relating to the game
-    broadcast = "broadcast", // server to all clients, relating to the game
-    debug = "debug" // server to single client, relating to a problem the server encountered (invalid request).
-}
-type messageType = keyof typeof messageTypes;
-
-/**
- * A message from one player to all players.
- */
-class Message extends Schema {
-    @type("string") messageType: messageType = messageTypes.message; // TODO: for some reason this isn't being serialized to the client
-    @type("string") message: string;
-
-    constructor(message: string) {
-        super();
-
-        this.message = message;
-    }
-}
-
-/**
- * A message from one player to one other player.
- */
-class PrivateMessage extends Message {
-    @type("string") messageType: messageType = messageTypes.privateMessage;
-    constructor(message: string) {
-        super(message);
-    }
-}
-
-/**
- * A game message from the server to a single client.
- */
-class Notification extends Message {
-    @type("string") messageType: messageType = messageTypes.notification;
-    constructor(message: string) {
-        super(message);
-    }
-}
-
-/**
- * A game message from the server to all clients.
- */
-class Broadcast extends Message {
-    @type("string") messageType: messageType = messageTypes.broadcast;
-    constructor(message: string) {
-        super(message);
-    }
-}
-
-/**
- * A non-game related message to a single client, used for debugging purposes only (for example, a bad request).
- */
-class Debug extends Message {
-    @type("string") messageType: messageType = messageTypes.debug;
-    constructor(message: string) {
-        super(message);
-    }
-}
-
 export class MyRoom extends Room {
     // ====== Colyseus Properties ======
 
@@ -225,8 +156,8 @@ export class MyRoom extends Room {
         // this is pretty unnecessary since the function has access to `this.send` directly. just using it as an example
         return [
             (client: Client, data: any, room: MyRoom) => {
-                room.send(client, new Notification(`Name updated from "${oldName}" to "${params.name}".`));
-                room.broadcast(new Broadcast(`"${oldName}" has changed their name to "${params.name}".`));
+                room.send(client, new Messages.Notification(`Name updated from "${oldName}" to "${params.name}".`));
+                room.broadcast(new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`));
             }
         ];
     }
@@ -263,7 +194,7 @@ export class MyRoom extends Room {
         } else {
             let msg = `Action ${data.action} not defined.`;
             console.log(msg);
-            this.send(client, new Debug(msg));
+            this.send(client, new Messages.Debug(msg));
         }
     }
 
