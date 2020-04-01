@@ -2,13 +2,15 @@ import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
 import roles from "./static/assets/onenight.json";
 
+// Enforces strict values for role names
+
 type RoleID = keyof typeof roles;
 
 const roleIDs = Object.keys(roles) as RoleID[];
 
 class Role extends Schema {
     @type("string")
-    name: RoleID;
+    name?: RoleID;
 
     @type("boolean")
     active: boolean = false;
@@ -22,7 +24,7 @@ class Role extends Schema {
     constructor(name?: RoleID, team?: string, wakeOrder?: number) {
         super();
 
-        this.name = name || "villager";
+        this.name = name || undefined;
         this.team = team || "";
         this.wakeOrder = wakeOrder || -1;
     }
@@ -103,43 +105,140 @@ export class State extends Schema {
     }
 }
 
-// API
-// data = {
-//     command: string,
+// Allows objects other than the Room to create callback functions that utilize Room actions
+
+type CallbackFunction = (...args: any[]) => void;
+const emptyCallback: CallbackFunction = function() {};
+
+type ActionFunction = (client: Client, params: any, Room: MyRoom) => CallbackFunction[];
+
+// Not required, just handy
+
+enum actions {
+    setPlayerName = "setPlayerName",
+    updateSelectedRole = "updateSelectedRole",
+    startGame = "startGame"
+}
+type Action = keyof typeof actions;
+
+// Client => Server
+// {
+//     action: Action,
 //     params: {
-//         name: string, (setName),
-//         roleID: string, (updateRole),
-//         roleEnabled: boolean, (updateRole)
+//         name: string, (setPlayerName),
+//         roleID: string, (updateSelectedRole),
+//         roleEnabled: boolean, (updateSelectedRole)
 //     }
 // }
+
+// Server => Client
+// {
+//     messageType: "notification" | "debug" | "message" | "broadcast",
+//     message: string
+// }
+
+enum messageTypes {
+    message = "message", // one player to all players
+    privateMessage = "privateMessage", // one player to one other player
+
+    notification = "notification", // server to single client, relating to the game
+    broadcast = "broadcast", // server to all clients, relating to the game
+    debug = "debug" // server to single client, relating to a problem the server encountered (invalid request).
+}
+type messageType = keyof typeof messageTypes;
+
+/**
+ * A message from one player to all players.
+ */
+class Message extends Schema {
+    @type("string") messageType: messageType = messageTypes.message; // TODO: for some reason this isn't being serialized to the client
+    @type("string") message: string;
+
+    constructor(message: string) {
+        super();
+
+        this.message = message;
+    }
+}
+
+/**
+ * A message from one player to one other player.
+ */
+class PrivateMessage extends Message {
+    @type("string") messageType: messageType = messageTypes.privateMessage;
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+/**
+ * A game message from the server to a single client.
+ */
+class Notification extends Message {
+    @type("string") messageType: messageType = messageTypes.notification;
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+/**
+ * A game message from the server to all clients.
+ */
+class Broadcast extends Message {
+    @type("string") messageType: messageType = messageTypes.broadcast;
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+/**
+ * A non-game related message to a single client, used for debugging purposes only (for example, a bad request).
+ */
+class Debug extends Message {
+    @type("string") messageType: messageType = messageTypes.debug;
+    constructor(message: string) {
+        super(message);
+    }
+}
 
 export class MyRoom extends Room {
     // ====== Colyseus Properties ======
 
     maxClients = 10;
 
-    // ====== Player Command Mapping ======
+    // ====== Player Action Mapping ======
 
-    commands = new Map([
-        ["setName", this.updatePlayerName.bind(this)],
-        ["updateSelectedRole", this.updateSelectedRole.bind(this)],
-        ["startGame", this.startGame.bind(this)]
+    actionExecs = new Map<Action, ActionFunction>([
+        [actions.setPlayerName, this.setPlayerName],
+        [actions.updateSelectedRole, this.updateSelectedRole],
+        [actions.startGame, this.startGame]
     ]);
 
-    // ====== Player Commands ======
+    // ====== Player Actions ======
 
-    updatePlayerName(client: Client, params: any) {
+    setPlayerName(client: Client, params: any): CallbackFunction[] {
         const player = this.state.players[client.sessionId];
         let oldName = player.name;
         player.name = params.name;
         console.debug(`Updated player ${client.sessionId}'s name from "${oldName}" to "${player.name}"`);
+
+        // this is pretty unnecessary since the function has access to `this.send` directly. just using it as an example
+        return [
+            (client: Client, data: any, room: MyRoom) => {
+                room.send(client, new Notification(`Name updated from "${oldName}" to "${params.name}".`));
+                room.broadcast(new Broadcast(`"${oldName}" has changed their name to "${params.name}".`));
+            }
+        ];
     }
 
-    updateSelectedRole(client: Client, params: any) {
+    updateSelectedRole(client: Client, params: any): CallbackFunction[] {
         this.state.setRoleActive(params.roleID, params.roleEnabled);
+        return [emptyCallback];
     }
 
-    startGame(client: Client, params: any) {}
+    startGame(client: Client, params: any): CallbackFunction[] {
+        return [emptyCallback];
+    }
 
     // ====== Colyseus Handlers ======
 
@@ -156,11 +255,15 @@ export class MyRoom extends Room {
     onMessage(client: Client, data: any) {
         console.log("MyRoom received message from", client.sessionId, ":", data);
 
-        let invokeCommand = this.commands.get(data.command);
-        if (invokeCommand) {
-            invokeCommand(client, data.params);
+        let exec = this.actionExecs.get(data.action);
+        if (exec) {
+            exec.bind(this)(client, data.params, this).forEach(callback => {
+                callback(client, data, this);
+            });
         } else {
-            console.log(`Command ${data.command} not defined.`);
+            let msg = `Action ${data.action} not defined.`;
+            console.log(msg);
+            this.send(client, new Debug(msg));
         }
     }
 
