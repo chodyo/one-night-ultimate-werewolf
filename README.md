@@ -16,11 +16,10 @@ Install project dependencies.
 - `package.json`:
     - `scripts`:
         - `yarn start`: runs `ts-node index.ts` which is the main entry point.
-        - `yarn run dev`: runs `yarn run watch` and `yarn run client` which starts up the server, and the client.
-        - `yarn run loadtest`: runs the [`@colyseus/loadtest`](https://github.com/colyseus/colyseus-loadtest/) tool for testing the connection, using the `loadtest/example.ts` script.
-        - `yarn start server`: runs `ts-node index.ts` which starts up the server.
         - `yarn start watch`: runs `ts-node-dev index.ts` which starts up the server and refreshes on file change saves.
         - `yarn start client`: runs `yarn --cwd client run start` which runs the start in client/package.json in order to start up the client.
+        - `yarn dev`: runs `yarn run watch` and `yarn run client` which starts up the server, and the client.
+        - `yarn run loadtest`: runs the [`@colyseus/loadtest`](https://github.com/colyseus/colyseus-loadtest/) tool for testing the connection, using the `loadtest/example.ts` script.
     - `dependencies`:
         - `@colyseus/monitor`
         - `@colyseus/social`

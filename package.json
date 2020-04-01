@@ -6,13 +6,12 @@
   "proxy": "http://localhost:2567",
   "main": "lib/index.js",
   "scripts": {
+    "start": "ts-node index.ts",
     "watch": "ts-node-dev index.ts",
-    "server": "ts-node index.ts",
-    "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "client": "yarn --cwd client run start",
     "dev": "concurrently --kill-others-on-fail \"yarn run watch\" \"yarn run client\"",
-    "start": "ts-node index.ts"
+    "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "UNLICENSED",
