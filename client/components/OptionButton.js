@@ -17,7 +17,7 @@ export default function OptionButton({ icon, label, onPress, isLastOption }) {
                 <View style={styles.optionIconContainer}>
                     <MoonIcon name={icon} size={22} color={Colors.activeText} />
                 </View>
-                <View style={styles.optionTextContainer}>
+                <View style={styles.optionIconContainer}>
                     <Text style={styles.optionText}>{label}</Text>
                 </View>
             </View>

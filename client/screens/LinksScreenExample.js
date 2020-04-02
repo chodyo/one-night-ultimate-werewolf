@@ -36,7 +36,7 @@ function OptionButton({ icon, label, onPress, isLastOption }) {
         <View style={styles.optionIconContainer}>
           <Ionicons name={icon} size={22} color="rgba(0,0,0,0.35)" />
         </View>
-        <View style={styles.optionTextContainer}>
+        <View style={styles.optionIconContainer}>
           <Text style={styles.optionText}>{label}</Text>
         </View>
       </View>

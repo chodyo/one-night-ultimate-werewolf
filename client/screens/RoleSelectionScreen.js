@@ -1,33 +1,118 @@
 import React from 'react';
 import PropTypes from 'prop-types'
-import { Button, Image, Platform, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
+import { Button, Image, Platform, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
+import { Client, Room } from "colyseus.js";
 import { roleDefinitions } from "../constants/RoleDefinitions";
 import OptionButton from '../components/OptionButton';
 
 
 class RoleSelectionScreen extends React.Component {
   static propTypes = {
-    //    room: PropTypes.object.isRequired,
   };
 
   constructor(props) {
     super(props);
 
+
     this.state = {
       roleDefinitions: null,
       activeRoles: [],
+      room: null,
     };
   }
 
   async componentDidMount() {
+    console.debug('Starting Mount');
+    this.start();
     await this.loadRoles();
+  }
+
+  componentWillUnmount() {
+    this.stop();
   }
 
   async loadRoles() {
 
     this.setState({ roleDefinitions: roleDefinitions });
+  }
+  // LIFECYCLE
+  start = async () => {
+    console.debug("LIFECYCLE");
+    const {
+      roomId = '',
+      location: {
+        search = '',
+      } = {},
+    } = this.props;
+
+    const isNewRoom = roomId === 'new';
+
+    console.debug(isNewRoom, roomId);
+
+    let options;
+    if (isNewRoom) {
+      console.debug('NEW ROOM!');
+      options = {
+      };
+    } else {
+      // The only thing to pass when joining an existing room is a player's name
+      console.debug('Not a new ROOM!');
+
+      options = {
+        playerName: localStorage.getItem('playerName'),
+      };
+      console.debug(options);
+
+    }
+
+    // Connect
+    try {
+      const host = window.document.location.host.replace(/:.*/, '');
+      console.debug(host);
+      const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
+      console.debug(port);
+      const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+      console.debug(url);
+
+      this.client = new Client(url);
+      console.debug('the url');
+      console.debug(url);
+      let room;
+      await this.client.joinOrCreate('my_room').then(joinedRoom => {
+        room = joinedRoom;
+        console.debug(`joined room`, room);
+      });
+
+      this.setState({
+        room,
+        playerId: room.sessionId,
+      });
+
+      //   if (isNewRoom) {
+      //     this.room = await this.client.create(Constants.ROOM_NAME, options);
+
+      //     // We replace the "new" in the URL with the room's id
+      //     window.history.replaceState(null, '', `/${this.room.id}`);
+      //     console.debug("fucking Unicorns!");
+      //   } else {
+      //     this.room = await this.client.joinById(roomId, options);
+      //     console.debug("fucking Unicorns!");
+
+      //   }
+    } catch (error) {
+      return;
+    }
+
+
+  }
+
+  stop = () => {
+    // Colyseus
+    if (this.room) {
+      this.room.leave();
+    }
   }
 
   activateRole = (roletoggle) => {
@@ -50,12 +135,12 @@ class RoleSelectionScreen extends React.Component {
           style={styles.container}
           contentContainerStyle={styles.contentContainer}
         >
-          <View style={styles.button}>
+          <View style={styles.unSelectedButton}>
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
             {Object.entries(roleDefinitions).map(([role, definition]) => (
-              <TouchableOpacity style={activeRoles.includes(role) ? styles.selectedButtonStyle : styles.button}>
+              <TouchableOpacity key={role} style={activeRoles.includes(role) ? styles.selectedButtonStyle : styles.unSelectedButton}>
                 <OptionButton
                   icon={definition.imageToken}
                   label={role}
