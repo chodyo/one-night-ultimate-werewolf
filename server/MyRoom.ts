@@ -1,35 +1,8 @@
 import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
-import roles from "./static/assets/onenight.json";
 import * as Messages from "./Message";
-
-// Enforces strict values for role names
-
-type RoleID = keyof typeof roles;
-
-const roleIDs = Object.keys(roles) as RoleID[];
-
-class Role extends Schema {
-    @type("string")
-    name?: RoleID;
-
-    @type("boolean")
-    active: boolean = false;
-
-    @type("string")
-    team: string = "";
-
-    @type("number")
-    wakeOrder: number;
-
-    constructor(name?: RoleID, team?: string, wakeOrder?: number) {
-        super();
-
-        this.name = name || undefined;
-        this.team = team || "";
-        this.wakeOrder = wakeOrder || -1;
-    }
-}
+import { RoleID, Role, roleIDs, roles } from "./Role";
+import { CallbackFunction, emptyCallback, ActionFunction, actions, Action } from "./Action";
 
 class Player extends Schema {
     @type("string")
@@ -106,32 +79,6 @@ export class State extends Schema {
     }
 }
 
-// Allows objects other than the Room to create callback functions that utilize Room actions
-
-type CallbackFunction = (...args: any[]) => void;
-const emptyCallback: CallbackFunction = function() {};
-
-type ActionFunction = (client: Client, params: any, Room: MyRoom) => CallbackFunction[];
-
-// Not required, just handy
-
-enum actions {
-    setPlayerName = "setPlayerName",
-    updateSelectedRole = "updateSelectedRole",
-    startGame = "startGame"
-}
-type Action = keyof typeof actions;
-
-// Client => Server
-// {
-//     action: Action,
-//     params: {
-//         name: string, (setPlayerName),
-//         roleID: string, (updateSelectedRole),
-//         roleEnabled: boolean, (updateSelectedRole)
-//     }
-// }
-
 export class MyRoom extends Room {
     // ====== Colyseus Properties ======
 
@@ -156,8 +103,13 @@ export class MyRoom extends Room {
         // this is pretty unnecessary since the function has access to `this.send` directly. just using it as an example
         return [
             (client: Client, data: any, room: MyRoom) => {
-                room.send(client, new Messages.Notification(`Name updated from "${oldName}" to "${params.name}".`));
-                room.broadcast(new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`));
+                let msg = new Messages.Notification(`Name updated from "${oldName}" to "${params.name}".`);
+                console.log("message", JSON.stringify(msg));
+                room.send(client, msg);
+
+                let broadcast = new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`);
+                console.log("broadcast", JSON.stringify(broadcast));
+                room.broadcast(broadcast);
             }
         ];
     }
