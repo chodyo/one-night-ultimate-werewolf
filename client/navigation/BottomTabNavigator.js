@@ -4,6 +4,7 @@ import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from "../screens/SettingsScreen";
 import RulesScreen from "../screens/RulesScreen";
+import RoleSelectionScreen from "../screens/RoleSelectionScreen";
 
 const BottomTab = createBottomTabNavigator();
 const INITIAL_ROUTE_NAME = 'Home';
@@ -25,10 +26,10 @@ export default function BottomTabNavigator({ navigation, route }) {
         }}
       />
       <BottomTab.Screen
-        name="Rules"
-        component={RulesScreen}
+        name="Role"
+        component={RoleSelectionScreen}
         options={{
-          title: 'Rules',
+          title: 'Role',
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
         }}
       />
@@ -50,8 +51,8 @@ function getHeaderTitle(route) {
   switch (routeName) {
     case 'Home':
       return 'One Night Ultimate Werewolf';
-    case 'Rules':
-      return 'Rules of Play';
+    case 'Roles':
+      return 'Roles to Play';
     case 'Settings':
       return 'Settings';
   }

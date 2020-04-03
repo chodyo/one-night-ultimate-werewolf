@@ -11,7 +11,9 @@ export default {
   warningText: '#666804',
   noticeBackground: tintColor,
   noticeText: '#fff',
-  werewolfBlue: '#2d3145',
-  activeText: '#D4B129',
+  werewolfBlue: '#182622',
+  buttonBackground: '#426957',
+  buttonSelectedBorder: '#FEEFDB',
+  activeText: '#C66302',
   inactiveText: '#1E151C',
 };

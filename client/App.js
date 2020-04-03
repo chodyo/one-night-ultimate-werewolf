@@ -27,11 +27,19 @@ export default function App(props) {
         // Load our initial navigation state
         setInitialNavigationState(await getInitialState());
 
+
+
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
           'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
+
         });
+        await Font.loadAsync({
+          'werewolf': require('./assets/fonts/Werewolf.ttf'),
+        });
+
+
       } catch (e) {
         // We might want to provide this error information to an error reporting service
         console.warn(e);
