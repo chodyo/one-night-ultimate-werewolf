@@ -15,7 +15,6 @@ class RoleSelectionScreen extends React.Component {
   constructor(props) {
     super(props);
 
-
     this.state = {
       roleDefinitions: null,
       activeRoles: [],
@@ -25,7 +24,7 @@ class RoleSelectionScreen extends React.Component {
 
   async componentDidMount() {
     console.debug('Starting Mount');
-    this.start();
+    await this.start();
     await this.loadRoles();
   }
 
@@ -34,7 +33,7 @@ class RoleSelectionScreen extends React.Component {
   }
 
   async loadRoles() {
-
+    // const { room } = this.state;
     this.setState({ roleDefinitions: roleDefinitions });
   }
   // LIFECYCLE
@@ -79,15 +78,13 @@ class RoleSelectionScreen extends React.Component {
       this.client = new Client(url);
       console.debug('the url');
       console.debug(url);
-      let room;
       await this.client.joinOrCreate('my_room').then(joinedRoom => {
-        room = joinedRoom;
-        console.debug(`joined room`, room);
-      });
+        console.debug(`joined room`, joinedRoom);
 
-      this.setState({
-        room,
-        playerId: room.sessionId,
+        this.setState({
+          room: joinedRoom,
+          playerId: joinedRoom.sessionId,
+        });
       });
 
       //   if (isNewRoom) {
@@ -102,32 +99,36 @@ class RoleSelectionScreen extends React.Component {
 
       //   }
     } catch (error) {
-      return;
+      console.error("Fucked by ", error);
     }
-
-
-  }
+  };
 
   stop = () => {
     // Colyseus
     if (this.room) {
       this.room.leave();
     }
-  }
+  };
 
   activateRole = (roletoggle) => {
     //These are the roles selected to play
-    const { activeRoles } = this.state;
-    //Check whether the clicked role has already been selected (or exists in active roles)
-    const roleExists = activeRoles.includes(roletoggle);
+    const { activeRoles, room } = this.state;
     //New list of roles which checks whether to add or remove the role to Active Roles selected to play
-    let newRoles = roleExists ? activeRoles.filter(role => roletoggle !== role) : activeRoles.concat(roletoggle);
+    // let newRoles = roleExists ? activeRoles.filter(role => roletoggle !== role) : activeRoles.concat(roletoggle);
+    let request = {
+      action: 'updateSelectedRole',
+      params: {
+        roleId: roletoggle,
+        //Check whether the clicked role has already been selected (or exists in active roles)
+        roleEnabled: !activeRoles.includes(roletoggle)
+      }};
     //Updates Active Roles to the expected roles to include
-    this.setState({ activeRoles: newRoles });
+    room.send(request);
+    // this.setState({ activeRoles: newRoles });
   };
 
   render() {
-    const { activeRoles, room } = this.state;
+    const { activeRoles } = this.state;
 
     return (
       <View style={styles.container}>
@@ -144,13 +145,7 @@ class RoleSelectionScreen extends React.Component {
                 <OptionButton
                   icon={definition.imageToken}
                   label={role}
-                  onPress={() => {
-                    this.activateRole(role);
-                    room.send(role);
-                    console.log(activeRoles);
-                    console.log(role)
-                  }}
-                // onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+                  onPress={() => this.activateRole(role) }
                 />
               </TouchableOpacity>
             ))}
