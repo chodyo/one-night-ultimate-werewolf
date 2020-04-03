@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Client, Room } from 'colyseus.js';
 import { Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from "../constants/Colors";
