@@ -127,7 +127,7 @@ class RoleSelectionScreen extends React.Component {
   };
 
   render() {
-    const { activeRoles } = this.state;
+    const { activeRoles, room } = this.state;
 
     return (
       <View style={styles.container}>
@@ -144,7 +144,12 @@ class RoleSelectionScreen extends React.Component {
                 <OptionButton
                   icon={definition.imageToken}
                   label={role}
-                  onPress={() => { this.activateRole(role); console.log(activeRoles); console.log(role) }}
+                  onPress={() => {
+                    this.activateRole(role);
+                    room.send(role);
+                    console.log(activeRoles);
+                    console.log(role)
+                  }}
                 // onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
                 />
               </TouchableOpacity>
