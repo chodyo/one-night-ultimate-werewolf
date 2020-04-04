@@ -10,10 +10,7 @@ const expoAssetId = require("../assets/fonts/Werewolf.ttf");
 const MoonIcon = createIconSetFromIcoMoon(icoMoonConfig, 'werewolf', expoAssetId);
 
 export default function OptionButton({ icon, label, onPress, isLastOption }) {
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/master
     return (
         <RectButton style={[styles.option, isLastOption && styles.lastOption]} onPress={onPress}>
             <View style={{ flexDirection: 'row' }}>
@@ -34,11 +31,9 @@ const styles = StyleSheet.create({
     },
     option: {
         backgroundColor: Colors.buttonSelectedBorder,
-        size: 15,
         color: Colors.activeText,
     },
     lastOption: {
-        size: 15,
         borderBottomWidth: StyleSheet.hairlineWidth,
     },
     optionText: {

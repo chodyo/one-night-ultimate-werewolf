@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Platform, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
+import { Button, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
 import { Client } from "colyseus.js";
@@ -248,7 +248,6 @@ const styles = StyleSheet.create({
   },
   selectedButtonStyle: {
     textAlign: 'center',
-    size: 15,
     backgroundColor: '#939FA0',
     paddingHorizontal: 5,
     paddingVertical: 5,
@@ -258,7 +257,6 @@ const styles = StyleSheet.create({
     color: Colors.inactiveText,
   },
   unSelectedButton: {
-    size: 15,
     textAlign: 'center',
     backgroundColor: Colors.buttonBackground,
     paddingHorizontal: 5,
