@@ -31,16 +31,24 @@ class RoleSelectionScreen extends React.Component {
     this.stop();
   }
 
+  //TODO ActiveRoles get from Serverside
   async loadRoles() {
     // const { room } = this.state;
     // this.setState({ roleDefinitions: roleDefinitions });
-    let roleButtons = [];
+    let roles = [];
     Object.entries(roleDefinitions).map(([role, definition]) => {
-      roleButtons.push({ ...definition, name: `${role}0` });
-
+      if (definition.maximum > 1) {
+        //create a new roleID for each number of roles that can exist
+        for (let i = 0; i < definition.maximum; i++) {
+          let roleID = role + i;
+          roles.push({ ...definition, name: role, id: roleID });
+        }
+      } else {
+        roles.push({ ...definition, name: role, id: `${role}0` });
+      }
     });
 
-    roleButtons.sort((a, b) => {
+    roles.sort((a, b) => {
       a = a.wakeOrder;
       b = b.wakeOrder;
 
@@ -54,7 +62,7 @@ class RoleSelectionScreen extends React.Component {
       else if (a > b) return 1;
       else return -1;
     });
-    this.setState({ roles: roleButtons });
+    this.setState({ roles: roles });
   }
   // LIFECYCLE
   start = async () => {
@@ -152,12 +160,12 @@ class RoleSelectionScreen extends React.Component {
               Select which roles you wish to include:
             </Text>
             {roles.map(role => (
-              <TouchableOpacity key={role.name} style={activeRoles.includes(role.name) ? styles.selectedButtonStyle : styles.unSelectedButton}>
+              <TouchableOpacity key={role.id} style={activeRoles.includes(role.id) ? styles.selectedButtonStyle : styles.unSelectedButton}>
                 <OptionButton
                   icon={role.imageToken}
                   label={role.name}
                   onPress={() => {
-                    this.activateRole(role.name);
+                    this.activateRole(role.id);
                     // room.send(role.name);
                     console.log(activeRoles);
                     console.log(role.name)
