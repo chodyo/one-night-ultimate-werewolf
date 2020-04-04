@@ -33,39 +33,55 @@ export class Message extends Schema {
 /**
  * A message from one player to one other player.
  */
-export class PrivateMessage extends Message {
+export class PrivateMessage extends Schema {
     @type("string") messageType: messageType = messageTypes.privateMessage;
+    @type("string") message: string;
+
     constructor(message: string) {
         super(message);
+
+        this.message = message;
     }
 }
 
 /**
  * A game message from the server to a single client.
  */
-export class Notification extends Message {
+export class Notification extends Schema {
     @type("string") messageType: messageType = messageTypes.notification;
+    @type("string") message: string;
+
     constructor(message: string) {
         super(message);
+
+        this.message = message;
     }
 }
 
 /**
  * A game message from the server to all clients.
  */
-export class Broadcast extends Message {
+export class Broadcast extends Schema {
     @type("string") messageType: messageType = messageTypes.broadcast;
+    @type("string") message: string;
+
     constructor(message: string) {
         super(message);
+
+        this.message = message;
     }
 }
 
 /**
  * A non-game related message to a single client, used for debugging purposes only (for example, a bad request).
  */
-export class Debug extends Message {
+export class Debug extends Schema {
     @type("string") messageType: messageType = messageTypes.debug;
+    @type("string") message: string;
+
     constructor(message: string) {
         super(message);
+
+        this.message = message;
     }
 }
