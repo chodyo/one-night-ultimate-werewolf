@@ -17,7 +17,7 @@ class Player extends Schema {
 }
 
 export class State extends Schema {
-    // Represents the players that are participating in the round.
+    // The players that are participating in the round.
     @type({ map: Player })
     players = new MapSchema<Player>();
 
@@ -32,7 +32,7 @@ export class State extends Schema {
     }
 
     createRoleMapping() {
-        roleIDs.forEach(roleID => {
+        roleIDs.forEach((roleID) => {
             let roleDef = roles[roleID];
 
             for (let i = 0; i < roleDef.maximum; i++) {
@@ -57,8 +57,14 @@ export class State extends Schema {
         }
     }
 
-    setRoleActive(roleID: RoleID, active: boolean) {
-        this.roles[roleID].active = active;
+    setRoleActive(roleID: string, active: boolean) {
+        let role = this.roles[roleID];
+        if (!role) {
+            console.warn(`Invalid roleID=${roleID}`);
+            return;
+        }
+
+        role.active = active;
 
         if (
             active &&
@@ -89,7 +95,7 @@ export class MyRoom extends Room {
     actionExecs = new Map<Action, ActionFunction>([
         [actions.setPlayerName, this.setPlayerName],
         [actions.updateSelectedRole, this.updateSelectedRole],
-        [actions.startGame, this.startGame]
+        [actions.startGame, this.startGame],
     ]);
 
     // ====== Player Actions ======
@@ -110,7 +116,7 @@ export class MyRoom extends Room {
                 let broadcast = new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`);
                 console.log("broadcast", JSON.stringify(broadcast));
                 room.broadcast(broadcast);
-            }
+            },
         ];
     }
 
@@ -140,7 +146,7 @@ export class MyRoom extends Room {
 
         let exec = this.actionExecs.get(data.action);
         if (exec) {
-            exec.bind(this)(client, data.params, this).forEach(callback => {
+            exec.bind(this)(client, data.params, this).forEach((callback) => {
                 callback(client, data, this);
             });
         } else {
