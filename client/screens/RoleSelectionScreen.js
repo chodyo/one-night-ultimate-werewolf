@@ -33,9 +33,16 @@ class RoleSelectionScreen extends React.Component {
 
   //TODO ActiveRoles get from Serverside
   async loadRoles() {
-    // const { room } = this.state;
+    const { room, roles2 } = this.state;
+
     // this.setState({ roleDefinitions: roleDefinitions });
     let roles = [];
+
+    for (let id in roles2) {
+      const role = roles2[id];
+      console.debug(`This Role is ${id}`, role);
+    }
+
     Object.entries(roleDefinitions).map(([role, definition]) => {
       if (definition.maximum > 1) {
         //create a new roleID for each number of roles that can exist
@@ -52,8 +59,6 @@ class RoleSelectionScreen extends React.Component {
       a = a.wakeOrder;
       b = b.wakeOrder;
 
-      console.debug(typeof a, typeof b);
-
       if (a === -1 && b === -1) return 0;
       else if (a === -1) return 1;
       else if (b === -1) return -1;
@@ -62,6 +67,7 @@ class RoleSelectionScreen extends React.Component {
       else if (a > b) return 1;
       else return -1;
     });
+    // this.setState((s) => { roles: s.room.roles });
     this.setState({ roles: roles });
   }
   // LIFECYCLE
@@ -97,17 +103,19 @@ class RoleSelectionScreen extends React.Component {
     // Connect
     try {
       const host = window.document.location.host.replace(/:.*/, '');
-      console.debug(host);
       const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      console.debug(port);
       const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
-      console.debug(url);
 
       this.client = new Client(url);
-      console.debug('the url');
-      console.debug(url);
       await this.client.joinOrCreate('my_room').then(joinedRoom => {
         console.debug(`joined room`, joinedRoom);
+
+        joinedRoom.onStateChange(state => {
+          for (let id in state.roles) {
+            let role = state.roles[id];
+            console.debug(`This Role is trying to ouput`);
+          }
+        });
 
         this.setState({
           room: joinedRoom,
@@ -149,6 +157,8 @@ class RoleSelectionScreen extends React.Component {
   render() {
     const { activeRoles, room, roles } = this.state;
 
+    //TODO Display roles from server state.. (i.e. minion should show 1 werewolf activated)
+    //TODO ^ getting this from joinedRoom in start
     return (
       <View style={styles.container}>
         <ScrollView
@@ -255,7 +265,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   selectedButtonStyle: {
-    textAlign: 'center',
     backgroundColor: '#939FA0',
     paddingHorizontal: 5,
     paddingVertical: 5,
@@ -265,12 +274,10 @@ const styles = StyleSheet.create({
     color: Colors.inactiveText,
   },
   unSelectedButton: {
-    textAlign: 'center',
     backgroundColor: Colors.buttonBackground,
     paddingHorizontal: 5,
     paddingVertical: 5,
     borderWidth: StyleSheet.borderWidth,
-    color: Colors.activeText,
   },
   helpLinkText: {
     fontSize: 14,

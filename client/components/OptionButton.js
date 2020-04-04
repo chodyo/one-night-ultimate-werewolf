@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     },
     option: {
         backgroundColor: Colors.buttonSelectedBorder,
-        color: Colors.activeText,
     },
     lastOption: {
         borderBottomWidth: StyleSheet.hairlineWidth,
