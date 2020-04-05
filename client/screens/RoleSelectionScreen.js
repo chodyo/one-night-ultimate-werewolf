@@ -176,7 +176,7 @@ class RoleSelectionScreen extends React.Component {
               <TouchableOpacity key={role.id} style=
                 {role.active ? styles.selectedButtonStyle : styles.unSelectedButton}>
                 <OptionButton
-                  icon={role.imageToken}
+                  icon={role.name + "-token"}
                   label={role.name}
                   onPress={() => {
                     this.activateRole(role.id);
