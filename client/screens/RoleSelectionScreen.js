@@ -1,10 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types'
-import { Button, Image, Platform, StyleSheet, Text, View, TouchableHighlight, AsyncStorage } from 'react-native';
+import { Button, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
-import { Client, Room } from "colyseus.js";
-import { roleDefinitions } from "../constants/RoleDefinitions";
+import { Client } from "colyseus.js";
 import OptionButton from '../components/OptionButton';
 
 
@@ -16,88 +14,42 @@ class RoleSelectionScreen extends React.Component {
     super(props);
 
     this.state = {
-      roleDefinitions: null,
-      activeRoles: [],
-      room: null,
+      roles: [],
     };
   }
 
   async componentDidMount() {
     console.debug('Starting Mount');
     await this.start();
-    await this.loadRoles();
   }
 
   componentWillUnmount() {
     this.stop();
   }
 
-  async loadRoles() {
-    // const { room } = this.state;
-    this.setState({ roleDefinitions: roleDefinitions });
-  }
   // LIFECYCLE
   start = async () => {
-    console.debug("LIFECYCLE");
-    const {
-      roomId = '',
-      location: {
-        search = '',
-      } = {},
-    } = this.props;
-
-    const isNewRoom = roomId === 'new';
-
-    console.debug(isNewRoom, roomId);
-
-    let options;
-    if (isNewRoom) {
-      console.debug('NEW ROOM!');
-      options = {
-      };
-    } else {
-      // The only thing to pass when joining an existing room is a player's name
-      console.debug('Not a new ROOM!');
-
-      options = {
-        playerName: localStorage.getItem('playerName'),
-      };
-      console.debug(options);
-
-    }
-
     // Connect
     try {
       const host = window.document.location.host.replace(/:.*/, '');
-      console.debug(host);
       const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      console.debug(port);
       const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
-      console.debug(url);
 
       this.client = new Client(url);
-      console.debug('the url');
-      console.debug(url);
-      await this.client.joinOrCreate('my_room').then(joinedRoom => {
-        console.debug(`joined room`, joinedRoom);
+      this.room = await this.client.joinOrCreate('my_room');
 
-        this.setState({
-          room: joinedRoom,
-          playerId: joinedRoom.sessionId,
-        });
-      });
+      //Client-side callbacks
+      //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
+      // this.room.state.onChange = (changes) => {
+      //   changes.forEach(change => {
+      //     console.debug(change.field);
+      //     console.debug(change.value);
+      //     console.debug(change.previousValue);
+      //   });
+      // };
 
-      //   if (isNewRoom) {
-      //     this.room = await this.client.create(Constants.ROOM_NAME, options);
+      this.room.onStateChange(() => this.loadRoles());
 
-      //     // We replace the "new" in the URL with the room's id
-      //     window.history.replaceState(null, '', `/${this.room.id}`);
-      //     console.debug("fucking Unicorns!");
-      //   } else {
-      //     this.room = await this.client.joinById(roomId, options);
-      //     console.debug("fucking Unicorns!");
-
-      //   }
     } catch (error) {
       console.error("Fucked by ", error);
     }
@@ -110,26 +62,66 @@ class RoleSelectionScreen extends React.Component {
     }
   };
 
-  activateRole = (roletoggle) => {
+  loadRoles = async () => {
+    const gameRoles = this.room.state.roles;
+
+    let roles = [];
+    for (let id in gameRoles) {
+      let role = gameRoles[id];
+      roles.push({ id, ...role });
+    }
+
+    roles.sort((a, b) => {
+      a = a.wakeOrder;
+      b = b.wakeOrder;
+
+      if (a === -1 && b === -1) return 0;
+      else if (a === -1) return 1;
+      else if (b === -1) return -1;
+
+      if (a === b) return 0;
+      else if (a > b) return 1;
+      else return -1;
+    });
+    this.setState({ roles });
+  };
+
+  activateRole = (roleID) => {
     //These are the roles selected to play
-    const { activeRoles, room } = this.state;
-    //New list of roles which checks whether to add or remove the role to Active Roles selected to play
-    // let newRoles = roleExists ? activeRoles.filter(role => roletoggle !== role) : activeRoles.concat(roletoggle);
+    const gameRoles = this.room.state.roles;
+
+    //toggle the role
+    let roleToggle;
+
+    for (let id in gameRoles) {
+      if (id === roleID) {
+        let role = gameRoles[id];
+        //reverse whatever state it is in on the server
+        roleToggle = !role.active;
+      }
+    }
+
     let request = {
       action: 'updateSelectedRole',
       params: {
-        roleId: roletoggle,
-        //Check whether the clicked role has already been selected (or exists in active roles)
-        roleEnabled: !activeRoles.includes(roletoggle)
-      }};
-    //Updates Active Roles to the expected roles to include
-    room.send(request);
-    // this.setState({ activeRoles: newRoles });
+        roleID: roleID,
+        roleEnabled: roleToggle
+      }
+    };
+    //Send the 'request' to set the role active or !active
+    this.room.send(request);
+
+    //Listen for Roles Contatiner state changes
+    //Client-side callback within a container AKA:MapSchema
+    //https://docs.colyseus.io/state/schema/#onchange-instance-key
+    // this.room.state.roles.onChange = (role, roleID) => {
+    //   console.debug(`${role} is now ${roleID}`);
+    //   console.debug(`${roleID}.active is now ${role.active}`);
+    // };
   };
 
   render() {
-    const { activeRoles } = this.state;
-
+    const { roles } = this.state;
     return (
       <View style={styles.container}>
         <ScrollView
@@ -140,16 +132,16 @@ class RoleSelectionScreen extends React.Component {
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
-            {Object.entries(roleDefinitions).map(([role, definition]) => (
-              <TouchableOpacity key={role} style={activeRoles.includes(role) ? styles.selectedButtonStyle : styles.unSelectedButton}>
+            {roles.map(role => (
+              <TouchableOpacity key={role.id} style=
+                {role.active ? styles.selectedButtonStyle : styles.unSelectedButton}>
                 <OptionButton
-                  icon={definition.imageToken}
-                  label={role}
-                  onPress={() => this.activateRole(role) }
+                  icon={role.name + "-token"}
+                  label={role.name}
+                  onPress={() => this.activateRole(role.id)}
                 />
               </TouchableOpacity>
             ))}
-
           </View>
         </ScrollView>
         <Button style={styles.unSelectedButton} onPress={() => this.activateRole(null)} title="Start Game" />
@@ -230,22 +222,18 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   selectedButtonStyle: {
-    textAlign: 'center',
     backgroundColor: '#939FA0',
     paddingHorizontal: 5,
     paddingVertical: 5,
     // borderWidth: StyleSheet.hairlineWidth,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.buttonSelectedBorder,
-    color: Colors.inactiveText,
   },
   unSelectedButton: {
-    textAlign: 'center',
     backgroundColor: Colors.buttonBackground,
     paddingHorizontal: 5,
     paddingVertical: 5,
     borderWidth: StyleSheet.borderWidth,
-    color: Colors.activeText,
   },
   helpLinkText: {
     fontSize: 14,

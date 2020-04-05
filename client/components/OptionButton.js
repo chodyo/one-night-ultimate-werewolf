@@ -15,7 +15,7 @@ export default function OptionButton({ icon, label, onPress, isLastOption }) {
         <RectButton style={[styles.option, isLastOption && styles.lastOption]} onPress={onPress}>
             <View style={{ flexDirection: 'row' }}>
                 <View style={styles.optionIconContainer}>
-                    <MoonIcon name={icon} size={22} color={Colors.activeText} />
+                    <MoonIcon name={icon} size={45} color={Colors.activeText} />
                 </View>
                 <View style={styles.optionIconContainer}>
                     <Text style={styles.optionText}>{label}</Text>
@@ -30,10 +30,7 @@ const styles = StyleSheet.create({
         marginRight: 12,
     },
     option: {
-        backgroundColor: '#44585E',
-        paddingHorizontal: 5,
-        paddingVertical: 5,
-        color: Colors.activeText,
+        backgroundColor: Colors.buttonSelectedBorder,
     },
     lastOption: {
         borderBottomWidth: StyleSheet.hairlineWidth,
