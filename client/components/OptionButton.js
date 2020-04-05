@@ -15,7 +15,7 @@ export default function OptionButton({ icon, label, onPress, isLastOption }) {
         <RectButton style={[styles.option, isLastOption && styles.lastOption]} onPress={onPress}>
             <View style={{ flexDirection: 'row' }}>
                 <View style={styles.optionIconContainer}>
-                    <MoonIcon name={icon} size={22} color={Colors.activeText} />
+                    <MoonIcon name={icon} size={45} color={Colors.activeText} />
                 </View>
                 <View style={styles.optionIconContainer}>
                     <Text style={styles.optionText}>{label}</Text>

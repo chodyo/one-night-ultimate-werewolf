@@ -3,7 +3,6 @@ import { Button, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
 import { Client } from "colyseus.js";
-import { roleDefinitions } from "../constants/RoleDefinitions";
 import OptionButton from '../components/OptionButton';
 
 
@@ -28,9 +27,43 @@ class RoleSelectionScreen extends React.Component {
     this.stop();
   }
 
+  // LIFECYCLE
+  start = async () => {
+    // Connect
+    try {
+      const host = window.document.location.host.replace(/:.*/, '');
+      const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
+      const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+
+      this.client = new Client(url);
+      this.room = await this.client.joinOrCreate('my_room');
+
+      //Client-side callbacks
+      //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
+      // this.room.state.onChange = (changes) => {
+      //   changes.forEach(change => {
+      //     console.debug(change.field);
+      //     console.debug(change.value);
+      //     console.debug(change.previousValue);
+      //   });
+      // };
+
+      this.room.onStateChange(() => this.loadRoles());
+
+    } catch (error) {
+      console.error("Fucked by ", error);
+    }
+  };
+
+  stop = () => {
+    // Colyseus
+    if (this.room) {
+      this.room.leave();
+    }
+  };
+
   loadRoles = async () => {
     const gameRoles = this.room.state.roles;
-    console.debug(`${gameRoles}`);
 
     let roles = [];
     for (let id in gameRoles) {
@@ -53,52 +86,9 @@ class RoleSelectionScreen extends React.Component {
     this.setState({ roles });
   }
 
-  // LIFECYCLE
-  start = async () => {
-    // Connect
-    try {
-      const host = window.document.location.host.replace(/:.*/, '');
-      const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
-
-      this.client = new Client(url);
-      this.room = await this.client.joinOrCreate('my_room')
-
-      this.setState({
-        playerId: this.room.sessionId,
-      });
-
-      //Client-side callbacks
-      //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
-      // this.room.state.onChange = (changes) => {
-      //   changes.forEach(change => {
-      //     console.debug(change.field);
-      //     console.debug(change.value);
-      //     console.debug(change.previousValue);
-      //   });
-      // };
-
-      this.room.onStateChange(() => this.loadRoles());
-
-      // Listen for Messages
-      this.room.onMessage(this.handleMessage);
-
-    } catch (error) {
-      console.error("Fucked by ", error);
-    }
-  };
-
-  stop = () => {
-    // Colyseus
-    if (this.room) {
-      this.room.leave();
-    }
-  };
-
   activateRole = (roleID) => {
     //These are the roles selected to play
     const gameRoles = this.room.state.roles;
-    console.debug(`${gameRoles}`);
 
     //toggle the role
     let roleToggle;
