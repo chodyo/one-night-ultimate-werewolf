@@ -27,8 +27,6 @@ export default function App(props) {
         // Load our initial navigation state
         setInitialNavigationState(await getInitialState());
 
-
-
         // Load fonts
         await Font.loadAsync({
           ...Ionicons.font,
@@ -38,11 +36,9 @@ export default function App(props) {
         await Font.loadAsync({
           'werewolf': require('./assets/fonts/Werewolf.ttf'),
         });
-
-
       } catch (e) {
         // We might want to provide this error information to an error reporting service
-        console.warn(e);
+        console.warn('Fucked by:', e);
       } finally {
         setLoadingComplete(true);
         SplashScreen.hide();

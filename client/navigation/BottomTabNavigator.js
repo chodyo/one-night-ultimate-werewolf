@@ -2,7 +2,6 @@ import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
-import SettingsScreen from "../screens/SettingsScreen";
 import RulesScreen from "../screens/RulesScreen";
 import RoleSelectionScreen from "../screens/RoleSelectionScreen";
 
@@ -26,19 +25,19 @@ export default function BottomTabNavigator({ navigation, route }) {
         }}
       />
       <BottomTab.Screen
-        name="Role"
+        name="Roles"
         component={RoleSelectionScreen}
         options={{
-          title: 'Role',
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
+          title: 'Roles',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-settings" />,
         }}
       />
       <BottomTab.Screen
-        name="Settings"
-        component={SettingsScreen}
+        name="Rules"
+        component={RulesScreen}
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-settings" />,
+          title: 'Rules',
+          tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-book" />,
         }}
       />
     </BottomTab.Navigator>
@@ -53,7 +52,7 @@ function getHeaderTitle(route) {
       return 'One Night Ultimate Werewolf';
     case 'Roles':
       return 'Roles to Play';
-    case 'Settings':
-      return 'Settings';
+    case 'Rules':
+      return 'Rules of the Game';
   }
 }

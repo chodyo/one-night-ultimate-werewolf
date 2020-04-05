@@ -33,7 +33,7 @@ class RoleSelectionScreen extends React.Component {
     try {
       const host = window.document.location.host.replace(/:.*/, '');
       const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+      const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
 
       this.client = new Client(url);
       this.room = await this.client.joinOrCreate('my_room');
@@ -42,14 +42,13 @@ class RoleSelectionScreen extends React.Component {
       //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
       // this.room.state.onChange = (changes) => {
       //   changes.forEach(change => {
-      //     console.debug(change.field);
+      //     console.debug(change.field);K
       //     console.debug(change.value);
       //     console.debug(change.previousValue);
       //   });
       // };
 
       this.room.onStateChange(() => this.loadRoles());
-
     } catch (error) {
       console.error("Fucked by ", error);
     }

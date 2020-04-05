@@ -9,8 +9,8 @@ export default function(containerRef) {
         path: 'root',
         screens: {
           Home: 'home',
+          Roles: 'roles',
           Rules: 'rules',
-          Settings: 'settings',
         },
       },
     },
