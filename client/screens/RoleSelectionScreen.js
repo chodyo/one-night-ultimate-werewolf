@@ -42,7 +42,7 @@ class RoleSelectionScreen extends React.Component {
       //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
       // this.room.state.onChange = (changes) => {
       //   changes.forEach(change => {
-      //     console.debug(change.field);K
+      //     console.debug(change.field);
       //     console.debug(change.value);
       //     console.debug(change.previousValue);
       //   });
