@@ -84,7 +84,7 @@ class RoleSelectionScreen extends React.Component {
       else return -1;
     });
     this.setState({ roles });
-  }
+  };
 
   activateRole = (roleID) => {
     //These are the roles selected to play
