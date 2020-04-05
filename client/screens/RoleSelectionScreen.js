@@ -16,44 +16,27 @@ class RoleSelectionScreen extends React.Component {
 
     this.state = {
       roles: [],
-      activeRoles: [],
     };
   }
 
   async componentDidMount() {
     console.debug('Starting Mount');
     await this.start();
-    await this.loadRoles();
   }
 
   componentWillUnmount() {
     this.stop();
   }
 
-  //TODO ActiveRoles get from Serverside
   loadRoles = async () => {
     const gameRoles = this.room.state.roles;
     console.debug(`${gameRoles}`);
 
-    // this.setState({ roleDefinitions: roleDefinitions });
     let roles = [];
-
     for (let id in gameRoles) {
       let role = gameRoles[id];
       roles.push({ id, ...role });
     }
-
-    // Object.entries(roleDefinitions).map(([role, definition]) => {
-    //   if (definition.maximum > 1) {
-    //     //create a new roleID for each number of roles that can exist
-    //     for (let i = 0; i < definition.maximum; i++) {
-    //       let roleID = role + i;
-    //       roles.push({ ...definition, name: role, id: roleID });
-    //     }
-    //   } else {
-    //     roles.push({ ...definition, name: role, id: `${role}0` });
-    //   }
-    // });
 
     roles.sort((a, b) => {
       a = a.wakeOrder;
@@ -67,7 +50,6 @@ class RoleSelectionScreen extends React.Component {
       else if (a > b) return 1;
       else return -1;
     });
-    // this.setState((s) => { roles: s.room.roles });
     this.setState({ roles });
   }
 
@@ -86,26 +68,17 @@ class RoleSelectionScreen extends React.Component {
         playerId: this.room.sessionId,
       });
 
-      // const gameRoles = this.room.state.roles;
-      // console.debug(`${gameRoles}`);
-
       //Client-side callbacks
       //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
-      this.room.state.onChange = (changes) => {
-        changes.forEach(change => {
-          console.debug(change.field);
-          console.debug(change.value);
-          console.debug(change.previousValue);
-        });
-      };
+      // this.room.state.onChange = (changes) => {
+      //   changes.forEach(change => {
+      //     console.debug(change.field);
+      //     console.debug(change.value);
+      //     console.debug(change.previousValue);
+      //   });
+      // };
 
-      this.room.onStateChange(state => {
-        this.loadRoles();
-        // for (let id in state.roles) {
-        //   let role = state.roles[id];
-        //   console.debug(`This Role is trying to ouput`);
-        // }
-      });
+      this.room.onStateChange(() => this.loadRoles());
 
       // Listen for Messages
       this.room.onMessage(this.handleMessage);
@@ -151,17 +124,14 @@ class RoleSelectionScreen extends React.Component {
     //Listen for Roles Contatiner state changes
     //Client-side callback within a container AKA:MapSchema
     //https://docs.colyseus.io/state/schema/#onchange-instance-key
-    this.room.state.roles.onChange = (role, roleID) => {
-      console.debug(`${role} is now ${roleID}`);
-      console.debug(`${roleID}.active is now ${role.active}`);
-    };
+    // this.room.state.roles.onChange = (role, roleID) => {
+    //   console.debug(`${role} is now ${roleID}`);
+    //   console.debug(`${roleID}.active is now ${role.active}`);
+    // };
   };
 
   render() {
-    const { roles, activeRoles } = this.state;
-
-    //TODO Display roles from server state.. (i.e. minion should show 1 werewolf activated)
-    //TODO ^ getting this from joinedRoom in start
+    const { roles } = this.state;
     return (
       <View style={styles.container}>
         <ScrollView
@@ -178,17 +148,10 @@ class RoleSelectionScreen extends React.Component {
                 <OptionButton
                   icon={role.name + "-token"}
                   label={role.name}
-                  onPress={() => {
-                    this.activateRole(role.id);
-                    // room.send(role.name);
-                    console.log(activeRoles);
-                    console.log(role.name)
-                  }}
-                // onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
+                  onPress={() => this.activateRole(role.id)}
                 />
               </TouchableOpacity>
             ))}
-
           </View>
         </ScrollView>
         <Button style={styles.unSelectedButton} onPress={() => this.activateRole(null)} title="Start Game" />
@@ -275,7 +238,6 @@ const styles = StyleSheet.create({
     // borderWidth: StyleSheet.hairlineWidth,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: Colors.buttonSelectedBorder,
-    color: Colors.inactiveText,
   },
   unSelectedButton: {
     backgroundColor: Colors.buttonBackground,
