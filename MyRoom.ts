@@ -36,6 +36,7 @@ export class MyRoom extends Room {
         if (err) {
             console.error(err);
             this.messager.Notify(client, err);
+            return;
         }
 
         // close the room to new players
