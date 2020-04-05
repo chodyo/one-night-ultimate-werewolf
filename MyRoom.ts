@@ -83,6 +83,8 @@ export class State extends Schema {
             this.roles["mason" + otherMason].active = active;
         }
     }
+
+    distributeRoles() {}
 }
 
 export class MyRoom extends Room {
@@ -126,6 +128,29 @@ export class MyRoom extends Room {
     }
 
     startGame(client: Client, params: any): CallbackFunction[] {
+        let selectedRoleCount = this.state.getSelectedRoleCount();
+        let playerCount = this.state.players.len();
+
+        if (playerCount !== selectedRoleCount + 3) {
+            console.log(
+                `Player "${
+                    this.state.players[client.sessionId].name
+                }" attempted to start the game with ${selectedRoleCount} roles and ${playerCount} players.`
+            );
+            return [
+                (client: Client, data: any, room: MyRoom) => {
+                    room.send(
+                        client,
+                        new Messages.Message(`Playing with ${playerCount} players requires ${playerCount + 3} roles.`)
+                    );
+                },
+            ];
+        }
+
+        this.state.distributeRoles();
+        this.state.startNightTime();
+
+        // placeholder, this func will end up returning a bunch of callback functions from each role assignment
         return [emptyCallback];
     }
 
