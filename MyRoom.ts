@@ -17,6 +17,9 @@ class Player extends Schema {
 }
 
 export class State extends Schema {
+    // Utilized when the server needs to assign roles without the state receiving updates.
+    private locked: boolean = false;
+
     // The players that are participating in the round.
     @type({ map: Player })
     players = new MapSchema<Player>();
@@ -25,39 +28,65 @@ export class State extends Schema {
     @type({ map: Role })
     roles = new MapSchema<RoleID>();
 
+    // playerID => roleID
+    playerRoles: { [index: string]: string } = {};
+
     constructor() {
         super();
 
-        this.createRoleMapping();
-    }
-
-    createRoleMapping() {
-        roleIDs.forEach((roleID) => {
-            let roleDef = roles[roleID];
-
-            for (let i = 0; i < roleDef.maximum; i++) {
-                let roleKey = roleID + i;
-                let role = new Role(roleID, roleDef.team, roleDef.wakeOrder);
-                this.roles[roleKey] = role;
-            }
-        });
-    }
-
-    addPlayer(id: string) {
-        this.players[id] = new Player();
-    }
-
-    removePlayer(id: string) {
-        delete this.players[id];
+        this.initRoles();
     }
 
     initRoles() {
-        for (let roleID in roleIDs) {
-            this.roles.set(roleID, 0);
+        if (!this.locked) {
+            roleIDs.forEach((roleID) => {
+                let roleDef = roles[roleID];
+
+                for (let i = 0; i < roleDef.maximum; i++) {
+                    let roleKey = roleID + i;
+                    let role = new Role(roleID, roleDef.team, roleDef.wakeOrder);
+                    this.roles[roleKey] = role;
+                }
+            });
         }
     }
 
+    lock() {
+        // sleep would be better here but javascript doesn't support sleeps outside of async/await and promises
+        while (this.locked) {
+            console.debug("Waiting to unlock the state.");
+        }
+
+        this.locked = true;
+    }
+
+    unlock() {
+        if (!this.locked) {
+            console.error("Expected to unlock State.locked, but found it was already locked.");
+        }
+
+        this.locked = false;
+    }
+
+    addPlayer(id: string) {
+        this.lock();
+
+        this.players[id] = new Player();
+
+        this.unlock();
+    }
+
+    removePlayer(id: string) {
+        this.lock();
+
+        delete this.players[id];
+
+        this.unlock();
+    }
+
     setRoleActive(roleID: string, active: boolean) {
+        this.lock();
+
         let role = this.roles[roleID];
         if (!role) {
             console.warn(`Invalid roleID=${roleID}`);
@@ -82,9 +111,32 @@ export class State extends Schema {
 
             this.roles["mason" + otherMason].active = active;
         }
+
+        this.unlock();
     }
 
-    distributeRoles() {}
+    distributeRoles() {
+        if (Object.keys(this.playerRoles).length > 0) {
+            console.error("Roles have already been distributed", this.playerRoles);
+            return;
+        }
+
+        this.lock();
+
+        let playerIDs = this.players.keys();
+        let selectedRoles = this.roles.keys();
+
+        console.debug(`players=${playerIDs} selectedRoles=${selectedRoles}`);
+
+        playerIDs.forEach((playerID: string) => {
+            let i = Math.floor(Math.random() * selectedRoles.length);
+            let randomRole = selectedRoles.splice(i, 1); // deletes "1" element in place at index i and returns the value
+
+            this.playerRoles[playerID] = randomRole;
+        });
+
+        this.unlock();
+    }
 }
 
 export class MyRoom extends Room {
@@ -129,7 +181,7 @@ export class MyRoom extends Room {
 
     startGame(client: Client, params: any): CallbackFunction[] {
         let selectedRoleCount = this.state.getSelectedRoleCount();
-        let playerCount = this.state.players.len();
+        let playerCount = this.state.players.length;
 
         if (playerCount !== selectedRoleCount + 3) {
             console.log(
