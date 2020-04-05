@@ -1,35 +1,8 @@
 import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
-import roles from "./static/assets/onenight.json";
 import * as Messages from "./Message";
-
-// Enforces strict values for role names
-
-type RoleID = keyof typeof roles;
-
-const roleIDs = Object.keys(roles) as RoleID[];
-
-class Role extends Schema {
-    @type("string")
-    name?: RoleID;
-
-    @type("boolean")
-    active: boolean = false;
-
-    @type("string")
-    team: string = "";
-
-    @type("number")
-    wakeOrder: number;
-
-    constructor(name?: RoleID, team?: string, wakeOrder?: number) {
-        super();
-
-        this.name = name || undefined;
-        this.team = team || "";
-        this.wakeOrder = wakeOrder || -1;
-    }
-}
+import { RoleID, Role, roleIDs, roles } from "./Role";
+import { CallbackFunction, emptyCallback, ActionFunction, actions, Action } from "./Action";
 
 class Player extends Schema {
     @type("string")
@@ -44,7 +17,7 @@ class Player extends Schema {
 }
 
 export class State extends Schema {
-    // Represents the players that are participating in the round.
+    // The players that are participating in the round.
     @type({ map: Player })
     players = new MapSchema<Player>();
 
@@ -59,7 +32,7 @@ export class State extends Schema {
     }
 
     createRoleMapping() {
-        roleIDs.forEach(roleID => {
+        roleIDs.forEach((roleID) => {
             let roleDef = roles[roleID];
 
             for (let i = 0; i < roleDef.maximum; i++) {
@@ -84,8 +57,14 @@ export class State extends Schema {
         }
     }
 
-    setRoleActive(roleID: RoleID, active: boolean) {
-        this.roles[roleID].active = active;
+    setRoleActive(roleID: string, active: boolean) {
+        let role = this.roles[roleID];
+        if (!role) {
+            console.warn(`Invalid roleID=${roleID}`);
+            return;
+        }
+
+        role.active = active;
 
         if (
             active &&
@@ -106,32 +85,6 @@ export class State extends Schema {
     }
 }
 
-// Allows objects other than the Room to create callback functions that utilize Room actions
-
-type CallbackFunction = (...args: any[]) => void;
-const emptyCallback: CallbackFunction = function() {};
-
-type ActionFunction = (client: Client, params: any, Room: MyRoom) => CallbackFunction[];
-
-// Not required, just handy
-
-enum actions {
-    setPlayerName = "setPlayerName",
-    updateSelectedRole = "updateSelectedRole",
-    startGame = "startGame"
-}
-type Action = keyof typeof actions;
-
-// Client => Server
-// {
-//     action: Action,
-//     params: {
-//         name: string, (setPlayerName),
-//         roleID: string, (updateSelectedRole),
-//         roleEnabled: boolean, (updateSelectedRole)
-//     }
-// }
-
 export class MyRoom extends Room {
     // ====== Colyseus Properties ======
 
@@ -142,7 +95,7 @@ export class MyRoom extends Room {
     actionExecs = new Map<Action, ActionFunction>([
         [actions.setPlayerName, this.setPlayerName],
         [actions.updateSelectedRole, this.updateSelectedRole],
-        [actions.startGame, this.startGame]
+        [actions.startGame, this.startGame],
     ]);
 
     // ====== Player Actions ======
@@ -156,9 +109,14 @@ export class MyRoom extends Room {
         // this is pretty unnecessary since the function has access to `this.send` directly. just using it as an example
         return [
             (client: Client, data: any, room: MyRoom) => {
-                room.send(client, new Messages.Notification(`Name updated from "${oldName}" to "${params.name}".`));
-                room.broadcast(new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`));
-            }
+                let msg = new Messages.Notification(`Name updated from "${oldName}" to "${params.name}".`);
+                console.log("message", JSON.stringify(msg));
+                room.send(client, msg);
+
+                let broadcast = new Messages.Broadcast(`"${oldName}" has changed their name to "${params.name}".`);
+                console.log("broadcast", JSON.stringify(broadcast));
+                room.broadcast(broadcast);
+            },
         ];
     }
 
@@ -188,7 +146,7 @@ export class MyRoom extends Room {
 
         let exec = this.actionExecs.get(data.action);
         if (exec) {
-            exec.bind(this)(client, data.params, this).forEach(callback => {
+            exec.bind(this)(client, data.params, this).forEach((callback) => {
                 callback(client, data, this);
             });
         } else {
