@@ -20,4 +20,12 @@ export class Player extends Schema {
     setName(name: string) {
         this.name = name;
     }
+
+    setRole(role: Role) {
+        this.role = role;
+    }
+
+    clearRole() {
+        this.role = new Role();
+    }
 }
