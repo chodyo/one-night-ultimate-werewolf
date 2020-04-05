@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { Client } from 'colyseus.js';
 import { Button, Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Colors from "../constants/Colors";
+import { Client } from 'colyseus.js';
 
 class HomeScreen extends React.Component {
   constructor(props) {
@@ -15,8 +15,9 @@ class HomeScreen extends React.Component {
     };
   }
 
-  componentDidMount() {
-    this.start();
+  async componentDidMount() {
+    console.debug('Starting Mount');
+    await this.start();
   }
 
   componentWillUnmount() {
@@ -33,13 +34,7 @@ class HomeScreen extends React.Component {
       this.client = new Client(url);
       this.room = await this.client.joinOrCreate('my_room');
 
-      // this.setState({
-      //   playerId: this.room.sessionId,
-      // });
-
-      console.debug(`Players in the room: ${this.room.state.players}`);
-      this.room.state.players.onChange = (player, key) => console.log(player, "have changes at", key);
-      // this.room.onStateChange(() => this.loadPlayers());
+      this.room.onStateChange(state => this.loadPlayers(state));
     } catch (error) {
       console.error('Home screen fucked by:', error)
     }
@@ -52,18 +47,13 @@ class HomeScreen extends React.Component {
     }
   };
 
-  loadPlayers = async () => {
-    const { playerId } = this.state;
-    const serverPlayers = this.room.state.players;
+  loadPlayers = async (state) => {
+    const serverPlayers = state.players;
 
     let players = [];
-    for (let p in serverPlayers) {
-      let player = serverPlayers[p];
-      players.push({ player });
-
-      if (!player.name) {
-        player.name = player.sessionId;
-      }
+    for (let id in serverPlayers) {
+      let player = serverPlayers[id];
+      players.push({ id: id, ...player });
     }
 
     this.setState({ players });
@@ -97,15 +87,19 @@ class HomeScreen extends React.Component {
             <Text style={styles.getStartedText}>Enter player name:</Text>
             <TextInput
               placeholder="What shall we call you?"
+              style={styles.getStartedInputsText}
               onChangeText={playerName => this.setState({ playerName })}
             />
-            <Button onPress={() => this.setPlayerName()} title="Submit" />
+            <Button
+              color={Colors.buttonBackground}
+              onPress={() => this.setPlayerName()} title="Submit"
+            />
           </View>
 
           <View style={styles.getStartedContainer}>
             <Text style={styles.getStartedText}>Players:</Text>
             {players.map(player => (
-              <Text key={player.sessionId} style={styles.getStartedText}>{player.name}</Text>
+              <Text key={player.id} style={styles.getStartedInputsText}>{player.name ? player.name : '...'}</Text>
             ))}
           </View>
         </ScrollView>
@@ -155,6 +149,12 @@ const styles = StyleSheet.create({
   getStartedText: {
     fontSize: 30,
     color: Colors.activeText,
+    // lineHeight: 24,
+    textAlign: 'center',
+  },
+  getStartedInputsText: {
+    fontSize: 24,
+    color: '#FEEFDB',
     // lineHeight: 24,
     textAlign: 'center',
   },
