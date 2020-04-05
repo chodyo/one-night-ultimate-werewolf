@@ -38,13 +38,9 @@
             </a>
         </h1>
 
-        <strong>Broadcast</strong><br />
-
-        <div id="broadcast"></div>
-
-        <strong>Notification</strong><br />
-
-        <div id="notification"></div>
+        <form id="startGameForm">
+            <input type="submit" value="Start Game" />
+        </form>
 
         <strong>Messages</strong><br />
 
@@ -54,7 +50,7 @@
 
         <form id="nameForm">
             <input type="text" id="nameInput" value="" autofocus />
-            <input type="submit" value="send" />
+            <input type="submit" value="Update" />
         </form>
 
         <hr />
@@ -79,13 +75,13 @@
             );
 
             fetch("/assets/onenight.json")
-                .then(response => response.json())
-                .then(json => {
+                .then((response) => response.json())
+                .then((json) => {
                     roleDefinitions = json;
                     console.debug(roleDefinitions);
                 });
 
-            const listPlayers = function(players) {
+            const listPlayers = function (players) {
                 let playersDiv = document.querySelector("#players");
                 playersDiv.innerHTML = "";
 
@@ -106,7 +102,7 @@
                 }
             };
 
-            const listRoles = function(roles) {
+            const listRoles = function (roles) {
                 let roleButtons = [];
                 for (let roleID in roles) {
                     let role = roles[roleID];
@@ -146,18 +142,18 @@
 
                 let rolesDiv = document.querySelector("#roles");
                 rolesDiv.innerHTML = "";
-                roleButtons.forEach(roleButton => {
+                roleButtons.forEach((roleButton) => {
                     rolesDiv.appendChild(roleButton);
                 });
             };
 
-            const sendRoleSelectionToServer = function(room, roleButton) {
+            const sendRoleSelectionToServer = function (room, roleButton) {
                 let data = {
                     action: "updateSelectedRole",
                     params: {
                         roleID: roleButton.id,
-                        roleEnabled: roleButton.classList.contains("active") ? false : true
-                    }
+                        roleEnabled: roleButton.classList.contains("active") ? false : true,
+                    },
                 };
 
                 console.debug("sending role update to the server:", data.params);
@@ -165,35 +161,39 @@
                 room.send(data);
             };
 
-            client.joinOrCreate("my_room").then(room => {
+            client.joinOrCreate("my_room").then((room) => {
                 console.log("joined");
 
                 gameRoom = room; // if this ends up being the permanent UI, i'd rather figure out a way to not require the room to be set globally
 
-                room.onStateChange.once(function(state) {
+                room.onStateChange.once(function (state) {
                     console.debug("initial room state:", state);
                     listPlayers(state.players);
                 });
 
                 // new room state
-                room.onStateChange(function(state) {
+                room.onStateChange(function (state) {
                     // this signal is triggered on each patch
                     console.debug("new state from server:", state);
                     listPlayers(state.players);
                     listRoles(state.roles);
                 });
 
-                // listen to patches coming from the server
-                room.onMessage(function(data) {
-                    console.debug("Got new message from server.", data);
+                // listen to messages
+                room.onMessage(function (data) {
+                    console.debug("Got new message.", data);
 
                     let p = document.createElement("p");
-                    p.innerText = data.message;
+                    let from = data.from;
+                    if (data.messageType === "blast" || data.messageType === "broadcast") {
+                        from += " <all>";
+                    }
+                    p.innerText = from + ": " + data.message;
                     document.querySelector("#messages").appendChild(p);
                 });
 
-                // send message to room on submit
-                document.querySelector("#nameForm").onsubmit = function(e) {
+                // send update player name
+                document.querySelector("#nameForm").onsubmit = function (e) {
                     e.preventDefault();
 
                     let input = document.querySelector("#nameInput");
@@ -205,6 +205,15 @@
 
                     // clear input
                     input.value = "";
+                };
+
+                // start game
+                document.querySelector("#startGameForm").onsubmit = function (e) {
+                    e.preventDefault();
+
+                    console.debug("sending startGame to server");
+
+                    room.send({ action: "startGame" });
                 };
             });
         </script>
