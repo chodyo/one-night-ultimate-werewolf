@@ -139,15 +139,6 @@ export class State extends Schema {
         let selectedRoleCount = Array.from(this.roles._indexes.keys()).filter((roleID) => this.roles[roleID].active)
             .length;
         let playerCount = this.players._indexes.size;
-        // for (let roleID in this.roles) {
-        //     if (this.roles[roleID].active) {
-        //         selectedRoleCount++;
-        //     }
-        // }
-        // let playerCount = 0;
-        // for (let _ in this.players) {
-        //     playerCount++;
-        // }
 
         this.unlock();
 
@@ -248,7 +239,7 @@ export class MyRoom extends Room {
             const roleID = this.state.playerRoles[playerID];
             const role = this.state.roles[roleID];
             const msg = role.getNighttimeMessage(roleID, this.state.players, this.state.roles, this.state.playerRoles);
-            console.debug(`Notifying ${playerID} of their role assignment ${roleID} with custom message ${msg}`);
+            console.debug(`Notifying ${playerID} of their role assignment ${roleID} with custom message "${msg}"`);
             this.messager.Notify(player.client, msg, roleID);
         }
 
