@@ -28,8 +28,20 @@ export class State extends Schema {
     @type({ map: Role })
     roles = new MapSchema<Role>();
 
+    /**
+     * Phases:
+     * prep -> [doppelganger] -> nighttime -> daytime -> results
+     *
+     * Most phases move to the next phase after a timer runs out, or the game can move to the next phase early if all players mark ready or finish actions.
+     *
+     * prep: Players are joining and choosing the roles that will participate in the round.
+     * doppelganger: An optional phase when the doppelganger is in the game, which allows the doppelganger to choose their role.
+     * nighttime: Werewolf, minion, and mason players find out who their teammates are. Action roles can submit their action.
+     * daytime: Some players receive additional messages about nighttime results, such as robber and insomniac learning their new role. Players begin discussing who the werewolves are and can lock or unlock their votes.
+     * results: All votes are in, the roles are revealed and the winner is displayed. (This could possibly be the same screen as the "prep" phase, allowing new roles to be selected for the next game.)
+     */
     @type("string")
-    phase = "daytime";
+    phase = "prep";
 
     constructor(messager: Messager) {
         super();
@@ -133,6 +145,16 @@ export class State extends Schema {
         this.unlock();
     }
 
+    ready(playerID: string) {
+        this.players[playerID].ready = true;
+    }
+
+    allAreReady(): boolean {
+        return (
+            Array.from(this.players._indexes.keys()).filter((playerID) => !this.players[playerID].ready).length === 0
+        );
+    }
+
     checkRoleSelectionCount(): string | undefined {
         this.lock();
 
@@ -157,7 +179,6 @@ export class State extends Schema {
         this.distributeRoles();
 
         const messages = new Map();
-
         Array.from(this.players._indexes).forEach(([playerID, _]) => {
             const player = this.players[playerID];
             const message = this.getNighttimeMessage(player.role.roleID);
