@@ -1,10 +1,10 @@
 import React from 'react';
 import { Button, Platform, StyleSheet, Text, View } from 'react-native';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import { ScrollView } from 'react-native-gesture-handler';
 import Colors from '../constants/Colors';
 import { Client } from "colyseus.js";
-import OptionButton from '../components/OptionButton';
-
+import RoleButton from "./RoleButton";
+import RoleGroup from "./RoleGroup";
 
 class RoleSelectionScreen extends React.Component {
   static propTypes = {
@@ -15,6 +15,11 @@ class RoleSelectionScreen extends React.Component {
 
     this.state = {
       roles: [],
+      duplicateRoles: {
+        werewolf: [],
+        mason: [],
+        villager: [],
+      },
     };
   }
 
@@ -65,8 +70,22 @@ class RoleSelectionScreen extends React.Component {
     const gameRoles = this.room.state.roles;
 
     let roles = [];
+    let werewolfRoles = [];
+    let masonRoles = [];
+    let villagerRoles = [];
     for (let id in gameRoles) {
       let role = gameRoles[id];
+
+      if (role.name === 'werewolf') {
+        werewolfRoles.push({ id, ...role });
+      }
+      if (role.name === 'mason') {
+        masonRoles.push({ id, ...role });
+      }
+      if (role.name === 'villager') {
+        villagerRoles.push({ id, ...role });
+      }
+
       roles.push({ id, ...role });
     }
 
@@ -82,7 +101,15 @@ class RoleSelectionScreen extends React.Component {
       else if (a > b) return 1;
       else return -1;
     });
-    this.setState({ roles });
+
+    this.setState({
+      roles,
+      duplicateRoles: {
+        werewolf: werewolfRoles,
+        mason: masonRoles,
+        villager: villagerRoles
+      },
+    });
   };
 
   activateRole = (roleID) => {
@@ -120,27 +147,28 @@ class RoleSelectionScreen extends React.Component {
   };
 
   render() {
-    const { roles } = this.state;
+    const { roles, duplicateRoles } = this.state;
+
     return (
       <View style={styles.container}>
         <ScrollView
           style={styles.container}
           contentContainerStyle={styles.contentContainer}
         >
-          <View style={styles.unSelectedButton}>
+          <View style={{ alignItems: 'center' }}>
             <Text style={styles.getStartedText}>
               Select which roles you wish to include:
             </Text>
-            {roles.map(role => (
-              <TouchableOpacity key={role.id} style=
-                {role.active ? styles.selectedButtonStyle : styles.unSelectedButton}>
-                <OptionButton
-                  icon={role.name + "-token"}
-                  label={role.name}
-                  onPress={() => this.activateRole(role.id)}
-                />
-              </TouchableOpacity>
-            ))}
+            {roles.map(role => {
+              if (Object.keys(duplicateRoles).includes(role.name)) {
+                if (role.id.endsWith('0')) {
+                  return <RoleGroup key={role.name} roles={duplicateRoles[role.name]}
+                                    onActivateRole={this.activateRole}/>
+                }
+              } else {
+                return <RoleButton key={role.id} role={role} onActivateRole={this.activateRole}/>
+              }
+            })}
           </View>
         </ScrollView>
         <Button style={styles.unSelectedButton} onPress={() => this.activateRole(null)} title="Start Game" />
@@ -219,20 +247,6 @@ const styles = StyleSheet.create({
   },
   helpLink: {
     paddingVertical: 15,
-  },
-  selectedButtonStyle: {
-    backgroundColor: '#939FA0',
-    paddingHorizontal: 5,
-    paddingVertical: 5,
-    // borderWidth: StyleSheet.hairlineWidth,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.buttonSelectedBorder,
-  },
-  unSelectedButton: {
-    backgroundColor: Colors.buttonBackground,
-    paddingHorizontal: 5,
-    paddingVertical: 5,
-    borderWidth: StyleSheet.borderWidth,
   },
   helpLinkText: {
     fontSize: 14,

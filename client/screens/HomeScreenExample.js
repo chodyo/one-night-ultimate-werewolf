@@ -52,7 +52,7 @@ export function HomeScreenExample() {
   );
 }
 
-HomeScreen.navigationOptions = {
+HomeScreenExample.navigationOptions = {
   header: null,
 };
 

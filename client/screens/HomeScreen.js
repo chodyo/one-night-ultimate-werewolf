@@ -86,9 +86,9 @@ class HomeScreen extends React.Component {
           <View style={styles.getStartedContainer}>
             <Text style={styles.getStartedText}>Enter player name:</Text>
             <TextInput
-              placeholder="What shall we call you?"
-              style={styles.getStartedInputsText}
-              onChangeText={playerName => this.setState({ playerName })}
+              placeholder="your name..."
+              style={styles.getStartedInputsBox}
+              onChangeText={text => this.setState({ playerName: text })}
             />
             <Button
               color={Colors.buttonBackground}
@@ -151,6 +151,13 @@ const styles = StyleSheet.create({
     color: Colors.activeText,
     // lineHeight: 24,
     textAlign: 'center',
+  },
+  getStartedInputsBox: {
+    fontSize: 24,
+    color: '#FEEFDB',
+    // lineHeight: 24,
+    textAlign: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   getStartedInputsText: {
     fontSize: 24,
