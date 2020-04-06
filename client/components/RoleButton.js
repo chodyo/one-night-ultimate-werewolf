@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, Text } from 'react-native';
 import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
-import Colors from '../constants/Colors';
+import { NightTheme } from '../constants/Colors';
 
-import { createIconSetFromIcoMoon } from '@expo/vector-icons';
+import { createIconSetFromIcoMoon } from '@expo/vector-icons/build/Icons';
 import icoMoonConfig from '../assets/fonts/selection.json';
 
 const expoAssetId = require('../assets/fonts/Werewolf.ttf');
@@ -17,7 +17,7 @@ const RoleButton = ({ role, onActivateRole }) => {
   return (
     <TouchableOpacity style={role.active ? styles.selectedButtonStyle : styles.unSelectedButton}>
       <RectButton style={styles.alignmentStyle} onPress={() => onActivateRole(role.id)}>
-        <MoonIcon name={roleIcon} size={45} color={Colors.activeText} />
+        <MoonIcon name={roleIcon} size={45} color={NightTheme.activeText} />
         <Text style={styles.optionText}>{roleName}</Text>
       </RectButton>
     </TouchableOpacity>
@@ -37,26 +37,25 @@ RoleButton.propTypes = {
 
 const styles = StyleSheet.create({
   selectedButtonStyle: {
-    backgroundColor: '#939FA0',
+    backgroundColor: NightTheme.buttonSelected,
     paddingHorizontal: 5,
     paddingVertical: 5,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.buttonSelectedBorder,
+    borderColor: NightTheme.buttonSelectedBorder,
   },
   unSelectedButton: {
-    backgroundColor: Colors.buttonBackground,
+    backgroundColor: NightTheme.buttonUnselected,
     paddingHorizontal: 5,
     paddingVertical: 5,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.buttonBackground,
+    borderColor: NightTheme.buttonUnselected,
   },
   alignmentStyle: {
-    backgroundColor: Colors.buttonSelectedBorder,
     alignItems: 'center',
     verticalAlign: 'middle',
   },
   optionText: {
-    color: Colors.activeText,
+    color: NightTheme.activeText,
     fontSize: 15,
     paddingHorizontal: 5,
     marginBottom: 5,
