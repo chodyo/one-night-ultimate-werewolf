@@ -71,7 +71,6 @@ export class State extends Schema {
             console.debug("Waiting to unlock the state.");
         }
 
-        console.debug("Aquired state lock.");
         this.locked = true;
     }
 
@@ -80,7 +79,6 @@ export class State extends Schema {
             console.error("Expected to unlock State.locked, but found it was already locked.");
         }
 
-        console.debug("Freed state lock.");
         this.locked = false;
     }
 
