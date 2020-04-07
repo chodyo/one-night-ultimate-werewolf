@@ -142,6 +142,8 @@ export class State extends Schema {
             console.debug(`Toggled ${roleID}; also toggled mason${otherMason}.`);
         }
 
+        this.clearAllReady();
+
         this.unlock();
     }
 
@@ -153,6 +155,10 @@ export class State extends Schema {
         return (
             Array.from(this.players._indexes.keys()).filter((playerID) => !this.players[playerID].ready).length === 0
         );
+    }
+
+    clearAllReady() {
+        Array.from(this.players._indexes.keys()).forEach((playerID) => (this.players[playerID].ready = false));
     }
 
     checkRoleSelectionCount(): string | undefined {
@@ -175,6 +181,8 @@ export class State extends Schema {
 
     startNighttime(): Map<Player, string> {
         this.phase = "nighttime";
+
+        this.clearAllReady();
 
         this.distributeRoles();
 
