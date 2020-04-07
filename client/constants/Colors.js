@@ -8,7 +8,6 @@ const buttonUnselected = '#45249C';
 const buttonText = '#999693';
 
 export default {
-  tintColor,
   activeText,
   inactiveText,
   inputText,

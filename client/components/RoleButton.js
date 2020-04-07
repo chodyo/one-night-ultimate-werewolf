@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   },
   alignmentStyle: {
     alignItems: 'center',
-    verticalAlign: 'middle',
   },
   optionText: {
     color: NightTheme.activeText,

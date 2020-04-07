@@ -25,16 +25,18 @@ class HomeScreen extends React.Component {
   }
 
   start = async () => {
+    const { client, room } = this.props;
     try {
       // Colyseus client setup
       const host = window.document.location.host.replace(/:.*/, '');
       const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
       const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
 
-      this.client = new Client(url);
-      this.room = await this.client.joinOrCreate('my_room');
+      // this.client = new Client(url);
+      // this.room = await client.joinOrCreate('my_room');
 
-      this.room.onStateChange(state => this.loadPlayers(state));
+      // this.room.onStateChange(state => this.loadPlayers(state));
+      room.onStateChange(state => this.loadPlayers(state));
     } catch (error) {
       console.error('Home screen fucked by:', error)
     }
