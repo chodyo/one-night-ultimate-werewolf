@@ -2,7 +2,6 @@ import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NightTheme } from '../constants/Colors';
-import { Client } from "colyseus.js";
 import RoleButton from "../components/RoleButton";
 import RoleGroup from "../components/RoleGroup";
 
@@ -24,7 +23,7 @@ class RoleSelectionScreen extends React.Component {
   }
 
   async componentDidMount() {
-    console.debug('Starting Mount');
+    console.debug('Loading RoleSelectionScreen');
     await this.start();
   }
 
@@ -34,40 +33,16 @@ class RoleSelectionScreen extends React.Component {
 
   // LIFECYCLE
   start = async () => {
-    // Connect
+    const { room } = this.props;
     try {
-      const host = window.document.location.host.replace(/:.*/, '');
-      const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
-
-      this.client = new Client(url);
-      this.room = await this.client.joinOrCreate('my_room');
-
-      //Client-side callbacks
-      //https://docs.colyseus.io/state/schema/#onchange-changes-datachange
-      // this.room.state.onChange = (changes) => {
-      //   changes.forEach(change => {
-      //     console.debug(change.field);
-      //     console.debug(change.value);
-      //     console.debug(change.previousValue);
-      //   });
-      // };
-
-      this.room.onStateChange(() => this.loadRoles());
+      room.onStateChange(() => this.loadRoles());
     } catch (error) {
       console.error("Fucked by ", error);
     }
   };
 
-  stop = () => {
-    // Colyseus
-    if (this.room) {
-      this.room.leave();
-    }
-  };
-
   loadRoles = async () => {
-    const gameRoles = this.room.state.roles;
+    const { roles: gameRoles } = this.props.room.state;
 
     let roles = [];
     let werewolfRoles = [];
@@ -114,7 +89,8 @@ class RoleSelectionScreen extends React.Component {
 
   activateRole = (roleID) => {
     //These are the roles selected to play
-    const gameRoles = this.room.state.roles;
+    const { room } = this.props;
+    const { roles: gameRoles } = room.state;
 
     //toggle the role
     let roleToggle;
@@ -135,15 +111,7 @@ class RoleSelectionScreen extends React.Component {
       }
     };
     //Send the 'request' to set the role active or !active
-    this.room.send(request);
-
-    //Listen for Roles Contatiner state changes
-    //Client-side callback within a container AKA:MapSchema
-    //https://docs.colyseus.io/state/schema/#onchange-instance-key
-    // this.room.state.roles.onChange = (role, roleID) => {
-    //   console.debug(`${role} is now ${roleID}`);
-    //   console.debug(`${roleID}.active is now ${role.active}`);
-    // };
+    room.send(request);
   };
 
   render() {

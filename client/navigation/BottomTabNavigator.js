@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Client } from 'colyseus.js';
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import RulesScreen from "../screens/RulesScreen";
@@ -13,12 +14,25 @@ export default function BottomTabNavigator({ navigation, route }) {
   // currently active tab. Learn more in the documentation:
   // https://reactnavigation.org/docs/en/screen-options-resolution.html
   navigation.setOptions({ headerTitle: getHeaderTitle(route) });
+  const [room, setRoom] = React.useState();
+
+  React.useEffect(() => {
+    async function loadRoom() {
+      try {
+        setRoom(await new Client('ws://localhost:2567').joinOrCreate('my_room'));
+      } catch (e) {
+        console.error('Fucked in BottomTabNavigator by:', e);
+      }
+    }
+
+    loadRoom();
+  }, []);
 
   return (
     <BottomTab.Navigator initialRouteName={INITIAL_ROUTE_NAME}>
       <BottomTab.Screen
         name="Home"
-        component={HomeScreen}
+        component={() => <HomeScreen room={room} />}
         options={{
           title: 'Join Room',
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-code-working" />,
@@ -26,7 +40,7 @@ export default function BottomTabNavigator({ navigation, route }) {
       />
       <BottomTab.Screen
         name="Roles"
-        component={RoleSelectionScreen}
+        component={() => <RoleSelectionScreen room={room} />}
         options={{
           title: 'Roles',
           tabBarIcon: ({ focused }) => <TabBarIcon focused={focused} name="md-settings" />,

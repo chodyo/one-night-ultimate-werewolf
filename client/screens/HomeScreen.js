@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { Button, Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, Image, TextInput, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import Colors, { NightTheme } from "../constants/Colors";
-import { Client } from 'colyseus.js';
+import { NightTheme } from "../constants/Colors";
 
 class HomeScreen extends React.Component {
   constructor(props) {
@@ -16,7 +15,7 @@ class HomeScreen extends React.Component {
   }
 
   async componentDidMount() {
-    console.debug('Starting Mount');
+    console.debug('Loading HomeScreen');
     await this.start();
   }
 
@@ -25,27 +24,10 @@ class HomeScreen extends React.Component {
   }
 
   start = async () => {
-    const { client, room } = this.props;
     try {
-      // Colyseus client setup
-      const host = window.document.location.host.replace(/:.*/, '');
-      const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
-      const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
-
-      // this.client = new Client(url);
-      // this.room = await client.joinOrCreate('my_room');
-
-      // this.room.onStateChange(state => this.loadPlayers(state));
-      room.onStateChange(state => this.loadPlayers(state));
+      this.props.room.onStateChange(state => this.loadPlayers(state));
     } catch (error) {
       console.error('Home screen fucked by:', error)
-    }
-  };
-
-  stop = () => {
-    // Colyseus
-    if (this.room) {
-      this.room.leave();
     }
   };
 
@@ -69,7 +51,7 @@ class HomeScreen extends React.Component {
       params: { name: playerName },
     };
 
-    this.room.send(request);
+    this.props.room.send(request);
   };
 
   render() {
