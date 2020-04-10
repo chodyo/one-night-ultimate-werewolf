@@ -27,10 +27,6 @@ class RoleSelectionScreen extends React.Component {
     await this.start();
   }
 
-  componentWillUnmount() {
-    this.stop();
-  }
-
   // LIFECYCLE
   start = async () => {
     const { room } = this.props;

@@ -19,10 +19,6 @@ class HomeScreen extends React.Component {
     await this.start();
   }
 
-  componentWillUnmount() {
-    this.stop();
-  }
-
   start = async () => {
     try {
       this.props.room.onStateChange(state => this.loadPlayers(state));
