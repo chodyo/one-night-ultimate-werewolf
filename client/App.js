@@ -8,8 +8,9 @@ import { NightTheme } from "./constants/Colors";
 import HomeScreen from "./screens/HomeScreen";
 import RoleSelectionScreen from "./screens/RoleSelectionScreen";
 import {ScrollView} from "react-native-gesture-handler";
+import NightScreen from "./screens/NightScreen";
 
-class App extends React.Component {
+export default class App extends React.Component {
   constructor(props) {
     super(props);
 
@@ -19,6 +20,9 @@ class App extends React.Component {
     this.state = {
       isLoadingComplete: false,
       initialNavigationState: null,
+      phase: '',
+      clientPlayer: null,
+      playerRole: null,
     };
   }
 
@@ -34,39 +38,63 @@ class App extends React.Component {
       });
 
       this.room = await this.client.joinOrCreate('my_room');
+      this.room.onStateChange(() => this.loadState());
       this.room.onMessage(whatever => console.debug('some message from client:', whatever));
     } catch (e) {
-      console.error('Fucked in App by:', e);
+      console.error('Fucked in the App by:', e);
     } finally {
       this.setState({ isLoadingComplete: true });
     }
   }
 
-  alertStart = () => {
+  loadState = async () => {
+    const { phase, players } = this.room.state;
+
+    let clientPlayer, playerRole;
+    for (let id in players) {
+      let player = players[id];
+      // find this client's player role
+      if (player.sessionId === this.client.sessionId) {
+        playerRole = player.role;
+        clientPlayer = player
+      }
+    }
+
+    this.setState({ phase, clientPlayer, playerRole });
+  };
+
+  startGame = () => {
     console.debug('Someone pressed start!');
+    this.room.send({ action: 'startGame' });
   };
 
   render() {
-    const { isLoadingComplete } = this.state;
+    const { clientPlayer, isLoadingComplete, phase, playerRole } = this.state;
 
     if (!isLoadingComplete) {
       return null;
     } else {
       return (
         <View style={styles.container}>
-          <Button style={styles.unSelectedButton} onPress={() => this.alertStart()} title="Start Game" />
           <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-            {Platform.OS === 'ios' && <StatusBar barStyle="default"/>}
-            <HomeScreen room={this.room} />
-            <RoleSelectionScreen room={this.room} />
+            {phase === 'daytime' &&
+              <View>
+                <Button style={styles.unSelectedButton} onPress={() => this.startGame()} title="Start Game" />
+                <HomeScreen room={this.room} />
+                <RoleSelectionScreen room={this.room} />
+              </View>
+            }
+            {phase === 'nighttime' &&
+              <View>
+                <NightScreen player={clientPlayer} role={playerRole}/>
+              </View>
+            }
           </ScrollView>
         </View>
       );
     }
   }
 }
-
-export default App;
 
 const styles = StyleSheet.create({
   container: {

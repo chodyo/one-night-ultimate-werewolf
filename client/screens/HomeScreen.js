@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Button, TextInput, StyleSheet, Text, View} from 'react-native';
 import {NightTheme} from "../constants/Colors";
 
-class HomeScreen extends React.Component {
+export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
 
@@ -81,8 +81,6 @@ class HomeScreen extends React.Component {
     );
   }
 }
-
-export default HomeScreen;
 
 HomeScreen.navigationOptions = {
   header: null,

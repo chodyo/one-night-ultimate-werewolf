@@ -4,7 +4,7 @@ import {NightTheme} from '../constants/Colors';
 import RoleButton from "../components/RoleButton";
 import RoleGroup from "../components/RoleGroup";
 
-class RoleSelectionScreen extends React.Component {
+export default class RoleSelectionScreen extends React.Component {
   static propTypes = {};
 
   constructor(props) {
@@ -130,8 +130,6 @@ class RoleSelectionScreen extends React.Component {
     );
   }
 }
-
-export default RoleSelectionScreen;
 
 RoleSelectionScreen.navigationOptions = {
   header: null,
