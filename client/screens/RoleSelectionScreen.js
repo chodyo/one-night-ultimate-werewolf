@@ -1,13 +1,11 @@
 import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { NightTheme } from '../constants/Colors';
+import {StyleSheet, Text, View} from 'react-native';
+import {NightTheme} from '../constants/Colors';
 import RoleButton from "../components/RoleButton";
 import RoleGroup from "../components/RoleGroup";
 
 class RoleSelectionScreen extends React.Component {
-  static propTypes = {
-  };
+  static propTypes = {};
 
   constructor(props) {
     super(props);
@@ -29,7 +27,7 @@ class RoleSelectionScreen extends React.Component {
 
   // LIFECYCLE
   start = async () => {
-    const { room } = this.props;
+    const {room} = this.props;
     try {
       room.onStateChange(() => this.loadRoles());
     } catch (error) {
@@ -38,7 +36,7 @@ class RoleSelectionScreen extends React.Component {
   };
 
   loadRoles = async () => {
-    const { roles: gameRoles } = this.props.room.state;
+    const {roles: gameRoles} = this.props.room.state;
 
     let roles = [];
     let werewolfRoles = [];
@@ -48,16 +46,16 @@ class RoleSelectionScreen extends React.Component {
       let role = gameRoles[id];
 
       if (role.name === 'werewolf') {
-        werewolfRoles.push({ id, ...role });
+        werewolfRoles.push({id, ...role});
       }
       if (role.name === 'mason') {
-        masonRoles.push({ id, ...role });
+        masonRoles.push({id, ...role});
       }
       if (role.name === 'villager') {
-        villagerRoles.push({ id, ...role });
+        villagerRoles.push({id, ...role});
       }
 
-      roles.push({ id, ...role });
+      roles.push({id, ...role});
     }
 
     roles.sort((a, b) => {
@@ -85,8 +83,8 @@ class RoleSelectionScreen extends React.Component {
 
   activateRole = (roleID) => {
     //These are the roles selected to play
-    const { room } = this.props;
-    const { roles: gameRoles } = room.state;
+    const {room} = this.props;
+    const {roles: gameRoles} = room.state;
 
     //toggle the role
     let roleToggle;
@@ -111,31 +109,23 @@ class RoleSelectionScreen extends React.Component {
   };
 
   render() {
-    const { roles, duplicateRoles } = this.state;
+    const {roles, duplicateRoles} = this.state;
 
     return (
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.container}
-          contentContainerStyle={styles.contentContainer}
-        >
-          <View style={{ alignItems: 'center' }}>
-            <Text style={styles.getStartedText}>
-              Select which roles you wish to include:
-            </Text>
-            {roles.map(role => {
-              if (Object.keys(duplicateRoles).includes(role.name)) {
-                if (role.id.endsWith('0')) {
-                  return <RoleGroup key={role.name} roles={duplicateRoles[role.name]}
-                                    onActivateRole={this.activateRole}/>
-                }
-              } else {
-                return <RoleButton key={role.id} role={role} onActivateRole={this.activateRole}/>
-              }
-            })}
-          </View>
-        </ScrollView>
-        <Button style={styles.unSelectedButton} onPress={() => this.activateRole(null)} title="Start Game" />
+      <View style={{alignItems: 'center'}}>
+        <Text style={styles.getStartedText}>
+          Select which roles you wish to include:
+        </Text>
+        {roles.map(role => {
+          if (Object.keys(duplicateRoles).includes(role.name)) {
+            if (role.id.endsWith('0')) {
+              return <RoleGroup key={role.name} roles={duplicateRoles[role.name]}
+                                onActivateRole={this.activateRole}/>
+            }
+          } else {
+            return <RoleButton key={role.id} role={role} onActivateRole={this.activateRole}/>
+          }
+        })}
       </View>
     );
   }

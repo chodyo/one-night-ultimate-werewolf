@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import {Button, Platform, StatusBar, StyleSheet, View} from 'react-native';
 import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +42,10 @@ class App extends React.Component {
     }
   }
 
+  alertStart = () => {
+    console.debug('Someone pressed start!');
+  };
+
   render() {
     const { isLoadingComplete } = this.state;
 
@@ -50,6 +54,7 @@ class App extends React.Component {
     } else {
       return (
         <View style={styles.container}>
+          <Button style={styles.unSelectedButton} onPress={() => this.alertStart()} title="Start Game" />
           <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {Platform.OS === 'ios' && <StatusBar barStyle="default"/>}
             <HomeScreen room={this.room} />

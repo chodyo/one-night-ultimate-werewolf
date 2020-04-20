@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { Button, Image, TextInput, StyleSheet, Text, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { NightTheme } from "../constants/Colors";
+import {Button, TextInput, StyleSheet, Text, View} from 'react-native';
+import {NightTheme} from "../constants/Colors";
 
 class HomeScreen extends React.Component {
   constructor(props) {
@@ -33,55 +32,51 @@ class HomeScreen extends React.Component {
     let players = [];
     for (let id in serverPlayers) {
       let player = serverPlayers[id];
-      players.push({ id: id, ...player });
+      players.push({id: id, ...player});
     }
 
-    this.setState({ players });
+    this.setState({players});
   };
 
   setPlayerName = () => {
-    const { playerName } = this.state;
+    const {playerName} = this.state;
 
     let request = {
       action: 'setPlayerName',
-      params: { name: playerName },
+      params: {name: playerName},
     };
 
     this.props.room.send(request);
+
+    this.setState({playerName: ''});
   };
 
   render() {
-    const { players } = this.state;
+    const {playerName, players} = this.state;
 
     return (
       <View style={styles.container}>
-          <View style={styles.welcomeContainer}>
-            <Image
-              source={require('../assets/images/werewolf.png')}
-              style={styles.welcomeImage}
-            />
-          </View>
+        <View style={styles.getStartedContainer}>
+          <Text style={styles.getStartedText}>Enter player name:</Text>
+          <TextInput
+            placeholder="your name..."
+            style={styles.getStartedInputsBox}
+            onChangeText={text => this.setState({playerName: text})}
+            value={playerName}
+          />
+          <Button
+            title="Submit"
+            color={NightTheme.buttonBackground}
+            onPress={() => this.setPlayerName()}
+          />
+        </View>
 
-          <View style={styles.getStartedContainer}>
-            <Text style={styles.getStartedText}>Enter player name:</Text>
-            <TextInput
-              placeholder="your name..."
-              style={styles.getStartedInputsBox}
-              onChangeText={text => this.setState({ playerName: text })}
-            />
-            <Button
-              title="Submit"
-              color={NightTheme.buttonBackground}
-              onPress={() => this.setPlayerName()}
-            />
-          </View>
-
-          <View style={styles.getStartedContainer}>
-            <Text style={styles.getStartedText}>Players:</Text>
-            {players.map(player => (
-              <Text key={player.id} style={styles.getStartedInputsText}>{player.name ? player.name : '...'}</Text>
-            ))}
-          </View>
+        <View style={styles.getStartedContainer}>
+          <Text style={styles.getStartedText}>Players:</Text>
+          {players.map(player => (
+            <Text key={player.id} style={styles.getStartedInputsText}>{player.name ? player.name : '...'}</Text>
+          ))}
+        </View>
       </View>
     );
   }
