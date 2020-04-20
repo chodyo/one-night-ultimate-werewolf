@@ -1,69 +1,67 @@
 import * as React from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { SplashScreen } from 'expo';
+import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 
-import BottomTabNavigator from './navigation/BottomTabNavigator';
-import useLinking from './navigation/useLinking';
 import { NightTheme } from "./constants/Colors";
+import HomeScreen from "./screens/HomeScreen";
+import RoleSelectionScreen from "./screens/RoleSelectionScreen";
+import {ScrollView} from "react-native-gesture-handler";
 
-const Stack = createStackNavigator();
+class App extends React.Component {
+  constructor(props) {
+    super(props);
 
-export default function App(props) {
-  const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [initialNavigationState, setInitialNavigationState] = React.useState();
+    this.client = new Client('ws://localhost:2567');
+    this.room = null;
 
-  const containerRef = React.useRef();
-  const { getInitialState } = useLinking(containerRef);
+    this.state = {
+      isLoadingComplete: false,
+      initialNavigationState: null,
+    };
+  }
 
-  // Load any resources or data that we need prior to rendering the app
-  React.useEffect(() => {
-    async function loadResourcesAndDataAsync() {
-      try {
-        SplashScreen.preventAutoHide();
+  async componentDidMount() {
+    try {
+      await Font.loadAsync({
+        ...Ionicons.font,
+        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
 
-        // Load our initial navigation state
-        setInitialNavigationState(await getInitialState());
+      });
+      await Font.loadAsync({
+        'werewolf': require('./assets/fonts/Werewolf.ttf'),
+      });
 
-        // Load fonts
-        await Font.loadAsync({
-          ...Ionicons.font,
-          'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
-
-        });
-        await Font.loadAsync({
-          'werewolf': require('./assets/fonts/Werewolf.ttf'),
-        });
-      } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        console.warn('Fucked by:', e);
-      } finally {
-        setLoadingComplete(true);
-        SplashScreen.hide();
-      }
+      this.room = await this.client.joinOrCreate('my_room');
+      this.room.onMessage(whatever => console.debug('some message from client:', whatever));
+    } catch (e) {
+      console.error('Fucked in App by:', e);
+    } finally {
+      this.setState({ isLoadingComplete: true });
     }
+  }
 
-    loadResourcesAndDataAsync();
-  }, []);
+  render() {
+    const { isLoadingComplete } = this.state;
 
-  if (!isLoadingComplete && !props.skipLoadingScreen) {
-    return null;
-  } else {
-    return (
-      <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
-          <Stack.Navigator>
-            <Stack.Screen name="Root" component={BottomTabNavigator} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </View>
-    );
+    if (!isLoadingComplete) {
+      return null;
+    } else {
+      return (
+        <View style={styles.container}>
+          <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+            {Platform.OS === 'ios' && <StatusBar barStyle="default"/>}
+            <HomeScreen room={this.room} />
+            <RoleSelectionScreen room={this.room} />
+          </ScrollView>
+        </View>
+      );
+    }
   }
 }
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {

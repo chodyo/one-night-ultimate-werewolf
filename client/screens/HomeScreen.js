@@ -55,7 +55,6 @@ class HomeScreen extends React.Component {
 
     return (
       <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.welcomeContainer}>
             <Image
               source={require('../assets/images/werewolf.png')}
@@ -83,7 +82,6 @@ class HomeScreen extends React.Component {
               <Text key={player.id} style={styles.getStartedInputsText}>{player.name ? player.name : '...'}</Text>
             ))}
           </View>
-        </ScrollView>
       </View>
     );
   }
