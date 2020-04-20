@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Button, Platform, StatusBar, StyleSheet, View} from 'react-native';
+import { Button, Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NightTheme } from "./constants/Colors";
 import HomeScreen from "./screens/HomeScreen";
 import RoleSelectionScreen from "./screens/RoleSelectionScreen";
-import {ScrollView} from "react-native-gesture-handler";
+import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 
 export default class App extends React.Component {
@@ -23,6 +23,7 @@ export default class App extends React.Component {
       phase: '',
       clientPlayer: null,
       playerRole: null,
+      roles: []
     };
   }
 
@@ -50,26 +51,25 @@ export default class App extends React.Component {
   loadState = async () => {
     const { phase, players } = this.room.state;
 
-    let clientPlayer, playerRole;
+    let playerRole;
     for (let id in players) {
       let player = players[id];
       // find this client's player role
-      if (player.sessionId === this.client.sessionId) {
+      // then display their role to them if the client === player
+      if (id === this.room.sessionId) {
         playerRole = player.role;
-        clientPlayer = player
       }
     }
 
-    this.setState({ phase, clientPlayer, playerRole });
+    this.setState({ phase, playerRole });
   };
 
   startGame = () => {
-    console.debug('Someone pressed start!');
     this.room.send({ action: 'startGame' });
   };
 
   render() {
-    const { clientPlayer, isLoadingComplete, phase, playerRole } = this.state;
+    const { isLoadingComplete, phase, playerRole } = this.state;
 
     if (!isLoadingComplete) {
       return null;
@@ -86,7 +86,7 @@ export default class App extends React.Component {
             }
             {phase === 'nighttime' &&
               <View>
-                <NightScreen player={clientPlayer} role={playerRole}/>
+                <NightScreen player={this.room.sessionId} role={playerRole} />
               </View>
             }
           </ScrollView>
