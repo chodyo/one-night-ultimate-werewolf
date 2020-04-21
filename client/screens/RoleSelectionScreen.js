@@ -136,18 +136,6 @@ RoleSelectionScreen.navigationOptions = {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: NightTheme.darkBlue,
-  },
-  contentContainer: {
-    alignItems: 'center',
-    flex: 10,
-    flexWrap: 'wrap',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: 30,
-  },
   getStartedText: {
     fontSize: 30,
     color: NightTheme.activeText,

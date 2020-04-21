@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingTop: 30,
+    alignItems: 'center',
   },
   welcomeContainer: {
     alignItems: 'center',
@@ -119,6 +120,7 @@ const styles = StyleSheet.create({
     // lineHeight: 24,
     textAlign: 'center',
     borderWidth: StyleSheet.hairlineWidth,
+    borderColor: NightTheme.inputText,
   },
   getStartedInputsText: {
     fontSize: 24,

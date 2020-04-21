@@ -9,42 +9,27 @@ export type RoleName = keyof typeof roles;
 export const roleNames = Object.keys(roles) as RoleName[];
 
 export class Role extends Schema {
-  @type("string")
-  roleID?: string;
+    @type("string")
+    roleID?: string;
 
-  @type("string")
-  name?: RoleName;
+    @type("string")
+    name?: RoleName;
 
-  @type("string")
-  description?: string;
+    @type("boolean")
+    active: boolean = false;
 
-  @type("string")
-  prompt?: string;
+    @type("string")
+    team?: string;
 
-  @type("boolean")
-  active: boolean = false;
+    @type("number")
+    wakeOrder?: number;
 
-  @type("string")
-  team?: string;
+    constructor(roleID?: string, name?: RoleName, team?: string, wakeOrder?: number) {
+        super();
 
-  @type("number")
-  wakeOrder?: number;
-
-  constructor(
-    roleID?: string,
-    name?: RoleName,
-    description?: string,
-    prompt?: string,
-    team?: string,
-    wakeOrder?: number
-  ) {
-    super();
-
-    this.roleID = roleID;
-    this.name = name;
-    this.description = description;
-    this.prompt = prompt;
-    this.team = team;
-    this.wakeOrder = wakeOrder;
-  }
+        this.roleID = roleID;
+        this.name = name;
+        this.team = team;
+        this.wakeOrder = wakeOrder;
+    }
 }

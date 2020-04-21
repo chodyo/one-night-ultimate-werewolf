@@ -51,34 +51,41 @@ export default class App extends React.Component {
   loadState = async () => {
     const { phase, players } = this.room.state;
 
-    let playerRole;
+    let clientPlayer, playerRole;
     for (let id in players) {
       let player = players[id];
       // find this client's player role
       // then display their role to them if the client === player
       if (id === this.room.sessionId) {
+        clientPlayer = player;
         playerRole = player.role;
       }
     }
 
-    this.setState({ phase, playerRole });
+    this.setState({ phase, clientPlayer, playerRole });
   };
 
   startGame = () => {
     this.room.send({ action: 'startGame' });
   };
 
+  markAsReady = () => {
+    const { state: { players }, sessionId } = this.room;
+    console.debug(`${players[sessionId].name} is ready!`)
+    // this.room.send({ action: 'ready' });
+  };
+
   render() {
-    const { isLoadingComplete, phase, playerRole } = this.state;
+    const { isLoadingComplete, phase, clientPlayer, playerRole } = this.state;
 
     if (!isLoadingComplete) {
       return null;
     } else {
       return (
         <View style={styles.container}>
-          <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+          <ScrollView style={styles.getStartedContainer}>
             {phase === 'daytime' &&
-              <View>
+              <View style={{ alignItems: 'center' }}>
                 <Button style={styles.unSelectedButton} onPress={() => this.startGame()} title="Start Game" />
                 <HomeScreen room={this.room} />
                 <RoleSelectionScreen room={this.room} />
@@ -86,7 +93,7 @@ export default class App extends React.Component {
             }
             {phase === 'nighttime' &&
               <View>
-                <NightScreen player={this.room.sessionId} role={playerRole} />
+                <NightScreen player={clientPlayer} role={playerRole} markAsReady={this.markAsReady} />
               </View>
             }
           </ScrollView>
