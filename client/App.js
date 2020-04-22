@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Button, Platform, StatusBar, StyleSheet, View, Text } from 'react-native';
 import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,8 @@ export default class App extends React.Component {
       phase: '',
       clientPlayer: null,
       playerRole: null,
-      roles: []
+      roles: [],
+      serverMessage: '',
     };
   }
 
@@ -40,6 +41,7 @@ export default class App extends React.Component {
 
       this.room = await this.client.joinOrCreate('my_room');
       this.room.onStateChange(() => this.loadState());
+      await this.handleMessage();
       this.room.onMessage(whatever => console.debug('some message from client:', whatever));
     } catch (e) {
       console.error('Fucked in the App by:', e);
@@ -67,7 +69,17 @@ export default class App extends React.Component {
 
   startGame = () => {
     this.room.send({ action: 'startGame' });
+    // this.room.onMessage((message) => {
+    //   console.log(`Server sent: ${message.message}`);
+    // });
   };
+
+  handleMessage = async () => {
+    await this.room.onMessage((message) => {
+      this.setState({ serverMessage: message.message });
+      console.log(`Server sent: ${message.message}`);
+    });
+  }
 
   markAsReady = () => {
     const { state: { players }, sessionId } = this.room;
@@ -76,7 +88,7 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { isLoadingComplete, phase, clientPlayer, playerRole } = this.state;
+    const { isLoadingComplete, phase, clientPlayer, playerRole, serverMessage } = this.state;
 
     if (!isLoadingComplete) {
       return null;
@@ -87,13 +99,21 @@ export default class App extends React.Component {
             {phase === 'daytime' &&
               <View style={{ alignItems: 'center' }}>
                 <Button style={styles.unSelectedButton} onPress={() => this.startGame()} title="Start Game" />
+                {serverMessage !== '' &&
+                  <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
+                }
                 <HomeScreen room={this.room} />
                 <RoleSelectionScreen room={this.room} />
               </View>
             }
             {phase === 'nighttime' &&
               <View>
-                <NightScreen player={clientPlayer} role={playerRole} markAsReady={this.markAsReady} />
+                <NightScreen
+                  player={clientPlayer}
+                  role={playerRole}
+                  messageForPlayer={serverMessage}
+                  markAsReady={this.markAsReady}
+                />
               </View>
             }
           </ScrollView>
@@ -107,5 +127,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: NightTheme.darkBlue,
+  },
+  getStartedInputsText: {
+    fontSize: 24,
+    color: NightTheme.inputText,
+    // lineHeight: 24,
+    textAlign: 'center',
   },
 });
