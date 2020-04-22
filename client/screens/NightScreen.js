@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
+import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
 
 export default class NightScreen extends React.Component {
@@ -11,6 +12,21 @@ export default class NightScreen extends React.Component {
     this.state = {
       rolePrompt: '',
       roleDescription: '',
+      displayMiddleCards: false,
+      centerRolesStub: [
+        {
+          label: 'center1',
+          name: 'werewolf',
+        },
+        {
+          label: 'center2',
+          name: 'mason',
+        },
+        {
+          label: 'center3',
+          name: 'seer',
+        },
+      ],
     };
   }
 
@@ -79,12 +95,16 @@ export default class NightScreen extends React.Component {
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { players, player, role, markAsReady, messageForPlayer } = this.props;
-    const { rolePrompt, roleDescription } = this.state;
+    const { players, player, role, markAsReady, messageForPlayer, centerRoles } = this.props;
+    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub } = this.state;
+
+    if (displayMiddleCards) {
+      return (<CenterCards centerRoles={centerRolesStub}/>);
+    }
 
     return (
       <View style={styles.container}>
-        <Button style={styles.unSelectedButton} onPress={() => markAsReady()} title="Ready" />
+        <Button style={styles.unSelectedButton} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
         </Text>
@@ -101,7 +121,7 @@ export default class NightScreen extends React.Component {
             Yo!: {messageForPlayer}
           </Text>
         }
-        <PlayerSelectionAction players={players}></PlayerSelectionAction>
+        <PlayerSelectionAction players={players} />
       </View>
     );
   }

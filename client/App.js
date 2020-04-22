@@ -26,6 +26,7 @@ export default class App extends React.Component {
       players: [],
       roles: [],
       serverMessage: '',
+      centerRoles: null,
     };
   }
 
@@ -52,7 +53,7 @@ export default class App extends React.Component {
   }
 
   loadState = async () => {
-    const { phase, players } = this.room.state;
+    const { centerRoles, phase, players } = this.room.state;
 
     let clientPlayer, playerRole;
     let playersArray = [];
@@ -68,7 +69,7 @@ export default class App extends React.Component {
       }
     }
 
-    this.setState({ phase, clientPlayer, playerRole, players: playersArray });
+    this.setState({ phase, clientPlayer, playerRole, players: playersArray, centerRoles });
   };
 
   startGame = () => {
@@ -92,7 +93,15 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { isLoadingComplete, phase, players, clientPlayer, playerRole, serverMessage } = this.state;
+    const {
+      isLoadingComplete,
+      phase,
+      players,
+      clientPlayer,
+      playerRole,
+      serverMessage,
+      centerRoles
+    } = this.state;
 
     if (!isLoadingComplete) {
       return null;
@@ -117,6 +126,7 @@ export default class App extends React.Component {
                   player={clientPlayer}
                   role={playerRole}
                   messageForPlayer={serverMessage}
+                  centerRoles={centerRoles}
                   markAsReady={this.markAsReady}
                 />
               </View>
