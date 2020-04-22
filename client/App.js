@@ -23,6 +23,7 @@ export default class App extends React.Component {
       phase: '',
       clientPlayer: null,
       playerRole: null,
+      players: [],
       roles: [],
       serverMessage: '',
     };
@@ -54,8 +55,11 @@ export default class App extends React.Component {
     const { phase, players } = this.room.state;
 
     let clientPlayer, playerRole;
+    let playersArray = [];
     for (let id in players) {
       let player = players[id];
+      playersArray.push({ id: id, ...player });
+
       // find this client's player role
       // then display their role to them if the client === player
       if (id === this.room.sessionId) {
@@ -64,7 +68,7 @@ export default class App extends React.Component {
       }
     }
 
-    this.setState({ phase, clientPlayer, playerRole });
+    this.setState({ phase, clientPlayer, playerRole, players: playersArray });
   };
 
   startGame = () => {
@@ -88,7 +92,7 @@ export default class App extends React.Component {
   };
 
   render() {
-    const { isLoadingComplete, phase, clientPlayer, playerRole, serverMessage } = this.state;
+    const { isLoadingComplete, phase, players, clientPlayer, playerRole, serverMessage } = this.state;
 
     if (!isLoadingComplete) {
       return null;
@@ -102,13 +106,14 @@ export default class App extends React.Component {
                 {serverMessage !== '' &&
                   <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
                 }
-                <HomeScreen room={this.room} />
+                <HomeScreen room={this.room} players={players} />
                 <RoleSelectionScreen room={this.room} />
               </View>
             }
             {phase === 'nighttime' &&
               <View>
                 <NightScreen
+                  players={players}
                   player={clientPlayer}
                   role={playerRole}
                   messageForPlayer={serverMessage}

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
+import PlayerSelectionAction from '../components/PlayerSelectionAction';
 
 export default class NightScreen extends React.Component {
   constructor(props) {
@@ -78,7 +79,7 @@ export default class NightScreen extends React.Component {
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { player, role, markAsReady, messageForPlayer } = this.props;
+    const { players, player, role, markAsReady, messageForPlayer } = this.props;
     const { rolePrompt, roleDescription } = this.state;
 
     return (
@@ -100,6 +101,7 @@ export default class NightScreen extends React.Component {
             Yo!: {messageForPlayer}
           </Text>
         }
+        <PlayerSelectionAction players={players}></PlayerSelectionAction>
       </View>
     );
   }

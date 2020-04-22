@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {Button, TextInput, StyleSheet, Text, View} from 'react-native';
-import {NightTheme} from "../constants/Colors";
+import { Button, TextInput, StyleSheet, Text, View } from 'react-native';
+import { NightTheme } from "../constants/Colors";
 
 export default class HomeScreen extends React.Component {
   constructor(props) {
@@ -9,50 +9,26 @@ export default class HomeScreen extends React.Component {
     this.state = {
       playerId: '',
       playerName: '',
-      players: [],
     };
   }
 
-  async componentDidMount() {
-    console.debug('Loading HomeScreen');
-    await this.start();
-  }
-
-  start = async () => {
-    try {
-      this.props.room.onStateChange(state => this.loadPlayers(state));
-    } catch (error) {
-      console.error('Home screen fucked by:', error)
-    }
-  };
-
-  loadPlayers = async (state) => {
-    const serverPlayers = state.players;
-
-    let players = [];
-    for (let id in serverPlayers) {
-      let player = serverPlayers[id];
-      players.push({id: id, ...player});
-    }
-
-    this.setState({players});
-  };
 
   setPlayerName = () => {
-    const {playerName} = this.state;
+    const { playerName } = this.state;
 
     let request = {
       action: 'setPlayerName',
-      params: {name: playerName},
+      params: { name: playerName },
     };
 
     this.props.room.send(request);
 
-    this.setState({playerName: ''});
+    this.setState({ playerName: '' });
   };
 
   render() {
-    const {playerName, players} = this.state;
+    const { playerName } = this.state;
+    const { players } = this.props;
 
     return (
       <View style={styles.container}>
@@ -61,7 +37,7 @@ export default class HomeScreen extends React.Component {
           <TextInput
             placeholder="your name..."
             style={styles.getStartedInputsBox}
-            onChangeText={text => this.setState({playerName: text})}
+            onChangeText={text => this.setState({ playerName: text })}
             value={playerName}
           />
           <Button
