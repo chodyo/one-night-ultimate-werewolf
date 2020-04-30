@@ -42,6 +42,10 @@ export default class NightScreen extends React.Component {
     }
   }
 
+  selectCard = (card) => {
+    console.log(`You Selected ${card.label} which is a ${card.name}!`);
+  };
+
   doppelganger() {
     //display all playernames in room to pick from
     //Send server which player was picked
@@ -99,12 +103,12 @@ export default class NightScreen extends React.Component {
     const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub } = this.state;
 
     if (displayMiddleCards) {
-      return (<CenterCards centerRoles={centerRolesStub}/>);
+      return (<CenterCards centerRoles={centerRolesStub} selectCard={this.selectCard}/>);
     }
 
     return (
       <View style={styles.container}>
-        <Button style={styles.unSelectedButton} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
+        <Button style={styles.card} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
         </Text>
