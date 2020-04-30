@@ -1,16 +1,15 @@
 import * as React from 'react';
 import { StyleSheet, Text, View, Image, TouchableHighlight, Animated } from 'react-native'; //Step 1
+import IconButton from '@material-ui/core/IconButton'
+import ArrowUpwardIcon from '@material-ui/icons/KeyboardArrowUp'
+import ArrowDownwardIcon from '@material-ui/icons/KeyboardArrowDown'
 import { NightTheme } from "../constants/Colors";
 
 export default class RolePanel extends React.Component {
     constructor(props) {
         super(props);
-        this.icons = {     //Step 2
-            'up': '<',
-            'down': '>'
-        };
 
-        this.state = {       //Step 3
+        this.state = {
             title: props.title,
             expanded: true,
             animation: new Animated.Value()
@@ -18,39 +17,38 @@ export default class RolePanel extends React.Component {
     }
 
     toggle() {
-        //Step 1
         let initialValue = this.state.expanded ? this.state.maxHeight + this.state.minHeight : this.state.minHeight,
             finalValue = this.state.expanded ? this.state.minHeight : this.state.maxHeight + this.state.minHeight;
 
         this.setState({
-            expanded: !this.state.expanded  //Step 2
+            expanded: !this.state.expanded
         });
 
-        this.state.animation.setValue(initialValue);  //Step 3
-        Animated.spring(     //Step 4
+        this.state.animation.setValue(initialValue);
+        Animated.spring(
             this.state.animation,
             {
                 toValue: finalValue
             }
-        ).start();  //Step 5
+        ).start();
     }
-    _setMaxHeight(event) {
+    setMaxHeight(event) {
         this.setState({
             maxHeight: event.nativeEvent.layout.height
         });
     }
 
-    _setMinHeight(event) {
+    setMinHeight(event) {
         this.setState({
             minHeight: event.nativeEvent.layout.height
         });
     }
 
     render() {
-        let icon = this.icons['down'];
+        let icon = <ArrowDownwardIcon />;
 
         if (this.state.expanded) {
-            icon = this.icons['up'];   //Step 4
+            icon = <ArrowUpwardIcon />
         }
 
         //Step 5
@@ -58,17 +56,20 @@ export default class RolePanel extends React.Component {
             <Animated.View
                 style={[styles.container, { height: this.state.animation }]}>
                 <View style={styles.container} >
-                    <View style={styles.titleContainer} onLayout={this._setMinHeight.bind(this)}>
+                    <View style={styles.titleContainer} onLayout={this.setMinHeight.bind(this)}>
                         <Text style={styles.title}>{this.state.title} description</Text>
-                        <TouchableHighlight
-                            style={styles.button}
-                            onPress={this.toggle.bind(this)}
-                            underlayColor="#f1f1f1">
-                            <Image style={styles.buttonImage} source={icon}></Image>
-                        </TouchableHighlight>
+                        <IconButton
+                            key="expand"
+                            aria-label="expand"
+                            color="inherit"
+                            className={styles.expand}
+                            onClick={this.toggle.bind(this)}
+                        >
+                            {icon}
+                        </IconButton>
                     </View>
 
-                    <View style={styles.body} onLayout={this._setMaxHeight.bind(this)}>
+                    <View style={styles.body} onLayout={this.setMaxHeight.bind(this)}>
                         {this.props.children}
                     </View>
                 </View>
@@ -78,6 +79,9 @@ export default class RolePanel extends React.Component {
 }
 
 const styles = StyleSheet.create({
+    expand: {
+        padding: 0.5,
+    },
     container: {
         alignItems: 'center',
         marginTop: 10,

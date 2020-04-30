@@ -10,6 +10,8 @@ import RoleSelectionScreen from "./screens/RoleSelectionScreen";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 
+import Notification from "./components/Notification";
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -92,6 +94,10 @@ export default class App extends React.Component {
     // this.room.send({ action: 'ready' });
   };
 
+  closeNotification = () => {
+    this.setState({ serverMessage: '' });
+  };
+
   render() {
     const {
       isLoadingComplete,
@@ -103,11 +109,16 @@ export default class App extends React.Component {
       centerRoles
     } = this.state;
 
+    let message = serverMessage;
+
     if (!isLoadingComplete) {
       return null;
     } else {
       return (
         <View style={styles.container}>
+          <Notification
+            message={serverMessage} onClose={this.closeNotification}
+          />
           <ScrollView style={styles.getStartedContainer}>
             {phase === 'daytime' &&
               <View style={{ alignItems: 'center' }}>
