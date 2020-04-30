@@ -42,8 +42,8 @@ export default class NightScreen extends React.Component {
     }
   }
 
-  selectCard = (card) => {
-    console.log(`You Selected ${card.label} which is a ${card.name}!`);
+  selectCard = (cardLabel) => {
+    console.log(`You Selected ${cardLabel}.`);
   };
 
   doppelganger() {
@@ -108,7 +108,7 @@ export default class NightScreen extends React.Component {
 
     return (
       <View style={styles.container}>
-        <Button style={styles.card} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
+        <Button style={styles.unSelectedButton} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
         </Text>

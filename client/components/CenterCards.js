@@ -7,7 +7,7 @@ const CenterCards = ({ centerRoles, selectCard }) => (
   <View style={styles.container}>
     {centerRoles.map(centerRole => (
       <TouchableOpacity key={centerRole.label} style={styles.card}>
-        <RectButton style={{ alignItems: 'center' }} onPress={() => selectCard(centerRole.name)}>
+        <RectButton style={{ alignItems: 'center' }} onPress={() => selectCard(centerRole.label)}>
           <Text style={styles.optionText}>{centerRole.label}</Text>
         </RectButton>
       </TouchableOpacity>
