@@ -61,7 +61,7 @@ export default class RolePanel extends React.Component {
                         <IconButton
                             key="expand"
                             aria-label="expand"
-                            color="inherit"
+                            color="primary"
                             className={styles.expand}
                             onClick={this.toggle.bind(this)}
                         >
