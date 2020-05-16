@@ -5,7 +5,15 @@ import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
 import { NightTheme } from "../constants/Colors";
 import { Room } from 'colyseus.js';
 
-const PlayerSelectionAction = ({ players }) => {
+export default class PlayerSelectionAction extends React.Component {
+    static propTypes = { players: PropTypes.arrayOf(PropTypes.object) };
+    constructor(props) {
+        super(props);
+
+        this.state = {
+
+        }
+    }
 
     sendPlayerSelectionAction = () => {
         for (let player in players) {
@@ -43,22 +51,26 @@ const PlayerSelectionAction = ({ players }) => {
         }
     }
 
-    return (
-        <View>
-            {players.map(player => (
-                < TouchableOpacity key={player.id} style={styles.unSelectedButton}>
-                    <RectButton style={styles.alignmentStyle} onPress={
-                        () => {
-                            console.debug(`You Selected ${player.name}`);
+    render() {
+        const { players } = this.props;
 
-                        }
-                    }>
-                        <Text style={styles.getStartedText}> PLAYER: {player.name}</Text>
-                    </RectButton>
-                </TouchableOpacity>
-            ))}
-        </View >
-    );
+        return (
+            <View>
+                {players.map(player => (
+                    < TouchableOpacity key={player.id} style={styles.unSelectedButton}>
+                        <RectButton style={styles.alignmentStyle} onPress={
+                            () => {
+                                console.debug(`You Selected ${player.name}`);
+                                sendPlayerSelectionAction();
+                            }
+                        }>
+                            <Text style={styles.getStartedText}> PLAYER: {player.name}</Text>
+                        </RectButton>
+                    </TouchableOpacity>
+                ))}
+            </View >
+        );
+    }
 };
 
 PlayerSelectionAction.propTypes = {
@@ -92,5 +104,3 @@ const styles = StyleSheet.create({
         // marginTop: 1,
     },
 });
-
-export default PlayerSelectionAction;
