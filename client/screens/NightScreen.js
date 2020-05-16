@@ -42,6 +42,10 @@ export default class NightScreen extends React.Component {
     }
   }
 
+  selectCard = (cardLabel) => {
+    console.log(`You Selected ${cardLabel}.`);
+  };
+
   doppelganger() {
     //display all playernames in room to pick from
     //Send server which player was picked
@@ -99,7 +103,7 @@ export default class NightScreen extends React.Component {
     const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub } = this.state;
 
     if (displayMiddleCards) {
-      return (<CenterCards centerRoles={centerRolesStub}/>);
+      return (<CenterCards centerRoles={centerRolesStub} selectCard={this.selectCard}/>);
     }
 
     return (
