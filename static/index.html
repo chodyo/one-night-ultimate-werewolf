@@ -38,8 +38,8 @@
             </a>
         </h1>
 
-        <form id="startGameForm">
-            <input type="submit" value="Start Game" />
+        <form id="readyForm">
+            <input type="submit" value="Ready" />
         </form>
 
         <strong>Messages</strong><br />
@@ -208,12 +208,12 @@
                 };
 
                 // start game
-                document.querySelector("#startGameForm").onsubmit = function (e) {
+                document.querySelector("#readyForm").onsubmit = function (e) {
                     e.preventDefault();
 
-                    console.debug("sending startGame to server");
+                    console.debug("sending ready to server");
 
-                    room.send({ action: "startGame" });
+                    room.send({ action: "ready" });
                 };
             });
         </script>

@@ -9,6 +9,9 @@ export class Player extends Schema {
     @type(Role)
     role: Role = new Role();
 
+    @type("boolean")
+    ready: boolean = false;
+
     client: Client;
 
     constructor(client: Client) {
