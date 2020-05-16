@@ -4,13 +4,11 @@ import {StyleSheet, Text, View} from 'react-native';
 import {RectButton, TouchableOpacity} from 'react-native-gesture-handler';
 import {NightTheme} from "../constants/Colors";
 
-const CenterCards = ({ centerRoles, selectCard }) => (
+const CenterCards = ({ centerRoles, onSelectCard, selected }) => (
   <View style={styles.container}>
     {centerRoles.map(centerRole => (
-      <TouchableOpacity key={centerRole.label} style={styles.card}>
-        <RectButton style={{ alignItems: 'center' }} onPress={() => selectCard(centerRole.label)}>
+      <TouchableOpacity key={centerRole.label} style={selected.includes(centerRole.label) ? styles.cardSelected : styles.card} onPress={() => onSelectCard(centerRole.label)}>
           <Text style={styles.optionText}>{centerRole.label}</Text>
-        </RectButton>
       </TouchableOpacity>
     ))}
   </View>
@@ -18,7 +16,8 @@ const CenterCards = ({ centerRoles, selectCard }) => (
 
 CenterCards.propTypes = {
   centerRoles: PropTypes.arrayOf(PropTypes.object).isRequired,
-  selectCard: PropTypes.func.isRequired,
+  onSelectCard: PropTypes.func.isRequired,
+  selected: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -30,15 +29,23 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: NightTheme.buttonUnselected,
-    // paddingHorizontal: 5,
-    // paddingVertical: 5,
-    // borderWidth: StyleSheet.hairlineWidth,
     borderColor: NightTheme.buttonUnselected,
     justifyContent: 'center',
     margin: '2rem',
     width: '25vw',
     height: '70vh',
-    borderRadius: '10px'
+    borderRadius: '10px',
+    alignItems: 'center',
+  },
+  cardSelected: {
+    backgroundColor: NightTheme.buttonSelected,
+    borderColor: NightTheme.buttonSelectedBorder,
+    justifyContent: 'center',
+    margin: '2rem',
+    width: '25vw',
+    height: '70vh',
+    borderRadius: '10px',
+    alignItems: 'center',
   },
   optionText: {
     color: NightTheme.activeText,

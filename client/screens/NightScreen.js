@@ -13,6 +13,7 @@ export default class NightScreen extends React.Component {
       rolePrompt: '',
       roleDescription: '',
       displayMiddleCards: false,
+      selected: [],
       centerRolesStub: [
         {
           label: 'center1',
@@ -43,7 +44,15 @@ export default class NightScreen extends React.Component {
   }
 
   selectCard = (cardLabel) => {
-    console.debug(`You Selected ${cardLabel}.`);
+    let { selected } = this.state;
+
+    if (!selected.includes(cardLabel)) {
+      if (selected.length < 2) { selected.push(cardLabel); }
+    } else {
+      selected = selected.filter(card => card !== cardLabel);
+    }
+
+    this.setState({ selected });
   };
 
   doppelganger() {
@@ -90,7 +99,7 @@ export default class NightScreen extends React.Component {
 
   render() {
     const { players, player, role, markAsReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub } = this.state;
+    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub, selected } = this.state;
 
     // seer() {
       //display option to pick from player or look at 2 in the center
@@ -120,7 +129,7 @@ export default class NightScreen extends React.Component {
         {role.name === 'seer' && (
           <>
             <PlayerSelectionAction players={players}/>
-            <CenterCards centerRoles={centerRolesStub} selectCard={this.selectCard}/>
+            <CenterCards centerRoles={centerRolesStub} onSelectCard={this.selectCard} selected={selected}/>
           </>
         )}
         {messageForPlayer !== '' &&
