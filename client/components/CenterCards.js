@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {StyleSheet, Text, View} from 'react-native';
 import {RectButton, TouchableOpacity} from 'react-native-gesture-handler';
 import {NightTheme} from "../constants/Colors";
@@ -14,6 +15,11 @@ const CenterCards = ({ centerRoles, selectCard }) => (
     ))}
   </View>
 );
+
+CenterCards.propTypes = {
+  centerRoles: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selectCard: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {

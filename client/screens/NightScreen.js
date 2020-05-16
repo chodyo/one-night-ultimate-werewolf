@@ -43,7 +43,7 @@ export default class NightScreen extends React.Component {
   }
 
   selectCard = (cardLabel) => {
-    console.log(`You Selected ${cardLabel}.`);
+    console.debug(`You Selected ${cardLabel}.`);
   };
 
   doppelganger() {
@@ -63,16 +63,6 @@ export default class NightScreen extends React.Component {
   }
   mason() {
     //display player that is a masons
-  }
-  seer() {
-    //display option to pick from player or look at 2 in the center
-    //display players to pick from 
-    //Send server which player was picked
-    //display player role
-    //display center cards in the center for picking 2 to look at
-    //Send Server which center cards were looked at
-    //Display selected cards
-
   }
   robber() {
     //display option to rob or not
@@ -102,9 +92,16 @@ export default class NightScreen extends React.Component {
     const { players, player, role, markAsReady, messageForPlayer, centerRoles } = this.props;
     const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub } = this.state;
 
-    if (displayMiddleCards) {
-      return (<CenterCards centerRoles={centerRolesStub} selectCard={this.selectCard}/>);
-    }
+    // seer() {
+      //display option to pick from player or look at 2 in the center
+      //display players to pick from
+      //Send server which player was picked
+      //display player role
+      //display center cards in the center for picking 2 to look at
+      //Send Server which center cards were looked at
+      //Display selected cards
+
+    // }
 
     return (
       <View style={styles.container}>
@@ -120,12 +117,17 @@ export default class NightScreen extends React.Component {
         <Text style={styles.getStartedText}>
           Please: {rolePrompt}
         </Text>
+        {role.name === 'seer' && (
+          <>
+            <PlayerSelectionAction players={players}/>
+            <CenterCards centerRoles={centerRolesStub} selectCard={this.selectCard}/>
+          </>
+        )}
         {messageForPlayer !== '' &&
           <Text style={styles.getStartedText}>
             Yo!: {messageForPlayer}
           </Text>
         }
-        <PlayerSelectionAction players={players} />
       </View>
     );
   }

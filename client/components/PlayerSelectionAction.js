@@ -49,7 +49,7 @@ export default class PlayerSelectionAction extends React.Component {
 
             }
         }
-    }
+    };
 
     render() {
         const { players } = this.props;
@@ -61,7 +61,7 @@ export default class PlayerSelectionAction extends React.Component {
                         <RectButton style={styles.alignmentStyle} onPress={
                             () => {
                                 console.debug(`You Selected ${player.name}`);
-                                sendPlayerSelectionAction();
+                                // this.sendPlayerSelectionAction();
                             }
                         }>
                             <Text style={styles.getStartedText}> PLAYER: {player.name}</Text>
