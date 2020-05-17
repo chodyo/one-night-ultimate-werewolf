@@ -1,14 +1,18 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {StyleSheet, Text, View} from 'react-native';
-import {RectButton, TouchableOpacity} from 'react-native-gesture-handler';
-import {NightTheme} from "../constants/Colors";
+import { StyleSheet, Text, View } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { NightTheme } from "../constants/Colors";
 
-const CenterCards = ({ centerRoles, onSelectCard, selected }) => (
+const CenterCards = ({ centerRoles, onSelection, selected }) => (
   <View style={styles.container}>
     {centerRoles.map(centerRole => (
-      <TouchableOpacity key={centerRole.label} style={selected.includes(centerRole.label) ? styles.cardSelected : styles.card} onPress={() => onSelectCard(centerRole.label)}>
-          <Text style={styles.optionText}>{centerRole.label}</Text>
+      <TouchableOpacity
+        key={centerRole.label}
+        style={selected.includes(centerRole.label) ? styles.cardSelected : styles.card}
+        onPress={() => onSelection(centerRole.label, false)}
+      >
+        <Text style={styles.optionText}>{centerRole.label}</Text>
       </TouchableOpacity>
     ))}
   </View>
@@ -16,7 +20,7 @@ const CenterCards = ({ centerRoles, onSelectCard, selected }) => (
 
 CenterCards.propTypes = {
   centerRoles: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onSelectCard: PropTypes.func.isRequired,
+  onSelection: PropTypes.func.isRequired,
   selected: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 

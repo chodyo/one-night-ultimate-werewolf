@@ -66,7 +66,7 @@ export default class App extends React.Component {
       // find this client's player role
       // then display their role to them if the client === player
       if (id === this.room.sessionId) {
-        clientPlayer = player;
+        clientPlayer = { id: id, ...player };
         playerRole = player.role;
       }
     }

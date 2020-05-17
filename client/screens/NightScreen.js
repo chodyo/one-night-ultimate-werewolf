@@ -13,7 +13,8 @@ export default class NightScreen extends React.Component {
       rolePrompt: '',
       roleDescription: '',
       displayMiddleCards: false,
-      selected: [],
+      selectedCards: [],
+      selectedPlayers: [],
       centerRolesStub: [
         {
           label: 'center1',
@@ -43,23 +44,12 @@ export default class NightScreen extends React.Component {
     }
   }
 
-  selectCard = (cardLabel) => {
-    let { selected } = this.state;
-
-    if (!selected.includes(cardLabel)) {
-      if (selected.length < 2) { selected.push(cardLabel); }
-    } else {
-      selected = selected.filter(card => card !== cardLabel);
-    }
-
-    this.setState({ selected });
-  };
-
   doppelganger() {
     //display all playernames in room to pick from
     //Send server which player was picked
     //display new doppelganger role
   }
+
   werewolf() {
     //werewolves assigned > 1
     //display other werewolves
@@ -95,22 +85,47 @@ export default class NightScreen extends React.Component {
     //display day - role
   }
 
+  makeSelection = (selectionLabel, isPlayer) => {
+    let { selectedCards, selectedPlayers } = this.state;
+
+    if (isPlayer) {
+      selectedCards = [];
+      if (!selectedPlayers.includes(selectionLabel)) {
+        selectedPlayers.push(selectionLabel);
+        if (selectedPlayers.length > 1) {
+          selectedPlayers.shift();
+        }
+      } else {
+        selectedPlayers = selectedPlayers.filter(player => player !== selectionLabel);
+      }
+    } else {
+      selectedPlayers = [];
+      if (!selectedCards.includes(selectionLabel)) {
+        selectedCards.push(selectionLabel);
+        if (selectedCards.length > 2) {
+          selectedCards = selectedCards.filter(card => card === selectionLabel);
+        }
+      } else {
+        selectedCards = selectedCards.filter(card => card !== selectionLabel);
+      }
+    }
+
+    this.setState({ selectedCards, selectedPlayers });
+  };
+
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
     const { players, player, role, markAsReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub, selected } = this.state;
+    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub, selectedCards, selectedPlayers } = this.state;
 
     // seer() {
-      //display option to pick from player or look at 2 in the center
-      //display players to pick from
-      //Send server which player was picked
-      //display player role
-      //display center cards in the center for picking 2 to look at
-      //Send Server which center cards were looked at
-      //Display selected cards
-
+    //display option to pick from player or look at 2 in the center
+    //Send server which player or which center cards were selected
+    //display player role or picked center cards roles
     // }
+
+    const selectablePlayers = players.filter(p => p.id !== player.id);
 
     return (
       <View style={styles.container}>
@@ -128,8 +143,8 @@ export default class NightScreen extends React.Component {
         </Text>
         {role.name === 'seer' && (
           <>
-            <PlayerSelectionAction players={players}/>
-            <CenterCards centerRoles={centerRolesStub} onSelectCard={this.selectCard} selected={selected}/>
+            <PlayerSelectionAction players={selectablePlayers} onSelection={this.makeSelection} selected={selectedPlayers}/>
+            <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards}/>
           </>
         )}
         {messageForPlayer !== '' &&
