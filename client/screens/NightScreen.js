@@ -9,12 +9,19 @@ export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
 
+    let finalAnswer = true;
+    if (props.role.name === 'doppelganger' || props.role.name === 'drunk') {
+        finalAnswer = false;
+    }
+
     this.state = {
       rolePrompt: '',
       roleDescription: '',
       displayMiddleCards: false,
       selectedCards: [],
       selectedPlayers: [],
+      // whether the player has made appropriate selections for their night action
+      finalAnswer,
       centerRolesStub: [
         {
           label: 'center1',
@@ -102,14 +109,16 @@ export default class NightScreen extends React.Component {
       selectionList = selectionList.filter(selection => selection !== selectionLabel);
     }
 
+    this.setState({ finalAnswer: selectionList.length === maxSelectable });
+
     return selectionList;
   }
 
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { players, player, role, markAsReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub, selectedCards, selectedPlayers } = this.state;
+    const { players, player, role, nightCapReady, messageForPlayer, centerRoles } = this.props;
+    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
     const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
@@ -160,7 +169,12 @@ export default class NightScreen extends React.Component {
 
     return (
       <View style={styles.container}>
-        <Button style={styles.unSelectedButton} onPress={() => {markAsReady(); this.setState({ displayMiddleCards: true });}} title="Ready" />
+        <Button
+          title="Ready"
+          style={styles.unSelectedButton}
+          onPress={() => nightCapReady(selectedCards, selectedPlayers)}
+          disabled={!finalAnswer}
+        />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
         </Text>

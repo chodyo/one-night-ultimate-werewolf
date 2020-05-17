@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Button, Platform, StatusBar, StyleSheet, View, Text } from 'react-native';
+import { Button, StyleSheet, View, Text } from 'react-native';
 import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +25,7 @@ export default class App extends React.Component {
       phase: '',
       clientPlayer: null,
       playerRole: null,
+      // allPlayersReady: false,
       players: [],
       roles: [],
       serverMessage: '',
@@ -74,24 +75,25 @@ export default class App extends React.Component {
     this.setState({ phase, clientPlayer, playerRole, players: playersArray, centerRoles });
   };
 
-  startGame = () => {
-    this.room.send({ action: 'startGame' });
-    // this.room.onMessage((message) => {
-    //   console.log(`Server sent: ${message.message}`);
-    // });
-  };
-
   handleMessage = async () => {
     await this.room.onMessage((message) => {
       this.setState({ serverMessage: message.message });
       console.log(`Server sent: ${message.message}`);
     });
-  }
+  };
 
   markAsReady = () => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is ready!`)
-    // this.room.send({ action: 'ready' });
+    console.debug(`${players[sessionId].name} is ready!`);
+
+    this.room.send({ action: 'ready' });
+  };
+
+  nightCapReady = (selectedCards, selectedPlayers) => {
+    const { state: { players }, sessionId } = this.room;
+    console.debug(`${players[sessionId].name} is ready!`);
+
+    this.room.send({ action: 'ready' });
   };
 
   closeNotification = () => {
@@ -120,9 +122,14 @@ export default class App extends React.Component {
             message={serverMessage} onClose={this.closeNotification}
           />
           <ScrollView style={styles.getStartedContainer}>
-            {phase === 'daytime' &&
+            {phase === 'prep' &&
               <View style={{ alignItems: 'center' }}>
-                <Button style={styles.unSelectedButton} onPress={() => this.startGame()} title="Start Game" />
+                <Button
+                  title="I'm ready!"
+                  style={styles.unSelectedButton}
+                  onPress={() => this.markAsReady()}
+                  disabled={clientPlayer.ready}
+                />
                 {serverMessage !== '' &&
                   <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
                 }
@@ -138,7 +145,7 @@ export default class App extends React.Component {
                   role={playerRole}
                   messageForPlayer={serverMessage}
                   centerRoles={centerRoles}
-                  markAsReady={this.markAsReady}
+                  markAsReady={this.nightCapReady}
                 />
               </View>
             }

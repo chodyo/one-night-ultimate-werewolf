@@ -11,27 +11,29 @@ export default class RolePanel extends React.Component {
 
         this.state = {
             title: props.title,
-            expanded: true,
+            expanded: false,
             animation: new Animated.Value()
         };
     }
 
     toggle() {
-        let initialValue = this.state.expanded ? this.state.maxHeight + this.state.minHeight : this.state.minHeight,
-            finalValue = this.state.expanded ? this.state.minHeight : this.state.maxHeight + this.state.minHeight;
+        const { expanded, animation, maxHeight, minHeight } = this.state;
+        let initialValue = expanded ? minHeight : maxHeight + minHeight,
+            finalValue = expanded ? maxHeight + minHeight : minHeight;
 
         this.setState({
-            expanded: !this.state.expanded
+            expanded: !expanded
         });
 
-        this.state.animation.setValue(initialValue);
+        animation.setValue(initialValue);
         Animated.spring(
-            this.state.animation,
+            animation,
             {
                 toValue: finalValue
             }
         ).start();
     }
+
     setMaxHeight(event) {
         this.setState({
             maxHeight: event.nativeEvent.layout.height
@@ -45,19 +47,17 @@ export default class RolePanel extends React.Component {
     }
 
     render() {
-        let icon = <ArrowDownwardIcon />;
+        const { title, expanded, animation } = this.state;
 
-        if (this.state.expanded) {
-            icon = <ArrowUpwardIcon />
-        }
+        let icon = expanded ?  <ArrowDownwardIcon /> : <ArrowUpwardIcon />;
 
         //Step 5
         return (
             <Animated.View
-                style={[styles.container, { height: this.state.animation }]}>
+                style={[styles.container, { height: animation }]}>
                 <View style={styles.container} >
                     <View style={styles.titleContainer} onLayout={this.setMinHeight.bind(this)}>
-                        <Text style={styles.title}>{this.state.title} description</Text>
+                        <Text style={styles.title}>{title} description</Text>
                         <IconButton
                             key="expand"
                             aria-label="expand"
