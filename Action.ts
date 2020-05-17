@@ -17,6 +17,6 @@ export type ActionFunction = (client: Client, params: any, Room: Room) => void;
 export enum actions {
     setPlayerName = "setPlayerName",
     updateSelectedRole = "updateSelectedRole",
-    startGame = "startGame",
+    ready = "ready",
 }
 export type Action = keyof typeof actions;
