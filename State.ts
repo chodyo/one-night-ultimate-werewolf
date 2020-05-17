@@ -185,7 +185,7 @@ export class State extends Schema {
             const randomRoleID = selectedRoleIDs.splice(i, 1)[0]; // deletes "1" element in place at index i and returns the value
 
             const player = this.players[playerID];
-            const role = this.roles['seer0'];
+            const role = this.roles[randomRoleID];
 
             player.role = role;
             this.rolePlayers.set(role, player);
