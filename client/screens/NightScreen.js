@@ -112,6 +112,7 @@ export default class NightScreen extends React.Component {
     const { rolePrompt, roleDescription, displayMiddleCards, centerRolesStub, selectedCards, selectedPlayers } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
+    const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
 
     const doppelganger = (
       //display all playernames in room to pick from
@@ -172,7 +173,7 @@ export default class NightScreen extends React.Component {
           Please: {rolePrompt}
         </Text>
         {role.name === 'doppelganger' && doppelganger}
-        {role.name === 'werewolf' && werewolf}
+        {role.name === 'werewolf' && loneWolf && werewolf}
         {role.name === 'seer' && seer}
         {role.name === 'robber' && robber}
         {role.name === 'troublemaker' && troublemaker}
