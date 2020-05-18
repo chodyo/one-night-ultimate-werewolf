@@ -41,6 +41,7 @@ export default class RoleSelectionScreen extends React.Component {
     let roles = [];
     let werewolfRoles = [];
     let masonRoles = [];
+    // let wakingRoles = [];
     let villagerRoles = [];
     for (let id in gameRoles) {
       let role = gameRoles[id];
@@ -51,6 +52,9 @@ export default class RoleSelectionScreen extends React.Component {
       if (role.name === 'mason') {
         masonRoles.push({ id, ...role });
       }
+      // if (role.name === 'seer' || role.name === 'robber' || role.name === 'troublemaker' || role.name === 'drunk') {
+      //   wakingRoles.push({ id, ...role });
+      // }
       if (role.name === 'villager') {
         villagerRoles.push({ id, ...role });
       }
@@ -138,7 +142,7 @@ RoleSelectionScreen.navigationOptions = {
 const styles = StyleSheet.create({
   getStartedText: {
     fontSize: 30,
-    color: NightTheme.activeText,
+    color: NightTheme.buttonText,
     // lineHeight: 24,
     textAlign: 'center',
   },

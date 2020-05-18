@@ -43,7 +43,8 @@ const styles = StyleSheet.create({
   },
   cardSelected: {
     backgroundColor: NightTheme.buttonSelected,
-    borderColor: NightTheme.buttonSelectedBorder,
+    borderColor: NightTheme.buttonText,
+    borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'center',
     margin: '2rem',
     width: '25vw',
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   optionText: {
-    color: NightTheme.activeText,
+    color: NightTheme.buttonText,
     fontSize: 15,
     paddingHorizontal: 5,
     marginBottom: 5,

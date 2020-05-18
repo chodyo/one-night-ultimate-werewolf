@@ -27,8 +27,8 @@ export const NightTheme = {
   buttonBackground: '#5D4D78',
   buttonSelectedBorder: '#D8D7D6',
   buttonSelected: '#7154A1',
-  buttonUnselected: '#45249C',
-  buttonText: '#999693',
+  buttonUnselected: '#5D4D78',
+  buttonText: '#D8D7D6',
 };
 
 export const DayTheme = {

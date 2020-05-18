@@ -19,7 +19,7 @@ const RoleButton = ({ role, onActivateRole }) => {
       style={role.active ? styles.selectedButtonStyle : styles.unSelectedButton}
       onPress={() => onActivateRole(role.id)}
     >
-      <MoonIcon name={roleIcon} size={45} color={NightTheme.activeText} />
+      <MoonIcon name={roleIcon} size={45} color={NightTheme.buttonText} />
       <Text style={styles.optionText}>{roleName}</Text>
     </TouchableOpacity>
   );
@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: NightTheme.buttonSelectedBorder,
+    borderRadius: '10px',
     alignItems: 'center',
   },
   unSelectedButton: {
@@ -51,10 +52,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: NightTheme.buttonUnselected,
+    borderRadius: '10px',
     alignItems: 'center',
   },
   optionText: {
-    color: NightTheme.activeText,
+    color: NightTheme.buttonText,
     fontSize: 15,
     paddingHorizontal: 5,
     marginBottom: 5,
