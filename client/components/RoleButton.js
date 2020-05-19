@@ -17,7 +17,7 @@ const RoleButton = ({ role, onActivateRole }) => {
   return (
     <TouchableOpacity
       style={role.active ? styles.selectedButtonStyle : styles.unSelectedButton}
-      onPress={() => onActivateRole(role.id)}
+      onPress={() => onActivateRole(role.roleID)}
     >
       <MoonIcon name={roleIcon} size={45} color={NightTheme.buttonText} />
       <Text style={styles.optionText}>{roleName}</Text>
@@ -27,7 +27,7 @@ const RoleButton = ({ role, onActivateRole }) => {
 
 RoleButton.propTypes = {
   role: PropTypes.shape({
-    id: PropTypes.string.isRequired,
+    roleID: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     active: PropTypes.bool.isRequired,
     team: PropTypes.string.isRequired,
