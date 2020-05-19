@@ -1,8 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from '../constants/Colors';
-import RoleButton from "../components/RoleButton";
-import RoleGroup from "../components/RoleGroup";
+import RoleButton from "./RoleButton";
+import RoleGroup from "./RoleGroup";
 
 export default class RoleSelection extends React.Component {
   static propTypes = {};

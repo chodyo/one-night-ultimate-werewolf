@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { NightTheme } from "./constants/Colors";
 import HomeScreen from "./screens/HomeScreen";
-import RoleSelection from "./screens/RoleSelection";
+import RoleSelection from "./components/RoleSelection";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 
