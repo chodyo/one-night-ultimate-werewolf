@@ -4,6 +4,7 @@ import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
+import { makeSelection } from "../assets/GameUtil";
 
 export default class NightScreen extends React.Component {
   constructor(props) {
@@ -90,29 +91,14 @@ export default class NightScreen extends React.Component {
 
     if (isPlayer) {
       selectedCards = [];
-      selectedPlayers = this.setSelection(maxPlayers, selectedPlayers, selectionLabel);
+      selectedPlayers = makeSelection(maxPlayers, selectedPlayers, selectionLabel);
     } else {
       selectedPlayers = [];
-      selectedCards = this.setSelection(maxCenterCards, selectedCards, selectionLabel);
+      selectedCards = makeSelection(maxCenterCards, selectedCards, selectionLabel);
     }
 
     this.setState({ selectedCards, selectedPlayers });
   };
-
-  setSelection(maxSelectable, selectionList, selectionLabel) {
-    if (!selectionList.includes(selectionLabel)) {
-      selectionList.push(selectionLabel);
-      if (selectionList.length > maxSelectable) {
-        selectionList = selectionList.filter(selection => selection === selectionLabel);
-      }
-    } else {
-      selectionList = selectionList.filter(selection => selection !== selectionLabel);
-    }
-
-    this.setState({ finalAnswer: selectionList.length === maxSelectable });
-
-    return selectionList;
-  }
 
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
