@@ -1,76 +1,170 @@
 import * as React from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
-import { SplashScreen } from 'expo';
+import { Button, StyleSheet, View, Text } from 'react-native';
+import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 
-import BottomTabNavigator from './navigation/BottomTabNavigator';
-import useLinking from './navigation/useLinking';
-import Colors from "./constants/Colors";
+import { NightTheme } from "./constants/Colors";
+import HomeScreen from "./screens/HomeScreen";
+import RoleSelectionScreen from "./screens/RoleSelectionScreen";
+import { ScrollView } from "react-native-gesture-handler";
+import NightScreen from "./screens/NightScreen";
 
-const Stack = createStackNavigator();
+import Notification from "./components/Notification";
 
-export default function App(props) {
-  const [isLoadingComplete, setLoadingComplete] = React.useState(false);
-  const [initialNavigationState, setInitialNavigationState] = React.useState();
-  const containerRef = React.useRef();
-  const { getInitialState } = useLinking(containerRef);
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
 
-  // Load any resources or data that we need prior to rendering the app
-  React.useEffect(() => {
-    async function loadResourcesAndDataAsync() {
-      try {
-        SplashScreen.preventAutoHide();
+    this.client = new Client('ws://localhost:2567');
+    this.room = null;
 
-        // Load our initial navigation state
-        setInitialNavigationState(await getInitialState());
+    this.state = {
+      isLoadingComplete: false,
+      initialNavigationState: null,
+      phase: '',
+      clientPlayer: null,
+      playerRole: null,
+      // allPlayersReady: false,
+      players: [],
+      roles: [],
+      serverMessage: '',
+      centerRoles: null,
+    };
+  }
 
+  async componentDidMount() {
+    try {
+      await Font.loadAsync({
+        ...Ionicons.font,
+        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
 
+      });
+      await Font.loadAsync({
+        'werewolf': require('./assets/fonts/Werewolf.ttf'),
+      });
 
-        // Load fonts
-        await Font.loadAsync({
-          ...Ionicons.font,
-          'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
+      this.room = await this.client.joinOrCreate('my_room');
+      this.room.onStateChange(() => this.loadState());
+      await this.handleMessage();
+      this.room.onMessage(whatever => console.debug('some message from client:', whatever));
+    } catch (e) {
+      console.error('Fucked in the App by:', e);
+    } finally {
+      this.setState({ isLoadingComplete: true });
+    }
+  }
 
-        });
-        await Font.loadAsync({
-          'werewolf': require('./assets/fonts/Werewolf.ttf'),
-        });
+  loadState = async () => {
+    const { centerRoles, phase, players } = this.room.state;
 
+    let clientPlayer, playerRole;
+    let playersArray = [];
+    for (let id in players) {
+      let player = players[id];
+      playersArray.push({ id: id, ...player });
 
-      } catch (e) {
-        // We might want to provide this error information to an error reporting service
-        console.warn(e);
-      } finally {
-        setLoadingComplete(true);
-        SplashScreen.hide();
+      // find this client's player role
+      // then display their role to them if the client === player
+      if (id === this.room.sessionId) {
+        clientPlayer = { id: id, ...player };
+        playerRole = player.role;
       }
     }
 
-    loadResourcesAndDataAsync();
-  }, []);
+    this.setState({ phase, clientPlayer, playerRole, players: playersArray, centerRoles });
+  };
 
-  if (!isLoadingComplete && !props.skipLoadingScreen) {
-    return null;
-  } else {
-    return (
-      <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <NavigationContainer ref={containerRef} initialState={initialNavigationState}>
-          <Stack.Navigator>
-            <Stack.Screen name="Root" component={BottomTabNavigator} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </View>
-    );
+  handleMessage = async () => {
+    await this.room.onMessage((message) => {
+      this.setState({ serverMessage: message.message });
+      console.log(`Server sent: ${message.message}`);
+    });
+  };
+
+  markAsReady = () => {
+    const { state: { players }, sessionId } = this.room;
+    console.debug(`${players[sessionId].name} is ready!`);
+
+    this.room.send({ action: 'ready' });
+  };
+
+  nightCapReady = (selectedCards, selectedPlayers) => {
+    const { state: { players }, sessionId } = this.room;
+    console.debug(`${players[sessionId].name} is ready!`);
+
+    this.room.send({ action: 'ready' });
+  };
+
+  closeNotification = () => {
+    this.setState({ serverMessage: '' });
+  };
+
+  render() {
+    const {
+      isLoadingComplete,
+      phase,
+      players,
+      clientPlayer,
+      playerRole,
+      serverMessage,
+      centerRoles
+    } = this.state;
+
+    let message = serverMessage;
+
+    if (!isLoadingComplete) {
+      return null;
+    } else {
+      return (
+        <View style={styles.container}>
+          <Notification
+            message={serverMessage} onClose={this.closeNotification}
+          />
+          <ScrollView style={styles.getStartedContainer}>
+            {phase === 'prep' &&
+              <View style={{ alignItems: 'center' }}>
+                <Button
+                  title="I'm ready!"
+                  style={styles.unSelectedButton}
+                  onPress={() => this.markAsReady()}
+                  disabled={clientPlayer.ready}
+                />
+                {serverMessage !== '' &&
+                  <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
+                }
+                <HomeScreen room={this.room} players={players} />
+                <RoleSelectionScreen room={this.room} />
+              </View>
+            }
+            {phase === 'nighttime' &&
+              <View>
+                <NightScreen
+                  players={players}
+                  player={clientPlayer}
+                  role={playerRole}
+                  messageForPlayer={serverMessage}
+                  centerRoles={centerRoles}
+                  markAsReady={this.nightCapReady}
+                />
+              </View>
+            }
+          </ScrollView>
+        </View>
+      );
+    }
   }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.werewolfBlue,
+    backgroundColor: NightTheme.darkBlue,
+  },
+  getStartedInputsText: {
+    fontSize: 24,
+    color: NightTheme.inputText,
+    // lineHeight: 24,
+    textAlign: 'center',
   },
 });

@@ -2,7 +2,7 @@ import * as React from 'react';
 import NavigationTestUtils from 'react-navigation/NavigationTestUtils';
 import renderer from 'react-test-renderer';
 
-import App from '../App';
+import AppExample from '../AppExample';
 
 jest.mock('expo', () => ({
   AppLoading: 'AppLoading',
@@ -10,7 +10,7 @@ jest.mock('expo', () => ({
 
 jest.mock('../navigation/AppNavigator', () => 'AppNavigator');
 
-describe('App', () => {
+describe('AppExample', () => {
   jest.useFakeTimers();
 
   beforeEach(() => {
@@ -18,12 +18,12 @@ describe('App', () => {
   });
 
   it(`renders the loading screen`, () => {
-    const tree = renderer.create(<App />).toJSON();
+    const tree = renderer.create(<AppExample />).toJSON();
     expect(tree).toMatchSnapshot();
   });
 
   it(`renders the root without loading screen`, () => {
-    const tree = renderer.create(<App skipLoadingScreen />).toJSON();
+    const tree = renderer.create(<AppExample skipLoadingScreen />).toJSON();
     expect(tree).toMatchSnapshot();
   });
 });

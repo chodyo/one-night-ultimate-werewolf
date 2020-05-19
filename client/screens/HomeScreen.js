@@ -1,27 +1,61 @@
 import * as React from 'react';
-import { Client, Room } from 'colyseus.js';
-import { Image, TextInput, Platform, StyleSheet, Text, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
-import Colors from "../constants/Colors";
+import { Button, TextInput, StyleSheet, Text, View } from 'react-native';
+import { NightTheme } from "../constants/Colors";
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-        <View style={styles.welcomeContainer}>
-          <Image
-            source={require('../assets/images/werewolf.png')}
-            style={styles.welcomeImage}
+export default class HomeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      playerId: '',
+      playerName: '',
+    };
+  }
+
+
+  setPlayerName = () => {
+    const { playerName } = this.state;
+
+    let request = {
+      action: 'setPlayerName',
+      params: { name: playerName },
+    };
+
+    this.props.room.send(request);
+
+    this.setState({ playerName: '' });
+  };
+
+  render() {
+    const { playerName } = this.state;
+    const { players } = this.props;
+
+    return (
+      <View style={styles.container}>
+        <View style={styles.getStartedContainer}>
+          <Text style={styles.getStartedText}>Enter player name:</Text>
+          <TextInput
+            placeholder="your name..."
+            style={styles.getStartedInputsBox}
+            onChangeText={text => this.setState({ playerName: text })}
+            value={playerName}
+          />
+          <Button
+            title="Submit"
+            color={NightTheme.buttonBackground}
+            onPress={() => this.setPlayerName()}
           />
         </View>
 
         <View style={styles.getStartedContainer}>
-          <Text style={styles.getStartedText}>Enter room code:</Text>
-          <TextInput />
+          <Text style={styles.getStartedText}>Players:</Text>
+          {players.map(player => (
+            <Text key={player.id} style={styles.getStartedInputsText}>{player.name ? player.name : '...'}</Text>
+          ))}
         </View>
-      </ScrollView>
-    </View>
-  );
+      </View>
+    );
+  }
 }
 
 HomeScreen.navigationOptions = {
@@ -31,10 +65,11 @@ HomeScreen.navigationOptions = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.werewolfBlue,
+    backgroundColor: NightTheme.darkBlue,
   },
   contentContainer: {
     paddingTop: 30,
+    alignItems: 'center',
   },
   welcomeContainer: {
     alignItems: 'center',
@@ -49,60 +84,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 50,
   },
-  homeScreenFilename: {
-    marginVertical: 7,
-  },
-  codeHighlightText: {
-    color: 'rgba(96,100,109, 0.8)',
-  },
-  codeHighlightContainer: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 3,
-    paddingHorizontal: 4,
-  },
   getStartedText: {
     fontSize: 30,
-    color: Colors.activeText,
+    color: NightTheme.activeText,
     // lineHeight: 24,
     textAlign: 'center',
   },
-  tabBarInfoContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 20,
-      },
-    }),
-    alignItems: 'center',
-    backgroundColor: '#fbfbfb',
-    paddingVertical: 20,
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
+  getStartedInputsBox: {
+    fontSize: 24,
+    color: NightTheme.inputText,
+    // lineHeight: 24,
     textAlign: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: NightTheme.inputText,
   },
-  navigationFilename: {
-    marginTop: 5,
-  },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: 'center',
-  },
-  helpLink: {
-    paddingVertical: 15,
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: '#2e78b7',
+  getStartedInputsText: {
+    fontSize: 24,
+    color: NightTheme.inputText,
+    // lineHeight: 24,
+    textAlign: 'center',
   },
 });

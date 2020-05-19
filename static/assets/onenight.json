@@ -1,6 +1,7 @@
 {
     "doppelganger": {
-        "description": "The Doppelganger is a fairly complicated card, becaue she takes on the role and team of whatever card she views. If you haven't played with most of the other roles yet, skip this role for now... it will make a lot more sense then. <br /> The Doppelganger wakes up before the other roles. She then looks at but does not switch one other player's card and does the following based on what she sees: <br /><em>Villager, Tanner, Hunter:</em> She is now that role and does nothing else at night. <br /><em>Werewolf or Mason:</em> She wakes up with the other Werewolves or Masons when they are called. She is on the werewolf team if she views a Werewolf, and is on the village team if she views a Mason.<br /><em>Seer, Robber, Troublemaker, Drunk:</em> She immediately does that role's action (she does not wake up again with the original role when it is called).<br /><em>Minion:</em> At the end of the Doppelganger phase, the Announcer tells the Doppelganger to close her eyes unless she is now the Minion, and that werewolves should put their thumbs up. She is on the werewolf team.<br /><em>Insomniac:</em> After the Insomniac, the Doppelganger-Insomniac is woken up to check her card to see if she is still the Doppelganger.<br />If a player receives the Doppelganger card during the night, she is the role the Doppelganger originally viewed. The Doppelganger's script at night is a little different than most, as she has to be told to look for werewolves if she is the Minion, and is woken up later at night if the Insomniac is present.",
+        "description": 
+        "The Doppelganger takes on the role and team of whatever card they view. If you haven't played with most of the other roles yet, skip this role for now.  The Doppelganger looks at another player's card and does the following based on what they see:  Villager, Tanner, Hunter: They are now that role and do not perform any night actions. Werewolf or Mason: The Doppelganger-Werewolf wakes up with the other Werewolves and is on the werewolf team; or the Doppelganger-Mason wakes up with the other Masons and is on the village team. Seer, Robber, Troublemaker, Drunk: They immediately perform that role's action. Minion: The Doppelganger-Minion sees who the Werewolves are. The Werewolves don't know who the Doppelganger-Minion is. If a Minion dies and no Werewolves die, the werewolf team wins. Insomniac: After the Insomniac looks at their role, the Doppelganger-Insomniac is woken up to check their card to see if they are still the Doppelganger.  If a player receives the Doppelganger card during the night, they are now the role the Doppelganger originally viewed.",
         "img": "assets/images/doppelganger.jpg",
         "imageCredit": "https://www.deviantart.com/kate-fox/art/Faceless-363889217",
         "imageToken": "assets/images/doppelganger-token.svg",
@@ -70,7 +71,7 @@
         "wakeOrder": 6
     },
     "seer": {
-        "description": "The Seer may look either at one other player's card or at two of the cetner cards.",
+        "description": "The Seer may look either at one other player's card or at two of the center cards.",
         "img": "assets/images/seer.jpg",
         "imageCredit": "https://www.deviantart.com/pin100/art/Seer-of-the-Dust-City-548571161",
         "imageToken": "assets/images/seer-token.svg",
