@@ -13,7 +13,7 @@ export const sortRolesByWakeOrder = (roles) => {
   })
 };
 
-export const makeSelection = (maxSelectable, selectionList, selectionLabel) => {
+export const updateSelections = (maxSelectable, selectionList, selectionLabel) => {
   if (!selectionList.includes(selectionLabel)) {
     selectionList.push(selectionLabel);
     if (selectionList.length > maxSelectable) {
@@ -22,8 +22,6 @@ export const makeSelection = (maxSelectable, selectionList, selectionLabel) => {
   } else {
     selectionList = selectionList.filter(selection => selection !== selectionLabel);
   }
-
-  this.setState({ finalAnswer: selectionList.length === maxSelectable });
 
   return selectionList;
 };

@@ -4,7 +4,7 @@ import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
-import { makeSelection } from "../assets/GameUtil";
+import { updateSelections } from "../assets/GameUtil";
 
 export default class NightScreen extends React.Component {
   constructor(props) {
@@ -91,10 +91,12 @@ export default class NightScreen extends React.Component {
 
     if (isPlayer) {
       selectedCards = [];
-      selectedPlayers = makeSelection(maxPlayers, selectedPlayers, selectionLabel);
+      selectedPlayers = updateSelections(maxPlayers, selectedPlayers, selectionLabel);
+      this.setState({ finalAnswer: selectedPlayers.length === maxPlayers });
     } else {
       selectedPlayers = [];
-      selectedCards = makeSelection(maxCenterCards, selectedCards, selectionLabel);
+      selectedCards = updateSelections(maxCenterCards, selectedCards, selectionLabel);
+      this.setState({ finalAnswer: selectedCards.length === maxCenterCards });
     }
 
     this.setState({ selectedCards, selectedPlayers });
