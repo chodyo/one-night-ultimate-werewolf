@@ -4,7 +4,7 @@ import { NightTheme } from '../constants/Colors';
 import RoleButton from "../components/RoleButton";
 import RoleGroup from "../components/RoleGroup";
 
-export default class RoleSelectionScreen extends React.Component {
+export default class RoleSelection extends React.Component {
   static propTypes = {};
 
   constructor(props) {
@@ -21,7 +21,7 @@ export default class RoleSelectionScreen extends React.Component {
   }
 
   async componentDidMount() {
-    console.debug('Loading RoleSelectionScreen');
+    console.debug('Loading RoleSelection');
     await this.start();
   }
 
@@ -135,7 +135,7 @@ export default class RoleSelectionScreen extends React.Component {
   }
 }
 
-RoleSelectionScreen.navigationOptions = {
+RoleSelection.navigationOptions = {
   header: null,
 };
 

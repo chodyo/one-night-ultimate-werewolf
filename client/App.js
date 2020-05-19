@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { NightTheme } from "./constants/Colors";
 import HomeScreen from "./screens/HomeScreen";
-import RoleSelectionScreen from "./screens/RoleSelectionScreen";
+import RoleSelection from "./screens/RoleSelection";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 
@@ -134,7 +134,7 @@ export default class App extends React.Component {
                   <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
                 }
                 <HomeScreen room={this.room} players={players} />
-                <RoleSelectionScreen room={this.room} />
+                <RoleSelection room={this.room} />
               </View>
             }
             {phase === 'nighttime' &&
