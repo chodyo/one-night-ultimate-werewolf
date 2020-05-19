@@ -9,6 +9,7 @@ import HomeScreen from "./screens/HomeScreen";
 import RoleSelectionScreen from "./screens/RoleSelectionScreen";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
+import DayScreen from "./screens/DayScreen";
 
 import Notification from "./components/Notification";
 
@@ -91,9 +92,23 @@ export default class App extends React.Component {
 
   nightCapReady = (selectedCards, selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is ready!`);
+    console.debug(`${players[sessionId].name} is voting!`);
+    
+    //Setting state here for now to render the screens
+    //Once this is functional on the server TODO: REMOVE
+    this.setState({ phase: 'daytime' });
+    // this.room.send({ action: 'ready' });
+  };
 
-    this.room.send({ action: 'ready' });
+  alarmClock = (selectedPlayers) => {
+    const { state: { players }, sessionId } = this.room;
+    console.debug(`${players[sessionId].name} voted!`);
+    
+    //Set state here for now to render the screens
+    //Once this is functional on the server TODO: REMOVE
+    this.setState({ phase: 'results' });
+    //Send the players VOTE to the server
+    // this.room.send({ action: 'ready' });
   };
 
   closeNotification = () => {
@@ -145,7 +160,27 @@ export default class App extends React.Component {
                   role={playerRole}
                   messageForPlayer={serverMessage}
                   centerRoles={centerRoles}
-                  markAsReady={this.nightCapReady}
+                  nightCapReady={this.nightCapReady}
+                />
+              </View>
+            }
+            {phase === 'daytime' &&
+              <View style={{ alignItems: 'center' }}>
+                <DayScreen
+                  phase={phase}
+                  players={players}
+                  player={clientPlayer}
+                  alarmClock={this.alarmClock}
+                />
+              </View>
+            }
+            {phase === 'results' &&
+              <View style={{ alignItems: 'center' }}>
+                <DayScreen
+                  phase={phase}
+                  players={players}
+                  player={clientPlayer}
+                  alarmClock={this.alarmClock}
                 />
               </View>
             }
@@ -165,6 +200,5 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: NightTheme.inputText,
     // lineHeight: 24,
-    textAlign: 'center',
   },
 });
