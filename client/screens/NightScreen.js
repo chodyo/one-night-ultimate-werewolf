@@ -4,6 +4,9 @@ import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
+import Modal from '@bit/nexxtway.react-rainbow.modal';
+import MasonSVG from '../../static/assets/images/mason-token.svg';
+import WerewolfSVG from '../../static/assets/images/werewolf-token.svg';
 
 export default class NightScreen extends React.Component {
   constructor(props) {
@@ -36,7 +39,18 @@ export default class NightScreen extends React.Component {
           name: 'seer',
         },
       ],
+      isOpen: false,
     };
+    this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleOnClose = this.handleOnClose.bind(this);
+  }
+
+  handleOnClick() {
+    return this.setState({ isOpen: true });
+  }
+
+  handleOnClose() {
+    return this.setState({ isOpen: false });
   }
 
   componentDidMount() {
@@ -51,12 +65,6 @@ export default class NightScreen extends React.Component {
     }
   }
 
-  minion() {
-    //display players that are werewolves
-  }
-  mason() {
-    //display player that is a masons
-  }
   insomniac() {
     //Funny message or sunsetting and rising till all night actions are completed.
     //display day - role
@@ -137,6 +145,41 @@ export default class NightScreen extends React.Component {
       //Display selected card
       <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
     );
+    const minion = (
+      //display players that are werewolves
+      <>
+        <Button
+          id="button-1"
+          title="Reveal werewolfs"
+          onPress={this.handleOnClick}
+        />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>The werewolves are:  </Text>
+          <img
+            src={WerewolfSVG}
+            alt="werewolves"
+          />
+        </Modal>
+      </>
+    );
+
+    const mason = (
+      //display player that is a masons
+      <>
+        <Button
+          id="button-1"
+          title="Reveal masons"
+          onPress={this.handleOnClick}
+        />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>The Other MASON is:  </Text>
+          <img
+            src={MasonSVG}
+            alt="mason"
+          />
+        </Modal>
+      </>
+    )
     const seer = (
       //display option to pick from player or look at 2 in the center
       //Send server which player or which center cards were selected
@@ -188,6 +231,8 @@ export default class NightScreen extends React.Component {
         </Text>
         {role.name === 'doppelganger' && doppelganger}
         {role.name === 'werewolf' && loneWolf && werewolf}
+        {role.name === 'minion' && minion}
+        {role.name === 'mason' && mason}
         {role.name === 'seer' && seer}
         {role.name === 'robber' && robber}
         {role.name === 'troublemaker' && troublemaker}

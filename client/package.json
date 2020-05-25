@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@bit/nexxtway.react-rainbow.modal": "^1.10.0",
     "babel-preset-expo": "~8.0.0",
     "jest-expo": "~36.0.1"
   },
