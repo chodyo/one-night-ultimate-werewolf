@@ -5,9 +5,6 @@ import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
 import Modal from '@bit/nexxtway.react-rainbow.modal';
-import MasonSVG from '../../static/assets/images/mason-token.svg';
-import WerewolfSVG from '../../static/assets/images/werewolf-token.svg';
-
 export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -40,6 +37,7 @@ export default class NightScreen extends React.Component {
         },
       ],
       isOpen: false,
+      initialmessage: null,
     };
     this.handleOnClick = this.handleOnClick.bind(this);
     this.handleOnClose = this.handleOnClose.bind(this);
@@ -54,12 +52,12 @@ export default class NightScreen extends React.Component {
   }
 
   componentDidMount() {
-    const { role } = this.props;
+    const { role, messageForPlayer } = this.props;
 
     try {
       const roles = require('../../static/assets/onenight.json');
       const { prompt, description } = roles[role.name];
-      this.setState({ rolePrompt: prompt, roleDescription: description });
+      this.setState({ rolePrompt: prompt, roleDescription: description, initialmessage: messageForPlayer });
     } catch (e) {
       console.error('Fucked in the night by:', e);
     }
@@ -126,7 +124,7 @@ export default class NightScreen extends React.Component {
 
   render() {
     const { players, player, role, nightCapReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub } = this.state;
+    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub, initialmessage } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
     const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
@@ -143,22 +141,20 @@ export default class NightScreen extends React.Component {
       //ELSE display cards in the center for picking 1 to look at
       //Send Server which center card was looked at
       //Display selected card
-      <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      <>
+        <Button title="Reveal wolfmate" onPress={this.handleOnClick} />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+        <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      </>
     );
     const minion = (
       //display players that are werewolves
       <>
-        <Button
-          id="button-1"
-          title="Reveal werewolfs"
-          onPress={this.handleOnClick}
-        />
+        <Button title="Reveal werewolfs" onPress={this.handleOnClick} />
         <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
-          <Text>The werewolves are:  </Text>
-          <img
-            src={WerewolfSVG}
-            alt="werewolves"
-          />
+          <Text>{initialmessage}</Text>
         </Modal>
       </>
     );
@@ -172,11 +168,7 @@ export default class NightScreen extends React.Component {
           onPress={this.handleOnClick}
         />
         <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
-          <Text>The Other MASON is:  </Text>
-          <img
-            src={MasonSVG}
-            alt="mason"
-          />
+          <Text>{initialmessage}</Text>
         </Modal>
       </>
     )
