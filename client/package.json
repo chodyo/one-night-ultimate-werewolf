@@ -39,6 +39,7 @@
     "@babel/core": "^7.0.0",
     "@bit/rivigo.ui.utils.iffun": "^0.0.6",
     "@material-ui/icons": "^4.9.1",
+    "@bit/nexxtway.react-rainbow.modal": "^1.10.0",
     "babel-preset-expo": "~8.0.0",
     "jest-expo": "~36.0.1"
   },

@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from '../constants/Colors';
 import RoleButton from "./RoleButton";
 import RoleGroup from "./RoleGroup";
+import { sortRolesByWakeOrder } from "../assets/GameUtil";
 
 export default class RoleSelection extends React.Component {
   static propTypes = {};
@@ -76,31 +77,16 @@ export default class RoleSelection extends React.Component {
     }
 
     this.setState({
-      roles: this.sortRolesByWakeOrder(roles),
+      roles: sortRolesByWakeOrder(roles),
       duplicateRoles: {
         werewolf: werewolfRoles,
         mason: masonRoles,
         villager: villagerRoles
       },
-      wakingRoles: this.sortRolesByWakeOrder(wakingRoles),
+      wakingRoles: sortRolesByWakeOrder(wakingRoles),
       nooners
     });
   };
-
-  sortRolesByWakeOrder(roles) {
-    return roles.sort((a, b) => {
-      a = a.wakeOrder;
-      b = b.wakeOrder;
-
-      if (a === -1 && b === -1) return 0;
-      else if (a === -1) return 1;
-      else if (b === -1) return -1;
-
-      if (a === b) return 0;
-      else if (a > b) return 1;
-      else return -1;
-    })
-  }
 
   activateRole = (roleID) => {
     //These are the roles selected to play

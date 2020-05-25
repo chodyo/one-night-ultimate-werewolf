@@ -4,15 +4,12 @@ import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
+import Modal from '@bit/nexxtway.react-rainbow.modal';
+import { updateSelections } from "../assets/GameUtil";
 
 export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
-
-    let finalAnswer = true;
-    if (props.role.name === 'doppelganger' || props.role.name === 'drunk') {
-      finalAnswer = false;
-    }
 
     this.state = {
       rolePrompt: '',
@@ -21,7 +18,8 @@ export default class NightScreen extends React.Component {
       selectedCards: [],
       selectedPlayers: [],
       // whether the player has made appropriate selections for their night action
-      finalAnswer,
+      actionRequiredRoleDefault: true,
+      actionRequired: true,
       centerRolesStub: [
         {
           label: 'center1',
@@ -36,27 +34,40 @@ export default class NightScreen extends React.Component {
           name: 'seer',
         },
       ],
+      isOpen: false,
+      initialmessage: null,
     };
+
+    this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleOnClose = this.handleOnClose.bind(this);
+  }
+
+  handleOnClick() {
+    return this.setState({ isOpen: true });
+  }
+
+  handleOnClose() {
+    return this.setState({ isOpen: false });
   }
 
   componentDidMount() {
-    const { role } = this.props;
+    const { role, messageForPlayer } = this.props;
 
     try {
       const roles = require('../../static/assets/onenight.json');
-      const { prompt, description } = roles[role.name];
-      this.setState({ rolePrompt: prompt, roleDescription: description });
+      const { prompt, description, nightActionRequired } = roles[role.name];
+      this.setState({
+        rolePrompt: prompt,
+        roleDescription: description,
+        actionRequiredRoleDefault: nightActionRequired,
+        actionRequired: nightActionRequired,
+        initialmessage: messageForPlayer,
+      });
     } catch (e) {
       console.error('Fucked in the night by:', e);
     }
   }
 
-  minion() {
-    //display players that are werewolves
-  }
-  mason() {
-    //display player that is a masons
-  }
   insomniac() {
     //Funny message or sunsetting and rising till all night actions are completed.
     //display day - role
@@ -88,37 +99,40 @@ export default class NightScreen extends React.Component {
         break;
     }
 
+    let actionRequired;
     if (isPlayer) {
       selectedCards = [];
-      selectedPlayers = this.setSelection(maxPlayers, selectedPlayers, selectionLabel);
+      selectedPlayers = updateSelections(maxPlayers, selectedPlayers, selectionLabel);
+      actionRequired = this.isActionRequired(maxPlayers, selectedPlayers);
     } else {
       selectedPlayers = [];
-      selectedCards = this.setSelection(maxCenterCards, selectedCards, selectionLabel);
+      selectedCards = updateSelections(maxCenterCards, selectedCards, selectionLabel);
+      actionRequired = this.isActionRequired(maxCenterCards, selectedCards);
     }
 
-    this.setState({ selectedCards, selectedPlayers });
+    this.setState({ selectedCards, selectedPlayers, actionRequired });
   };
 
-  setSelection(maxSelectable, selectionList, selectionLabel) {
-    if (!selectionList.includes(selectionLabel)) {
-      selectionList.push(selectionLabel);
-      if (selectionList.length > maxSelectable) {
-        selectionList = selectionList.filter(selection => selection === selectionLabel);
-      }
+  isActionRequired(maxSelectable, selectionList) {
+    const selections = selectionList.length;
+    if (selections > 0) {
+      console.debug("Is action required? " + this.state.actionRequired);
+      console.debug("Selections are " + selections);
+      console.debug("Maximum selections can be " + maxSelectable);
+      return selections !== maxSelectable;
     } else {
-      selectionList = selectionList.filter(selection => selection !== selectionLabel);
+      console.debug("Else: Is action required? " + this.state.actionRequired);
+      console.debug("Else: Selections are " + selections);
+      console.debug("Else: Maximum selections can be " + maxSelectable);
+      return this.state.actionRequiredRoleDefault;
     }
-
-    this.setState({ finalAnswer: selectionList.length === maxSelectable });
-
-    return selectionList;
   }
 
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { players, player, role, nightCapReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub } = this.state;
+    const { players, player, role, handleNightAction, messageForPlayer } = this.props;
+    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, actionRequired, centerRolesStub, initialmessage } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
     const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
@@ -135,8 +149,37 @@ export default class NightScreen extends React.Component {
       //ELSE display cards in the center for picking 1 to look at
       //Send Server which center card was looked at
       //Display selected card
-      <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      <>
+        <Button title="Reveal wolfmate" onPress={this.handleOnClick} />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+        <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      </>
     );
+    const minion = (
+      //display players that are werewolves
+      <>
+        <Button title="Reveal werewolfs" onPress={this.handleOnClick} />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+      </>
+    );
+
+    const mason = (
+      //display player that is a masons
+      <>
+        <Button
+          id="button-1"
+          title="Reveal masons"
+          onPress={this.handleOnClick}
+        />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+      </>
+    )
     const seer = (
       //display option to pick from player or look at 2 in the center
       //Send server which player or which center cards were selected
@@ -172,8 +215,8 @@ export default class NightScreen extends React.Component {
         <Button
           title="Ready"
           style={styles.unSelectedButton}
-          onPress={() => nightCapReady(selectedCards, selectedPlayers)}
-          disabled={!finalAnswer}
+          onPress={() => handleNightAction(selectedCards, selectedPlayers)}
+          disabled={actionRequired}
         />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
@@ -188,6 +231,8 @@ export default class NightScreen extends React.Component {
         </Text>
         {role.name === 'doppelganger' && doppelganger}
         {role.name === 'werewolf' && loneWolf && werewolf}
+        {role.name === 'minion' && minion}
+        {role.name === 'mason' && mason}
         {role.name === 'seer' && seer}
         {role.name === 'robber' && robber}
         {role.name === 'troublemaker' && troublemaker}
