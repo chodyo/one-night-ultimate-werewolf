@@ -49,7 +49,7 @@ export default class RolePanel extends React.Component {
     render() {
         const { title, expanded, animation } = this.state;
 
-        let icon = expanded ?  <ArrowDownwardIcon /> : <ArrowUpwardIcon />;
+        let icon = expanded ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />;
 
         //Step 5
         return (

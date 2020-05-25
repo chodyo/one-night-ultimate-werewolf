@@ -13,8 +13,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "~10.0.0",
-    "@material-ui/core": "^4.9.12",
-    "@material-ui/icons": "^4.9.1",
+    "@material-ui/core": "^4.10.0",
     "@react-native-community/masked-view": "0.1.5",
     "@react-navigation/bottom-tabs": "^5.0.0",
     "@react-navigation/native": "^5.0.0",
@@ -38,6 +37,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@bit/rivigo.ui.utils.iffun": "^0.0.6",
+    "@material-ui/icons": "^4.9.1",
     "babel-preset-expo": "~8.0.0",
     "jest-expo": "~36.0.1"
   },

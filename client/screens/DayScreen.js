@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from "../constants/Colors";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
+import CountDownTimer from '../components/CountDownTimer';
 
 export default class DayScreen extends React.Component {
   constructor(props) {
@@ -42,7 +43,7 @@ export default class DayScreen extends React.Component {
     const selectablePlayers = players.filter(p => p.id !== player.id);
 
     const vote = (
-      //Display the list of players to vote for.
+      //Display the list of players to vote for ONCE ALL PLAYERS ARE READY
       <>
         <Button
           title="Vote Now"
@@ -52,6 +53,12 @@ export default class DayScreen extends React.Component {
             alarmClock(selectedPlayers);
           }}
         />
+        <CountDownTimer
+          style={styles.activeText}
+          firstText='You have '
+          secondText=' seconds to vote.'
+          time={60}
+         />
         <PlayerSelectionAction
           players={selectablePlayers}
           onSelection={this.makeSelection}
