@@ -196,7 +196,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
     backgroundColor: NightTheme.darkBlue,
-    color: NightTheme.activeText,
   },
   getStartedText: {
     fontSize: 30,

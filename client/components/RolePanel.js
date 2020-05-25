@@ -62,7 +62,6 @@ export default class RolePanel extends React.Component {
                             key="expand"
                             aria-label="expand"
                             color="primary"
-                            className={styles.expand}
                             onClick={this.toggle.bind(this)}
                         >
                             {icon}
