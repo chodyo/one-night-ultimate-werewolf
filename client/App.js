@@ -31,6 +31,7 @@ export default class App extends React.Component {
       roles: [],
       serverMessage: '',
       centerRoles: null,
+      results: '',
     };
   }
 
@@ -90,23 +91,37 @@ export default class App extends React.Component {
     this.room.send({ action: 'ready' });
   };
 
-  nightCapReady = (selectedCards, selectedPlayers) => {
+  handleNightAction = (selectedCards, selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
     console.debug(`${players[sessionId].name} is voting!`);
-    
+
+    this.room.send({
+      action: 'updateNightChoices',
+      params: {
+        selectedCards: selectedCards,
+        selectedPlayers: selectedPlayers,
+      },
+    });
+
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
     this.setState({ phase: 'daytime' });
-    // this.room.send({ action: 'ready' });
   };
 
-  alarmClock = (selectedPlayers) => {
+  handleVoteAction = (selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
     console.debug(`${players[sessionId].name} voted!`);
-    
+
+    this.room.send({
+      action: 'updateVoteChoices',
+      params: {
+        selectedPlayers: selectedPlayers,
+      },
+    });
+
     //Set state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
-    this.setState({ phase: 'results' });
+    this.setState({ results: selectedPlayers[0] });
     //Send the players VOTE to the server
     // this.room.send({ action: 'ready' });
   };
@@ -123,7 +138,8 @@ export default class App extends React.Component {
       clientPlayer,
       playerRole,
       serverMessage,
-      centerRoles
+      centerRoles,
+      results,
     } = this.state;
 
     let message = serverMessage;
@@ -160,27 +176,17 @@ export default class App extends React.Component {
                   role={playerRole}
                   messageForPlayer={serverMessage}
                   centerRoles={centerRoles}
-                  nightCapReady={this.nightCapReady}
+                  handleNightAction={this.handleNightAction}
                 />
               </View>
             }
             {phase === 'daytime' &&
               <View style={{ alignItems: 'center' }}>
                 <DayScreen
-                  phase={phase}
                   players={players}
                   player={clientPlayer}
-                  alarmClock={this.alarmClock}
-                />
-              </View>
-            }
-            {phase === 'results' &&
-              <View style={{ alignItems: 'center' }}>
-                <DayScreen
-                  phase={phase}
-                  players={players}
-                  player={clientPlayer}
-                  alarmClock={this.alarmClock}
+                  handleVoteAction={this.handleVoteAction}
+                  results={results}
                 />
               </View>
             }
