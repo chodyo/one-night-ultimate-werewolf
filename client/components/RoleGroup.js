@@ -5,7 +5,7 @@ import RoleButton from './RoleButton';
 
 const RoleGroup = ({ roles, onActivateRole }) => (
   <View style={{ flex: 1, flexDirection: 'row' }}>
-    {roles.map(role => <RoleButton key={role.id} role={role} onActivateRole={onActivateRole} />)}
+    {roles.map(role => <RoleButton key={role.roleID} role={role} onActivateRole={onActivateRole} />)}
   </View>
 );
 

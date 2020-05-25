@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from '../constants/Colors';
-import RoleButton from "../components/RoleButton";
-import RoleGroup from "../components/RoleGroup";
+import RoleButton from "./RoleButton";
+import RoleGroup from "./RoleGroup";
 
-export default class RoleSelectionScreen extends React.Component {
+export default class RoleSelection extends React.Component {
   static propTypes = {};
 
   constructor(props) {
@@ -17,11 +17,13 @@ export default class RoleSelectionScreen extends React.Component {
         mason: [],
         villager: [],
       },
+      wakingRoles: [],
+      nooners: [],
     };
   }
 
   async componentDidMount() {
-    console.debug('Loading RoleSelectionScreen');
+    console.debug('Loading RoleSelection');
     await this.start();
   }
 
@@ -41,28 +43,52 @@ export default class RoleSelectionScreen extends React.Component {
     let roles = [];
     let werewolfRoles = [];
     let masonRoles = [];
-    // let wakingRoles = [];
+    let wakingRoles = [];
     let villagerRoles = [];
+    let nooners = [];
     for (let id in gameRoles) {
       let role = gameRoles[id];
 
-      if (role.name === 'werewolf') {
-        werewolfRoles.push({ id, ...role });
-      }
-      if (role.name === 'mason') {
-        masonRoles.push({ id, ...role });
-      }
-      // if (role.name === 'seer' || role.name === 'robber' || role.name === 'troublemaker' || role.name === 'drunk') {
-      //   wakingRoles.push({ id, ...role });
-      // }
-      if (role.name === 'villager') {
-        villagerRoles.push({ id, ...role });
+      switch (role.name) {
+        case 'werewolf':
+          werewolfRoles.push(role);
+          break;
+        case 'mason':
+          masonRoles.push(role);
+          break;
+        case 'seer':
+        case 'robber':
+        case 'troublemaker':
+        case 'drunk':
+          wakingRoles.push(role);
+          break;
+        case 'insomniac':
+        case 'hunter':
+        case 'tanner':
+          nooners.push(role);
+          break;
+        case 'villager':
+          villagerRoles.push(role);
+          break;
       }
 
-      roles.push({ id, ...role });
+      roles.push(role);
     }
 
-    roles.sort((a, b) => {
+    this.setState({
+      roles: this.sortRolesByWakeOrder(roles),
+      duplicateRoles: {
+        werewolf: werewolfRoles,
+        mason: masonRoles,
+        villager: villagerRoles
+      },
+      wakingRoles: this.sortRolesByWakeOrder(wakingRoles),
+      nooners
+    });
+  };
+
+  sortRolesByWakeOrder(roles) {
+    return roles.sort((a, b) => {
       a = a.wakeOrder;
       b = b.wakeOrder;
 
@@ -73,17 +99,8 @@ export default class RoleSelectionScreen extends React.Component {
       if (a === b) return 0;
       else if (a > b) return 1;
       else return -1;
-    });
-
-    this.setState({
-      roles,
-      duplicateRoles: {
-        werewolf: werewolfRoles,
-        mason: masonRoles,
-        villager: villagerRoles
-      },
-    });
-  };
+    })
+  }
 
   activateRole = (roleID) => {
     //These are the roles selected to play
@@ -113,7 +130,7 @@ export default class RoleSelectionScreen extends React.Component {
   };
 
   render() {
-    const { roles, duplicateRoles } = this.state;
+    const { roles, duplicateRoles, wakingRoles, nooners } = this.state;
 
     return (
       <View style={{ alignItems: 'center' }}>
@@ -122,12 +139,18 @@ export default class RoleSelectionScreen extends React.Component {
         </Text>
         {roles.map(role => {
           if (Object.keys(duplicateRoles).includes(role.name)) {
-            if (role.id.endsWith('0')) {
+            if (role.roleID.endsWith('0')) {
               return <RoleGroup key={role.name} roles={duplicateRoles[role.name]}
                 onActivateRole={this.activateRole} />
             }
           } else {
-            return <RoleButton key={role.id} role={role} onActivateRole={this.activateRole} />
+            if ('doppelganger' === role.name || 'minion' === role.name) {
+              return <RoleButton key={role.roleID} role={role} onActivateRole={this.activateRole} />
+            } else if ('seer' === role.name) {
+              return <RoleGroup key="wakingRoles" roles={wakingRoles} onActivateRole={this.activateRole} />
+            } else if ('insomniac' === role.name) {
+              return <RoleGroup key="nooners" roles={nooners} onActivateRole={this.activateRole} />
+            }
           }
         })}
       </View>
@@ -135,7 +158,7 @@ export default class RoleSelectionScreen extends React.Component {
   }
 }
 
-RoleSelectionScreen.navigationOptions = {
+RoleSelection.navigationOptions = {
   header: null,
 };
 
