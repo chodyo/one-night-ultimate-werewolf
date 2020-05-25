@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from "../constants/Colors";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
+import { updateSelections } from "../assets/GameUtil";
 
 export default class DayScreen extends React.Component {
   constructor(props) {
@@ -15,25 +16,10 @@ export default class DayScreen extends React.Component {
   makeSelection = (selectionLabel) => {
     let { selectedPlayers } = this.state;
 
-    selectedPlayers = this.setSelection(1, selectedPlayers, selectionLabel);
+    selectedPlayers = updateSelections(1, selectedPlayers, selectionLabel);
 
     this.setState({ selectedPlayers });
   };
-
-  setSelection(maxSelectable, selectionList, selectionLabel) {
-    if (!selectionList.includes(selectionLabel)) {
-      selectionList.push(selectionLabel);
-      if (selectionList.length > maxSelectable) {
-        selectionList = selectionList.filter(selection => selection === selectionLabel);
-      }
-    } else {
-      selectionList = selectionList.filter(selection => selection !== selectionLabel);
-    }
-
-    this.setState({ finalAnswer: selectionList.length === maxSelectable });
-
-    return selectionList;
-  }
 
   render() {
     const { players, player, handleVoteAction, results } = this.props;
