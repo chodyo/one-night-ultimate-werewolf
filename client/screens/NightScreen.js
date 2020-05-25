@@ -4,7 +4,7 @@ import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
 import CenterCards from "../components/CenterCards";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
-
+import Modal from '@bit/nexxtway.react-rainbow.modal';
 export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -36,27 +36,33 @@ export default class NightScreen extends React.Component {
           name: 'seer',
         },
       ],
+      isOpen: false,
+      initialmessage: null,
     };
+    this.handleOnClick = this.handleOnClick.bind(this);
+    this.handleOnClose = this.handleOnClose.bind(this);
+  }
+
+  handleOnClick() {
+    return this.setState({ isOpen: true });
+  }
+
+  handleOnClose() {
+    return this.setState({ isOpen: false });
   }
 
   componentDidMount() {
-    const { role } = this.props;
+    const { role, messageForPlayer } = this.props;
 
     try {
       const roles = require('../../static/assets/onenight.json');
       const { prompt, description } = roles[role.name];
-      this.setState({ rolePrompt: prompt, roleDescription: description });
+      this.setState({ rolePrompt: prompt, roleDescription: description, initialmessage: messageForPlayer });
     } catch (e) {
       console.error('Fucked in the night by:', e);
     }
   }
 
-  minion() {
-    //display players that are werewolves
-  }
-  mason() {
-    //display player that is a masons
-  }
   insomniac() {
     //Funny message or sunsetting and rising till all night actions are completed.
     //display day - role
@@ -118,7 +124,7 @@ export default class NightScreen extends React.Component {
 
   render() {
     const { players, player, role, nightCapReady, messageForPlayer, centerRoles } = this.props;
-    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub } = this.state;
+    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, finalAnswer, centerRolesStub, initialmessage } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
     const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
@@ -135,8 +141,37 @@ export default class NightScreen extends React.Component {
       //ELSE display cards in the center for picking 1 to look at
       //Send Server which center card was looked at
       //Display selected card
-      <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      <>
+        <Button title="Reveal wolfmate" onPress={this.handleOnClick} />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+        <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
+      </>
     );
+    const minion = (
+      //display players that are werewolves
+      <>
+        <Button title="Reveal werewolfs" onPress={this.handleOnClick} />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+      </>
+    );
+
+    const mason = (
+      //display player that is a masons
+      <>
+        <Button
+          id="button-1"
+          title="Reveal masons"
+          onPress={this.handleOnClick}
+        />
+        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
+          <Text>{initialmessage}</Text>
+        </Modal>
+      </>
+    )
     const seer = (
       //display option to pick from player or look at 2 in the center
       //Send server which player or which center cards were selected
@@ -188,6 +223,8 @@ export default class NightScreen extends React.Component {
         </Text>
         {role.name === 'doppelganger' && doppelganger}
         {role.name === 'werewolf' && loneWolf && werewolf}
+        {role.name === 'minion' && minion}
+        {role.name === 'mason' && mason}
         {role.name === 'seer' && seer}
         {role.name === 'robber' && robber}
         {role.name === 'troublemaker' && troublemaker}
