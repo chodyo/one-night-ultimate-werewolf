@@ -37,6 +37,7 @@ export default class NightScreen extends React.Component {
       isOpen: false,
       initialmessage: null,
     };
+
     this.handleOnClick = this.handleOnClick.bind(this);
     this.handleOnClose = this.handleOnClose.bind(this);
   }
@@ -130,7 +131,7 @@ export default class NightScreen extends React.Component {
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { players, player, role, nightCapReady, messageForPlayer } = this.props;
+    const { players, player, role, handleNightAction, messageForPlayer } = this.props;
     const { rolePrompt, roleDescription, selectedCards, selectedPlayers, actionRequired, centerRolesStub, initialmessage } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
@@ -214,7 +215,7 @@ export default class NightScreen extends React.Component {
         <Button
           title="Ready"
           style={styles.unSelectedButton}
-          onPress={() => nightCapReady(selectedCards, selectedPlayers)}
+          onPress={() => handleNightAction(selectedCards, selectedPlayers)}
           disabled={actionRequired}
         />
         <Text style={styles.getStartedText}>

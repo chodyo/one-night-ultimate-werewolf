@@ -36,8 +36,8 @@ export default class DayScreen extends React.Component {
   }
 
   render() {
-    const { phase, players, player, alarmClock } = this.props
-    const { selectedPlayers } = this.state
+    const { players, player, handleVoteAction, results } = this.props;
+    const { selectedPlayers } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
 
@@ -49,30 +49,29 @@ export default class DayScreen extends React.Component {
           style={styles.unSelectedButton}
           onPress={() => {
             console.debug(`You voted to kill: ${selectedPlayers}`);
-            alarmClock(selectedPlayers);
+            handleVoteAction(selectedPlayers);
           }}
         />
         <PlayerSelectionAction
           players={selectablePlayers}
           onSelection={this.makeSelection}
-          selected={selectedPlayers} />
+          selected={selectedPlayers}
+        />
       </>
     );
 
-    const results = (
-      //Display the results
-      //Who voted(killed) who
-      //Player's starting:ending role
-      //Winning Team
-      <>
-        <Text style={styles.getStartedText}> TODO Results: [Player-starting role, ending role]</Text>
-      </>
-    );
-
+    //Display results if server has updated them
+    //Who voted(killed) who
+    //Player's starting:ending role
+    //Winning Team
+    //<Text style={styles.getStartedText}> TODO Results: [Player-starting role, ending role]</Text>
     return (
       <View>
-        {phase === 'daytime' && vote}
-        {phase === 'results' && results}
+        {results !== '' ? (
+          <Text style={styles.getStartedText}>Results: {results} was killed!</Text>
+        ) : (
+          vote
+        )}
       </View>
     );
   }
