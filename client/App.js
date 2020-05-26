@@ -80,14 +80,17 @@ export default class App extends React.Component {
 
   markAsReady = () => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is ready!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
+    console.debug(`${playerName} is ready!`);
 
     this.room.send({ action: 'ready' });
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is voting!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
+
+    console.debug(`${playerName} is voting!`);
 
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
@@ -96,12 +99,14 @@ export default class App extends React.Component {
 
   handleVoteAction = (selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} voted!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
+
+    console.debug(`${playerName} voted for ${selectedPlayers[0]}`);
 
     //Set state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
-    this.setState({ phase: 'results' });
-    this.room.send({ action: 'ready' });
+    // this.setState({ phase: 'results' });
+    // this.room.send({ action: 'updateVoteSelection' });
 
     //Send the players VOTE to the server
     // this.room.send({ action: 'ready' });

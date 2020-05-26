@@ -11,6 +11,7 @@ export default class DayScreen extends React.Component {
 
     this.state = {
       selectedPlayers: [],
+      buttonText: 'Vote Now'
     };
   }
 
@@ -22,9 +23,13 @@ export default class DayScreen extends React.Component {
     this.setState({ selectedPlayers });
   };
 
+  updateButtonText = () => {
+    this.setState({ buttonText: 'Time is up!' });
+  }
+
   render() {
     const { players, player, handleVoteAction, results } = this.props;
-    const { selectedPlayers } = this.state;
+    const { selectedPlayers, buttonText } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
 
@@ -32,7 +37,7 @@ export default class DayScreen extends React.Component {
       //Display the list of players to vote for ONCE ALL PLAYERS ARE READY
       <>
         <Button
-          title="Vote Now"
+          title={buttonText}
           style={styles.unSelectedButton}
           onPress={() => {
             console.debug(`You voted to kill: ${selectedPlayers}`);
@@ -43,8 +48,9 @@ export default class DayScreen extends React.Component {
           style={styles.activeText}
           firstText='You have '
           secondText=' seconds to vote.'
-          time={60}
-         />
+          time={6}
+          timeIsOver={() => handleVoteAction(selectedPlayers)}
+        />
         <PlayerSelectionAction
           players={selectablePlayers}
           onSelection={this.makeSelection}
@@ -63,8 +69,8 @@ export default class DayScreen extends React.Component {
         {results !== '' ? (
           <Text style={styles.getStartedText}>Results: {results} was killed!</Text>
         ) : (
-          vote
-        )}
+            vote
+          )}
       </View>
     );
   }
