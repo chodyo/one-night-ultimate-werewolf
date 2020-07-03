@@ -18,14 +18,14 @@ export default class DayScreen extends React.Component {
   makeSelection = (selectionLabel) => {
     let { selectedPlayers } = this.state;
 
-    selectedPlayers = updateSelections(1, this.state.selectedPlayers, selectionLabel);
+    selectedPlayers = updateSelections(1, selectedPlayers, selectionLabel);
 
     this.setState({ selectedPlayers });
   };
 
   updateButtonText = () => {
     this.setState({ buttonText: 'Time is up!' });
-  }
+  };
 
   render() {
     const { players, player, handleVoteAction, results } = this.props;

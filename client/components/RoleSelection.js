@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from '../constants/Colors';
 import RoleButton from "./RoleButton";
 import RoleGroup from "./RoleGroup";
-import { sortRolesByWakeOrder } from "../assets/GameUtil";
 
 export default class RoleSelection extends React.Component {
   static propTypes = {};
@@ -13,6 +12,7 @@ export default class RoleSelection extends React.Component {
 
     const { roles } = this.props;
 
+    // Group and sort roles for display
     let werewolfRoles = [];
     let masonRoles = [];
     let wakingRoles = [];

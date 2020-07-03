@@ -133,16 +133,13 @@ export default class App extends React.Component {
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
-    const { state: { players }, sessionId } = this.room;
-    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
-
-    this.room.send({
-      action: 'updateNightChoices',
-      params: {
-        selectedCards: selectedCards,
-        selectedPlayers: selectedPlayers,
-      },
-    });
+    // this.room.send({
+    //   action: 'updateNightChoices',
+    //   params: {
+    //     selectedCards: selectedCards,
+    //     selectedPlayers: selectedPlayers,
+    //   },
+    // });
 
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
@@ -150,9 +147,6 @@ export default class App extends React.Component {
   };
 
   handleVoteAction = (selectedPlayers) => {
-    const { state: { players }, sessionId } = this.room;
-    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
-
     this.room.send({
       action: 'updateVoteChoices',
       params: {
@@ -207,9 +201,6 @@ export default class App extends React.Component {
                   // disabled if there aren't exactly 3 more roles than players in game
                   disabled={requiredRoles !== activeRoles.length || clientPlayer.ready}
                 />
-                {serverMessage !== '' &&
-                  <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
-                }
                 <HomeScreen room={this.room} players={players} />
                 <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice}/>
               </View>

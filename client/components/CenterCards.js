@@ -8,18 +8,18 @@ const CenterCards = ({ centerRoles, onSelection, selected }) => (
   <View style={styles.container}>
     {centerRoles.map(centerRole => (
       <TouchableOpacity
-        key={centerRole.label}
-        style={selected.includes(centerRole.label) ? styles.cardSelected : styles.card}
-        onPress={() => onSelection(centerRole.label, false)}
+        key={centerRole}
+        style={selected.includes(centerRole) ? styles.cardSelected : styles.card}
+        onPress={() => onSelection(centerRole, false)}
       >
-        <Text style={styles.optionText}>{centerRole.label}</Text>
+        <Text style={styles.optionText}>{centerRole}</Text>
       </TouchableOpacity>
     ))}
   </View>
 );
 
 CenterCards.propTypes = {
-  centerRoles: PropTypes.arrayOf(PropTypes.object).isRequired,
+  centerRoles: PropTypes.arrayOf(PropTypes.string).isRequired,
   onSelection: PropTypes.func.isRequired,
   selected: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
