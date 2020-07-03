@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Button, StyleSheet, View, Text } from 'react-native';
 import { Client } from 'colyseus.js';
 import * as Font from 'expo-font';
-import { Ionicons } from '@expo/vector-icons';
 
 import { NightTheme } from "./constants/Colors";
 import HomeScreen from "./screens/HomeScreen";
@@ -11,7 +10,6 @@ import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 import DayScreen from "./screens/DayScreen";
 
-import Notification from "./components/Notification";
 
 export default class App extends React.Component {
   constructor(props) {
@@ -38,18 +36,13 @@ export default class App extends React.Component {
   async componentDidMount() {
     try {
       await Font.loadAsync({
-        ...Ionicons.font,
-        'space-mono': require('./assets/fonts/SpaceMono-Regular.ttf'),
-
-      });
-      await Font.loadAsync({
         'werewolf': require('./assets/fonts/Werewolf.ttf'),
       });
 
       this.room = await this.client.joinOrCreate('my_room');
       this.room.onStateChange(() => this.loadState());
       await this.handleMessage();
-      this.room.onMessage(whatever => console.debug('some message from client:', whatever));
+      this.room.onMessage(whatever => console.debug('Message for client:', whatever));
     } catch (e) {
       console.error('Fucked in the App by:', e);
     } finally {
@@ -77,6 +70,7 @@ export default class App extends React.Component {
     this.setState({ phase, clientPlayer, playerRole, players: playersArray, centerRoles });
   };
 
+
   handleMessage = async () => {
     await this.room.onMessage((message) => {
       this.setState({ serverMessage: message.message });
@@ -86,22 +80,17 @@ export default class App extends React.Component {
 
   markAsReady = () => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is ready!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
+    console.debug(`${playerName} is ready!`);
 
     this.room.send({ action: 'ready' });
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} is voting!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
 
-    this.room.send({
-      action: 'updateNightChoices',
-      params: {
-        selectedCards: selectedCards,
-        selectedPlayers: selectedPlayers,
-      },
-    });
+    console.debug(`${playerName} is voting!`);
 
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
@@ -110,24 +99,17 @@ export default class App extends React.Component {
 
   handleVoteAction = (selectedPlayers) => {
     const { state: { players }, sessionId } = this.room;
-    console.debug(`${players[sessionId].name} voted!`);
+    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
 
-    this.room.send({
-      action: 'updateVoteChoices',
-      params: {
-        selectedPlayers: selectedPlayers,
-      },
-    });
+    console.debug(`${playerName} voted for ${selectedPlayers[0]}`);
 
     //Set state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
-    this.setState({ results: selectedPlayers[0] });
+    // this.setState({ phase: 'results' });
+    // this.room.send({ action: 'updateVoteSelection' });
+
     //Send the players VOTE to the server
     // this.room.send({ action: 'ready' });
-  };
-
-  closeNotification = () => {
-    this.setState({ serverMessage: '' });
   };
 
   render() {
@@ -149,9 +131,6 @@ export default class App extends React.Component {
     } else {
       return (
         <View style={styles.container}>
-          <Notification
-            message={serverMessage} onClose={this.closeNotification}
-          />
           <ScrollView style={styles.getStartedContainer}>
             {phase === 'prep' &&
               <View style={{ alignItems: 'center' }}>
@@ -205,6 +184,5 @@ const styles = StyleSheet.create({
   getStartedInputsText: {
     fontSize: 24,
     color: NightTheme.inputText,
-    // lineHeight: 24,
   },
 });
