@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, View, Image, TouchableHighlight, Animated } from 'react-native'; //Step 1
+import { StyleSheet, Text, View, Animated } from 'react-native'; //Step 1
 import IconButton from '@material-ui/core/IconButton'
 import ArrowUpwardIcon from '@material-ui/icons/KeyboardArrowUp'
 import ArrowDownwardIcon from '@material-ui/icons/KeyboardArrowDown'

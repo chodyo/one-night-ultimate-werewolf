@@ -2,24 +2,33 @@ import * as React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from "../constants/Colors";
 import RolePanel from "../components/RolePanel";
-import CenterCards from "../components/CenterCards";
-import PlayerSelectionAction from '../components/PlayerSelectionAction';
-import Modal from '@bit/nexxtway.react-rainbow.modal';
 import { updateSelections } from "../assets/GameUtil";
-import {SelectionAction} from "../components/SelectionAction";
+import Peek from "../components/Peek";
+import SelectionAction from "../components/SelectionAction";
 
 export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
 
+    const { players, player, role } = props;
     let maxPlayers = 0;
     let maxCenterCards = 0;
-    switch (props.role.name) {
+    let peekable = false;
+    let peekTitle = 'Reveal ';
+
+    const lonewolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
+
+    switch (role.name) {
       case 'doppelganger':
         maxPlayers = 1;
         break;
       case 'werewolf':
-        maxCenterCards = 1;
+        if (lonewolf) {
+          maxCenterCards = 1;
+        } else {
+          peekable = true;
+          peekTitle += 'Wolfmates';
+        }
         break;
       case 'seer':
         maxCenterCards = 2;
@@ -34,38 +43,49 @@ export default class NightScreen extends React.Component {
       case 'drunk':
         maxCenterCards = 1;
         break;
+      case 'minion':
+        peekable = true;
+        peekTitle += 'Masters';
+        break;
+      case 'mason':
+        peekable = true;
+        peekTitle += 'Guildmates';
+        break;
     }
 
     this.state = {
-      rolePrompt: '',
-      roleDescription: '',
-      displayMiddleCards: false,
-      selectedCards: [],
-      selectedPlayers: [],
       // whether the player has made appropriate selections for their night action
       actionRequiredRoleDefault: true,
       actionRequired: true,
-      maxPlayers,
-      maxCenterCards,
-      centerRolesStub: [
+      centerCards: [
         'center1',
         'center2',
         'center3',
       ],
-      isOpen: false,
+      displayMiddleCards: false,
       initialMessage: null,
+      maxCenterCards,
+      maxPlayers,
+      peekable,
+      peekOpen: false,
+      peekTitle,
+      rolePrompt: '',
+      roleDescription: '',
+      selectedCards: [],
+      selectedPlayers: [],
+      selectablePlayers: players.filter(p => p.id !== player.id),
     };
 
-    this.handleOnClick = this.handleOnClick.bind(this);
-    this.handleOnClose = this.handleOnClose.bind(this);
+    this.handleOpenPeek = this.handleOpenPeek.bind(this);
+    this.handleClosePeek = this.handleClosePeek.bind(this);
   }
 
-  handleOnClick() {
-    return this.setState({ isOpen: true });
+  handleOpenPeek() {
+    return this.setState({ peekOpen: true });
   }
 
-  handleOnClose() {
-    return this.setState({ isOpen: false });
+  handleClosePeek() {
+    return this.setState({ peekOpen: false });
   }
 
   componentDidMount() {
@@ -84,11 +104,6 @@ export default class NightScreen extends React.Component {
     } catch (e) {
       console.error('Fucked in the night by:', e);
     }
-  }
-
-  insomniac() {
-    //Funny message or sunsetting and rising till all night actions are completed.
-    //display day - role
   }
 
   makeSelection = (selectionLabel, isPlayer) => {
@@ -126,86 +141,22 @@ export default class NightScreen extends React.Component {
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { players, player, role, handleNightAction, messageForPlayer } = this.props;
-    const { rolePrompt, roleDescription, selectedCards, selectedPlayers, actionRequired, centerRolesStub, initialMessage } = this.state;
-
-    const selectablePlayers = players.filter(p => p.id !== player.id);
-    const loneWolf = players.filter(p => p.id !== player.id && p.role.name === 'werewolf').length === 0;
-
-    const doppelganger = (
-      //display all playernames in room to pick from
-      //Send server which player was picked
-      //display new doppelganger role
-      <PlayerSelectionAction players={selectablePlayers} maxSelectable={1} onSelection={this.makeSelection} selected={selectedPlayers} />
-    );
-    const werewolf = (
-      //werewolves assigned > 1
-      //display other werewolves
-      //ELSE display cards in the center for picking 1 to look at
-      //Send Server which center card was looked at
-      //Display selected card
-      <>
-        {!loneWolf && <Button title="Reveal wolfmate" onPress={this.handleOnClick} />}
-        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
-          <Text>{initialMessage}</Text>
-        </Modal>
-        {loneWolf &&
-          < CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
-        }
-      </>
-    );
-    const minion = (
-      //display players that are werewolves
-      <>
-        <Button title="Reveal werewolfs" onPress={this.handleOnClick} />
-        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
-          <Text>{initialMessage}</Text>
-        </Modal>
-      </>
-    );
-
-    const mason = (
-      //display player that is a masons
-      <>
-        <Button
-          id="button-1"
-          title="Reveal masons"
-          onPress={this.handleOnClick}
-        />
-        <Modal id="modal-1" isOpen={this.state.isOpen} onRequestClose={this.handleOnClose}>
-          <Text>{initialMessage}</Text>
-        </Modal>
-      </>
-    );
-    const seer = (
-      //display option to pick from player or look at 2 in the center
-      //Send server which player or which center cards were selected
-      //display player role or picked center cards roles
-      <>
-        <PlayerSelectionAction players={selectablePlayers} maxSelectable={1} onSelection={this.makeSelection} selected={selectedPlayers} />
-        <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
-      </>
-    );
-    const robber = (
-      //display option to rob or not
-      //display players to pick from
-      //Send server which player was picked
-      //display picked player's role
-      <PlayerSelectionAction players={selectablePlayers} onSelection={this.makeSelection} selected={selectedPlayers} />
-    );
-    const troublemaker = (
-      //display option to troublemake or not
-      //display players to pick from (select 2)
-      //Send server which players were picked
-      //nothing else, maybe display confirmation that player_x & player_y were switched
-      <PlayerSelectionAction players={selectablePlayers} onSelection={this.makeSelection} selected={selectedPlayers} />
-    );
-    const drunk = (
-      //display cards in the center for picking 1 to switch with players card
-      //Send Server which center card was selected
-      //nothing else, maybe display confirmation that centerCard_x was swtiched with drunk
-      <CenterCards centerRoles={centerRolesStub} onSelection={this.makeSelection} selected={selectedCards} />
-    );
+    const { player, role, handleNightAction } = this.props;
+    const {
+      peekable,
+      peekOpen,
+      peekTitle,
+      rolePrompt,
+      roleDescription,
+      selectedCards,
+      selectablePlayers,
+      selectedPlayers,
+      maxPlayers,
+      maxCenterCards,
+      actionRequired,
+      centerCards,
+      initialMessage
+    } = this.state;
 
     return (
       <View style={styles.container}>
@@ -226,20 +177,24 @@ export default class NightScreen extends React.Component {
         <Text style={styles.getStartedText}>
           Please: {rolePrompt}
         </Text>
-        <SelectionAction />
-        {role.name === 'doppelganger' && doppelganger}
-        {role.name === 'werewolf' && werewolf}
-        {role.name === 'minion' && minion}
-        {role.name === 'mason' && mason}
-        {role.name === 'seer' && seer}
-        {role.name === 'robber' && robber}
-        {role.name === 'troublemaker' && troublemaker}
-        {role.name === 'drunk' && drunk}
-        {messageForPlayer !== '' &&
-          <Text style={styles.getStartedText}>
-            Yo!: {messageForPlayer}
-          </Text>
-        }
+        {peekable && (
+          <Peek
+            title={peekTitle}
+            message={initialMessage}
+            isOpen={peekOpen}
+            onOpen={this.handleOpenPeek}
+            onClose={this.handleClosePeek}
+          />
+        )}
+        <SelectionAction
+          players={selectablePlayers}
+          maxPlayers={maxPlayers}
+          selectedPlayers={selectedPlayers}
+          cards={centerCards}
+          maxCards={maxCenterCards}
+          selectedCards={selectedCards}
+          onSelection={this.makeSelection}
+        />
       </View>
     );
   }
