@@ -4,22 +4,22 @@ import { StyleSheet, Text, View } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NightTheme } from "../constants/Colors";
 
-const CenterCards = ({ centerRoles, onSelection, selected }) => (
+const CenterCards = ({ cards, onSelection, selected }) => (
   <View style={styles.container}>
-    {centerRoles.map(centerRole => (
+    {cards.map(centerRole => (
       <TouchableOpacity
-        key={centerRole.label}
-        style={selected.includes(centerRole.label) ? styles.cardSelected : styles.card}
-        onPress={() => onSelection(centerRole.label, false)}
+        key={centerRole}
+        style={selected.includes(centerRole) ? styles.cardSelected : styles.card}
+        onPress={() => onSelection(centerRole, false)}
       >
-        <Text style={styles.optionText}>{centerRole.label}</Text>
+        <Text style={styles.optionText}>{centerRole}</Text>
       </TouchableOpacity>
     ))}
   </View>
 );
 
 CenterCards.propTypes = {
-  centerRoles: PropTypes.arrayOf(PropTypes.object).isRequired,
+  cards: PropTypes.arrayOf(PropTypes.string).isRequired,
   onSelection: PropTypes.func.isRequired,
   selected: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

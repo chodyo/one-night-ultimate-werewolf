@@ -10,12 +10,21 @@ import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 import DayScreen from "./screens/DayScreen";
 
+import { sortRolesByWakeOrder } from "./assets/GameUtil";
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    this.client = new Client('ws://localhost:2567');
+    const host = window.document.location.host.replace(/:.*/, '');
+    console.debug(host);
+    const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
+    console.debug(port);
+    const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+    console.debug(url);
+    this.client = new Client(url);
+
+    // this.client = new Client('ws://localhost:2567');
     this.room = null;
 
     this.state = {
@@ -51,7 +60,7 @@ export default class App extends React.Component {
   }
 
   loadState = async () => {
-    const { centerRoles, phase, players } = this.room.state;
+    const { centerRoles, phase, players, roles } = this.room.state;
 
     let clientPlayer, playerRole;
     let playersArray = [];
@@ -67,15 +76,52 @@ export default class App extends React.Component {
       }
     }
 
-    this.setState({ phase, clientPlayer, playerRole, players: playersArray, centerRoles });
-  };
+    let rolesArray = [];
+    for (let id in roles) {
+      let role = roles[id];
+      rolesArray.push(role);
+    }
 
+    this.setState({
+      phase,
+      clientPlayer,
+      playerRole,
+      players: playersArray,
+      roles: sortRolesByWakeOrder(rolesArray),
+      centerRoles
+    });
+  };
 
   handleMessage = async () => {
     await this.room.onMessage((message) => {
       this.setState({ serverMessage: message.message });
       console.log(`Server sent: ${message.message}`);
     });
+  };
+
+  handleRoleChoice = (roleID) => {
+    const { roles } = this.room.state;
+
+    //toggle the role
+    let roleToggle;
+    for (let id in roles) {
+      if (id === roleID) {
+        let role = roles[id];
+        //reverse whatever state it is in on the server
+        roleToggle = !role.active;
+      }
+    }
+
+    let request = {
+      action: 'updateSelectedRole',
+      params: {
+        roleID: roleID,
+        roleEnabled: roleToggle
+      }
+    };
+
+    //Send the 'request' to set the role active or !active
+    this.room.send(request);
   };
 
   markAsReady = () => {
@@ -87,10 +133,13 @@ export default class App extends React.Component {
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
-    const { state: { players }, sessionId } = this.room;
-    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
-
-    console.debug(`${playerName} is voting!`);
+    // this.room.send({
+    //   action: 'updateNightChoices',
+    //   params: {
+    //     selectedCards: selectedCards,
+    //     selectedPlayers: selectedPlayers,
+    //   },
+    // });
 
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
@@ -98,16 +147,16 @@ export default class App extends React.Component {
   };
 
   handleVoteAction = (selectedPlayers) => {
-    const { state: { players }, sessionId } = this.room;
-    let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
-
-    console.debug(`${playerName} voted for ${selectedPlayers[0]}`);
+    this.room.send({
+      action: 'updateVoteChoices',
+      params: {
+        selectedPlayers: selectedPlayers,
+      },
+    });
 
     //Set state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
-    // this.setState({ phase: 'results' });
-    // this.room.send({ action: 'updateVoteSelection' });
-
+    this.setState({ results: selectedPlayers[0] });
     //Send the players VOTE to the server
     // this.room.send({ action: 'ready' });
   };
@@ -119,12 +168,22 @@ export default class App extends React.Component {
       players,
       clientPlayer,
       playerRole,
+      roles,
       serverMessage,
       centerRoles,
       results,
     } = this.state;
 
-    let message = serverMessage;
+    const activeRoles = roles.filter(role => role.active);
+    const requiredRoles = players.length + 3;
+
+    let buttonText;
+    if (activeRoles.length === requiredRoles) {
+      buttonText = "I'm ready!";
+    } else {
+      const difference = requiredRoles - activeRoles.length;
+      buttonText = difference < 0 ? 'Too many roles' : "Too few roles";
+    }
 
     if (!isLoadingComplete) {
       return null;
@@ -135,16 +194,15 @@ export default class App extends React.Component {
             {phase === 'prep' &&
               <View style={{ alignItems: 'center' }}>
                 <Button
-                  title="I'm ready!"
+                  title={buttonText}
                   style={styles.unSelectedButton}
                   onPress={() => this.markAsReady()}
-                  disabled={clientPlayer.ready}
+                  // disabled after player clicks
+                  // disabled if there aren't exactly 3 more roles than players in game
+                  disabled={requiredRoles !== activeRoles.length || clientPlayer.ready}
                 />
-                {serverMessage !== '' &&
-                  <Text style={styles.getStartedInputsText}>Message: {serverMessage}</Text>
-                }
                 <HomeScreen room={this.room} players={players} />
-                <RoleSelection room={this.room} />
+                <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice}/>
               </View>
             }
             {phase === 'nighttime' &&

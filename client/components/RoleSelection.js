@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NightTheme } from '../constants/Colors';
 import RoleButton from "./RoleButton";
 import RoleGroup from "./RoleGroup";
-import { sortRolesByWakeOrder } from "../assets/GameUtil";
 
 export default class RoleSelection extends React.Component {
   static propTypes = {};
@@ -11,45 +10,15 @@ export default class RoleSelection extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      roles: [],
-      duplicateRoles: {
-        werewolf: [],
-        mason: [],
-        villager: [],
-      },
-      wakingRoles: [],
-      nooners: [],
-    };
-  }
+    const { roles } = this.props;
 
-  async componentDidMount() {
-    console.debug('Loading RoleSelection');
-    await this.start();
-  }
-
-  // LIFECYCLE
-  start = async () => {
-    const { room } = this.props;
-    try {
-      room.onStateChange(() => this.loadRoles());
-    } catch (error) {
-      console.error("Fucked by ", error);
-    }
-  };
-
-  loadRoles = async () => {
-    const { roles: gameRoles } = this.props.room.state;
-
-    let roles = [];
+    // Group and sort roles for display
     let werewolfRoles = [];
     let masonRoles = [];
     let wakingRoles = [];
     let villagerRoles = [];
     let nooners = [];
-    for (let id in gameRoles) {
-      let role = gameRoles[id];
-
+    roles.map(role => {
       switch (role.name) {
         case 'werewolf':
           werewolfRoles.push(role);
@@ -72,51 +41,22 @@ export default class RoleSelection extends React.Component {
           villagerRoles.push(role);
           break;
       }
+    });
 
-      roles.push(role);
-    }
-
-    this.setState({
-      roles: sortRolesByWakeOrder(roles),
+    this.state = {
       duplicateRoles: {
         werewolf: werewolfRoles,
         mason: masonRoles,
-        villager: villagerRoles
+        villager: villagerRoles,
       },
-      wakingRoles: sortRolesByWakeOrder(wakingRoles),
+      wakingRoles,
       nooners
-    });
-  };
-
-  activateRole = (roleID) => {
-    //These are the roles selected to play
-    const { room } = this.props;
-    const { roles: gameRoles } = room.state;
-
-    //toggle the role
-    let roleToggle;
-
-    for (let id in gameRoles) {
-      if (id === roleID) {
-        let role = gameRoles[id];
-        //reverse whatever state it is in on the server
-        roleToggle = !role.active;
-      }
-    }
-
-    let request = {
-      action: 'updateSelectedRole',
-      params: {
-        roleID: roleID,
-        roleEnabled: roleToggle
-      }
     };
-    //Send the 'request' to set the role active or !active
-    room.send(request);
-  };
+  }
 
   render() {
-    const { roles, duplicateRoles, wakingRoles, nooners } = this.state;
+    const { roles, onRoleChoice } = this.props;
+    const { duplicateRoles, wakingRoles, nooners } = this.state;
 
     return (
       <View style={{ alignItems: 'center' }}>
@@ -127,15 +67,15 @@ export default class RoleSelection extends React.Component {
           if (Object.keys(duplicateRoles).includes(role.name)) {
             if (role.roleID.endsWith('0')) {
               return <RoleGroup key={role.name} roles={duplicateRoles[role.name]}
-                onActivateRole={this.activateRole} />
+                onActivateRole={onRoleChoice} />
             }
           } else {
             if ('doppelganger' === role.name || 'minion' === role.name) {
-              return <RoleButton key={role.roleID} role={role} onActivateRole={this.activateRole} />
+              return <RoleButton key={role.roleID} role={role} onActivateRole={onRoleChoice} />
             } else if ('seer' === role.name) {
-              return <RoleGroup key="wakingRoles" roles={wakingRoles} onActivateRole={this.activateRole} />
+              return <RoleGroup key="wakingRoles" roles={wakingRoles} onActivateRole={onRoleChoice} />
             } else if ('insomniac' === role.name) {
-              return <RoleGroup key="nooners" roles={nooners} onActivateRole={this.activateRole} />
+              return <RoleGroup key="nooners" roles={nooners} onActivateRole={onRoleChoice} />
             }
           }
         })}
