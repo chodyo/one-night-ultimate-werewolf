@@ -39,6 +39,8 @@ export default class HomeScreen extends React.Component {
             style={styles.getStartedInputsBox}
             onChangeText={text => this.setState({ playerName: text })}
             value={playerName}
+            autoFocus={true}
+            onKeyPress={(e) => { (e.key === 'Enter' ? this.setPlayerName() : null) }}
           />
           <Button
             title="Submit"
