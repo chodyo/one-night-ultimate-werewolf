@@ -187,8 +187,14 @@ export default class App extends React.Component {
     if (activeRoles.length === requiredRoles) {
       buttonText = "I'm ready!";
     } else {
-      const difference = requiredRoles - activeRoles.length;
-      buttonText = difference < 0 ? 'Too many roles' : "Too few roles";
+      let difference = requiredRoles - activeRoles.length;
+      let differenceVerb = 'more';
+      if (difference < 0) {
+        differenceVerb = 'less';
+        difference *= -1;
+      }
+      const roleNoun = difference === 1 ? 'role' : 'roles';
+      buttonText = `Select ${difference} ${differenceVerb} ${roleNoun}`;
     }
 
     if (!isLoadingComplete) {
@@ -208,7 +214,7 @@ export default class App extends React.Component {
                   disabled={requiredRoles !== activeRoles.length || clientPlayer.ready}
                 />
                 <HomeScreen room={this.room} players={players} />
-                <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice}/>
+                <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice} />
               </View>
             }
             {phase === 'nighttime' &&

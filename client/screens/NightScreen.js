@@ -106,6 +106,10 @@ export default class NightScreen extends React.Component {
     }
   }
 
+  selectNone = () => {
+    this.setState((s) => ({ ...s, selectedCards: [], selectedPlayers: [], actionRequired: s.actionRequiredRoleDefault }));
+  }
+
   makeSelection = (selectionLabel, isPlayer) => {
     let { selectedCards, maxCenterCards, selectedPlayers, maxPlayers } = this.state;
 
@@ -154,6 +158,7 @@ export default class NightScreen extends React.Component {
       maxPlayers,
       maxCenterCards,
       actionRequired,
+      actionRequiredRoleDefault,
       centerCards,
       initialMessage
     } = this.state;
@@ -194,6 +199,8 @@ export default class NightScreen extends React.Component {
           maxCards={maxCenterCards}
           selectedCards={selectedCards}
           onSelection={this.makeSelection}
+          actionRequired={actionRequiredRoleDefault}
+          selectNone={this.selectNone}
         />
       </View>
     );
