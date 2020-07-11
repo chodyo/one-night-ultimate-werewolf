@@ -6,6 +6,8 @@ import { NightTheme } from "../constants/Colors";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const SelectionAction = ({ actionRequired, selectNone, players, maxPlayers, selectedPlayers, cards, maxCards, selectedCards, onSelection }) => {
+  
+  //Optional players Explicit Don't troublemake, divine, rob, etc.
   return (
     <>
       {!actionRequired && (maxPlayers > 0 || maxCards > 0) &&
@@ -13,8 +15,8 @@ const SelectionAction = ({ actionRequired, selectNone, players, maxPlayers, sele
           key='SelectNone'
           style={selectedPlayers.length === 0 && selectedCards.length === 0 ? styles.selectedButtonStyle : styles.unSelectedButton}
           onPress={selectNone}
-        >
-          <Text style={styles.getStartedText}> Select none</Text>
+      >
+        <Text style={styles.getStartedText}> Don't do anything</Text>
         </TouchableOpacity>}
       {maxPlayers > 0 && (
         <PlayerSelectionAction
