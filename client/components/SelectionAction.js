@@ -6,7 +6,7 @@ import { Styles } from "../constants/Themes";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const SelectionAction = ({ actionRequired, selectNone, players, maxPlayers, selectedPlayers, cards, maxCards, selectedCards, onSelection }) => {
-  
+
   //Optional players Explicit Don't troublemake, divine, rob, etc.
   return (
     <>
@@ -15,8 +15,8 @@ const SelectionAction = ({ actionRequired, selectNone, players, maxPlayers, sele
           key='SelectNone'
           style={selectedPlayers.length === 0 && selectedCards.length === 0 ? Styles.selectedButtonStyle : Styles.unSelectedButton}
           onPress={selectNone}
-      >
-        <Text style={Styles.getStartedText}> Don't do anything</Text>
+        >
+          <Text style={Styles.getStartedText}> Don't do anything</Text>
         </TouchableOpacity>}
       {maxPlayers > 0 && (
         <PlayerSelectionAction
