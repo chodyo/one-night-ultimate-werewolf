@@ -126,20 +126,26 @@ export default class App extends React.Component {
 
   markAsReady = () => {
     const { state: { players }, sessionId } = this.room;
+
     let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
     console.debug(`${playerName} is ready!`);
 
-    this.room.send({ action: 'ready' });
+    this.room.send({
+      action: 'ready',
+      params: {
+        readyAll: true
+      }
+    });
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
-    // this.room.send({
-    //   action: 'updateNightChoices',
-    //   params: {
-    //     selectedCards: selectedCards,
-    //     selectedPlayers: selectedPlayers,
-    //   },
-    // });
+    this.room.send({
+      action: 'updateNightChoices',
+      params: {
+        selectedCards: selectedCards,
+        selectedPlayers: selectedPlayers,
+      },
+    });
 
     //Setting state here for now to render the screens
     //Once this is functional on the server TODO: REMOVE
