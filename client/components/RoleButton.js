@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, Text } from 'react-native';
-import { RectButton, TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NightTheme } from '../constants/Colors';
 
 import { createIconSetFromIcoMoon } from '@expo/vector-icons/build/Icons';

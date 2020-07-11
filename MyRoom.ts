@@ -32,7 +32,13 @@ export class MyRoom extends Room {
     }
 
     ready(client: Client, params: any): void {
-        this.state.ready(client.sessionId);
+        // Useful for dev-testing scenarios with multiple browser tabs, but could be used in game configuration ¯\_(ツ)_/¯
+        if (params.readyAll) {
+            Array.from(this.state.players._indexes.keys()).forEach((playerID) => (this.state.ready(playerID)))
+        } else {
+            this.state.ready(client.sessionId);
+        }
+
         if (!this.state.allAreReady()) {
             console.debug("Not everyone is ready yet.");
             return;
