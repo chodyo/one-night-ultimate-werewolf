@@ -140,16 +140,12 @@ export default class App extends React.Component {
 
   handleNightAction = (selectedCards, selectedPlayers) => {
     this.room.send({
-      action: 'updateNightChoices',
+      action: 'ready',
       params: {
         selectedCards: selectedCards,
         selectedPlayers: selectedPlayers,
       },
     });
-
-    //Setting state here for now to render the screens
-    //Once this is functional on the server TODO: REMOVE
-    this.setState({ phase: 'daytime' });
   };
 
   handleVoteAction = (selectedPlayers) => {

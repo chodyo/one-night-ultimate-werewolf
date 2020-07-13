@@ -39,14 +39,14 @@ export class MyRoom extends Room {
             this.state.ready(client.sessionId);
         }
 
-        if (!this.state.allAreReady()) {
-            console.debug("Not everyone is ready yet.");
-            return;
-        }
-
         let messages: Map<Player, string> = new Map();
         switch (this.state.phase) {
             case "prep":
+                if (!this.state.allAreReady()) {
+                    console.debug("Not everyone is ready yet.");
+                    return;
+                }
+
                 let err = this.state.checkRoleSelectionCount();
                 if (err) {
                     console.error(err);
@@ -63,6 +63,14 @@ export class MyRoom extends Room {
 
             case "doppelganger":
             case "nighttime":
+                this.state.setNightChoices(client.sessionId, params.selectedCards, params.selectedPlayers);
+
+                if (this.state.allAreReady()) {
+                    messages = this.state.startDaytime();
+                }
+
+                break;
+
             case "daytime":
             case "results":
             default:

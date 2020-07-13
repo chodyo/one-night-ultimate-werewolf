@@ -18,6 +18,10 @@ export class State extends Schema {
     // center# => role
     centerRoles: Map<string, Role> = new Map();
 
+    private nightChoices: Map<Player, Array<string>> = new Map();
+
+    private finalResults: Map<Player, Role> = new Map();
+
     // ====== Synched Properties ======
 
     // The players that are participating in the round.
@@ -269,6 +273,179 @@ export class State extends Schema {
             // case "tanner":
             // case "troublemaker":
             // case "villager":
+            default:
+                return "";
+        }
+    }
+
+    setNightChoices(id: string, selectedCards: Array<string>, selectedPlayers: Array<string>): void {
+        const player = this.players[id];
+        if (!player) {
+            console.error(`Invalid player=${id}`);
+            return;
+        }
+
+        const roleName = player.role.name;
+
+        let choice = Array<string>();
+        switch (roleName) {
+            case "werewolf":
+                choice = selectedCards;
+                break;
+            case "seer":
+                choice = selectedCards.length > 0 ? selectedCards : selectedPlayers;
+                break;
+            case "robber":
+                choice = selectedPlayers;
+                break;
+            case "troublemaker":
+                choice = selectedPlayers;
+                break;
+            case "drunk":
+                choice = selectedCards;
+                break;
+            default:
+                return;
+        }
+
+        if (choice.length > 0) {
+            this.nightChoices.set(player, choice);
+        }
+
+        // TODO: only for debugging purposes, maybe remove once functional
+        let msg = `Set player ${id}'s choice of "${JSON.stringify(choice)}" for the "${roleName} action."`;
+        console.debug(msg);
+        this.messager.Broadcast(msg);
+    }
+
+    // TODO: generalize into startPhase() with actions performed and message retrieved by phase argument
+    startDaytime(): Map<Player, string> {
+        this.phase = "daytime";
+
+        this.clearAllReady();
+
+        try {
+            this.executeNightActions();
+
+            const messages = new Map();
+            Array.from(this.players._indexes).forEach(([playerID, _]) => {
+                const player = this.players[playerID];
+                const message = this.getDaytimeMessage(playerID, player.role.roleID);
+                messages.set(player, message);
+            });
+
+            return messages;
+        } catch (e) {
+            console.error(`Fucked in exection by:`, e);
+            this.unlock();
+            return new Map();
+        }
+    }
+
+    executeNightActions() {
+        if (this.finalResults.size > 0) {
+            console.error("Results have already been distributed", this.finalResults);
+            return;
+        }
+
+        this.lock();
+
+        const roleChoices = new Map(Array.from(this.nightChoices.entries()).sort(([roleA, choicesA], [roleB, choicesB]) => {
+            console.info(`Role A is ${JSON.stringify(roleA)}\nRole B is ${JSON.stringify(roleB)}`);
+            let a = roleA.role.wakeOrder!;
+            let b = roleB.role.wakeOrder!;
+
+            if (a === -1 && b === -1) return 0;
+            else if (a === -1) return 1;
+            else if (b === -1) return -1;
+
+            if (a === b) return 0;
+            else if (a > b) return 1;
+            else return -1;
+        }));
+
+        console.debug(`roleChoices=${roleChoices}`);
+
+        roleChoices.forEach((choices: Array<string>, player: Player) => {
+            let role = player.role;
+            switch (role.name) {
+                case "robber":
+                    if (choices.length === 1) {
+                        const robbedPlayer = this.players[choices[0]];
+
+                        this.finalResults.set(player, robbedPlayer.role);
+                        this.finalResults.set(robbedPlayer, role);
+                    }
+                    break;
+                case "troublemaker":
+                    if (choices.length === 2) {
+                        const playerA = this.players[choices[0]];
+                        const playerB = this.players[choices[1]];
+
+                        this.finalResults.set(playerA, playerB.role);
+                        this.finalResults.set(playerB, playerA.role);
+                    }
+                    break;
+                case "drunk":
+                    if (choices.length === 1) {
+                        this.finalResults.set(player, this.centerRoles.get(choices[0])!);
+                    } else {
+                        console.error("The drunk died by execution!!")
+                    }
+                    break;
+            }
+        });
+
+        Array.from(this.rolePlayers.values()).forEach((player) => {
+            const playerHasNoResult = Array.from(this.finalResults.keys()).filter((playerWithResult) => playerWithResult === player).length === 0;
+            if (playerHasNoResult) {
+                this.finalResults.set(player, player.role)
+            }
+        });
+
+        console.debug(`Finished setting results to dayResults=${this.finalResults}`);
+
+        this.unlock();
+    }
+
+    getDaytimeMessage(playerID: string, roleID: string): string {
+        const role = this.roles[roleID];
+        console.debug(`roleID=${JSON.stringify(role)}`);
+
+        const youAreBlind = "You are blind!";
+
+        const choices = Array.from(this.nightChoices.entries()).filter(([player, _]) => player.client.sessionId === playerID)[0][1];
+        switch (role.name) {
+            case "werewolf":
+                const partnerRoleID = getPartnerRoleID(roleID);
+                const partnerRole = this.roles[partnerRoleID];
+                // As long as it's the lone wolf
+                if (!partnerRole.active && choices.length === 1) {
+                    return `The ${choices[0]} card is a ${this.centerRoles.get(choices[0])!.name}`;
+                } else {
+                    return youAreBlind;
+                }
+            case "seer":
+                if (choices.length === 1) {
+                    let chosenPlayer = this.players[choices[0]];
+                    return `${chosenPlayer.name} is a ${chosenPlayer.role.name}`;
+                } else if (choices.length === 2) {
+                    const card1 = this.centerRoles.get(choices[0])!;
+                    const card2 = this.centerRoles.get(choices[1])!;
+                    return `The ${JSON.stringify(choices)} cards are a ${card1.name} and ${card2.name} respectively`;
+                } else {
+                    return youAreBlind;
+                }
+            case "robber":
+                if (choices.length === 1) {
+                    const robbedRole = this.players[choices[0]];
+                    return `Your new role is ${robbedRole.name}`;
+                } else {
+                    return youAreBlind;
+                }
+            case "insomniac":
+                const wakingRole = Array.from(this.finalResults.entries()).filter(([player, _]) => player.client.sessionId = playerID)[0][1];
+                return `You woke up as a ${wakingRole.name}`;
             default:
                 return "";
         }
