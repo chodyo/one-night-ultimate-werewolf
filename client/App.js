@@ -9,6 +9,7 @@ import RoleSelection from "./components/RoleSelection";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 import DayScreen from "./screens/DayScreen";
+import ConfirmRole from "./screens/ConfirmRole";
 
 import { sortRolesByWakeOrder } from "./assets/GameUtil";
 
@@ -152,6 +153,17 @@ export default class App extends React.Component {
     this.setState({ phase: 'daytime' });
   };
 
+  handleDoppelAction = (selectedPlayers) => {
+    this.room.send({
+      action: 'ready',
+      params: {
+        doppelgangerChoice: selectedPlayers,
+      },
+    });
+
+    console.debug(`${this.clientPlayer} chose ${selectedPlayers[0]} and is now that role`)
+  };
+
   handleVoteAction = (selectedPlayers) => {
     this.room.send({
       action: 'updateVoteChoices',
@@ -215,6 +227,17 @@ export default class App extends React.Component {
                 />
                 <HomeScreen room={this.room} players={players} />
                 <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice} />
+              </View>
+            }
+            {phase === 'doppelganger' &&
+              <View style={{ alignItems: 'center' }}>
+                <ConfirmRole
+                  players={players}
+                  player={clientPlayer}
+                  handleSelection={this.handleDoppelAction}
+                  markAsReady={this.markAsReady}
+                  results={results}
+                />
               </View>
             }
             {phase === 'nighttime' &&
