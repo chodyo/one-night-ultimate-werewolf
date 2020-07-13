@@ -171,14 +171,29 @@ export class State extends Schema {
         if (playerCount + 3 !== selectedRoleCount) {
             return `Playing with ${playerCount} player${playerCount === 1 ? "" : "s"} requires ${
                 playerCount + 3
-            } roles, but there ${selectedRoleCount === 1 ? "is" : "are"} only ${selectedRoleCount} role${
+                } roles, but there ${selectedRoleCount === 1 ? "is" : "are"} only ${selectedRoleCount} role${
                 selectedRoleCount === 1 ? "" : "s"
-            } chosen.`;
+                } chosen.`;
         }
     }
 
     startNighttime(): Map<Player, string> {
         this.phase = "nighttime";
+
+        this.clearAllReady();
+
+        const messages = new Map();
+        Array.from(this.players._indexes).forEach(([playerID, _]) => {
+            const player = this.players[playerID];
+            const message = this.getNighttimeMessage(player.role.roleID);
+            messages.set(player, message);
+        });
+
+        return messages;
+    }
+
+    startDoppelganger(): Map<Player, string> {
+        this.phase = "doppelganger";
 
         this.clearAllReady();
 
@@ -228,6 +243,34 @@ export class State extends Schema {
         this.unlock();
     }
 
+    distributeDoppelsRole(clientID: string, chosenPlayersClientID: string) {
+
+        this.lock();
+
+        //Get the Doppelganger to prepare for role Assignment
+        const doppelganger = Array.from(this.players._indexes.keys())
+            .filter((playerID) => this.players[playerID].roleName === 'doppelganger');
+        //Get the Doppelganger's choice to prepare for new role assignment
+        const doppelgangedRole = this.players[chosenPlayersClientID].role;
+
+        let roleID = getPartnerRoleID(doppelgangedRole.roleID)
+        let newRole = new Role(
+            roleID,
+            doppelgangedRole.name,
+            doppelgangedRole.team,
+            doppelgangedRole.wakeOrder
+        );
+
+        //The role assignment
+        const player = this.players[clientID];
+
+        player.role = newRole;
+        console.debug('Setting role for doppelganger');
+        this.rolePlayers.set(newRole, player);
+
+        this.unlock();
+    }
+
     getNighttimeMessage(roleID: string): string {
         const role = this.roles[roleID];
         console.debug(`roleID=${JSON.stringify(role)}`);
@@ -235,17 +278,7 @@ export class State extends Schema {
         switch (role.name) {
             case "werewolf":
             case "mason":
-                const partnerRoleID = getPartnerRoleID(roleID);
-                const partnerRole = this.roles[partnerRoleID];
-                if (!partnerRole.active) {
-                    return `You are the only ${role.name}.`;
-                }
-
-                const partner = this.rolePlayers.get(partnerRole);
-                return partner
-                    ? `The other ${role.name} is ${partner.name}.`
-                    : `The other ${role.name} is in the center.`;
-
+                return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
                 return "TODO";
 
@@ -271,6 +304,22 @@ export class State extends Schema {
             // case "villager":
             default:
                 return "";
+        }
+    }
+
+    getPartnerNames(clientID: string, roleName: string): string {
+
+        const partnerNames = Array.from(this.rolePlayers)
+            .filter(([partnersRole, _]) => partnersRole.name === roleName)
+            .map(([_, player]) => player.name);
+
+        if (partnerNames.length == 0) {
+            return `You are the only ${roleName}.`;
+        } else if (partnerNames.length == 1) {
+            return `You are the only ${roleName}.`;
+        } else {
+            const pluralRoleName = roleName ==="werewolf" ? 'werewolves' : 'minions'
+            return `The ${pluralRoleName} are ${partnerNames}.`;
         }
     }
 }
