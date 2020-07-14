@@ -40,6 +40,7 @@ export class MyRoom extends Room {
         }
 
         let messages: Map<Player, string> = new Map();
+        let phaseAction = "role assignment";
         switch (this.state.phase) {
             case "prep":
                 if (!this.state.allAreReady()) {
@@ -63,6 +64,7 @@ export class MyRoom extends Room {
 
             case "doppelganger":
             case "nighttime":
+                phaseAction = "night choice";
                 this.state.setNightChoices(client.sessionId, params.selectedCards, params.selectedPlayers);
 
                 if (this.state.allAreReady()) {
@@ -84,8 +86,9 @@ export class MyRoom extends Room {
         // TODO: generalize this
         messages.forEach((message: string, player: Player) => {
             const roleID = player.role.roleID;
+            const playerName = player.name === null ? player.client.sessionId : player.name;
             console.debug(
-                `Notifying ${player.client.sessionId} of their role assignment ${roleID} with custom message "${message}"`
+                `Notifying ${playerName} of their ${phaseAction} ${roleID} with custom message "${message}"`
             );
             this.messager.Notify(player.client, message, roleID);
         });

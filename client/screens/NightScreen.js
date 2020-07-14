@@ -58,9 +58,9 @@ export default class NightScreen extends React.Component {
       actionRequiredRoleDefault: true,
       actionRequired: true,
       centerCards: [
+        'center0',
         'center1',
         'center2',
-        'center3',
       ],
       displayMiddleCards: false,
       initialMessage: null,
