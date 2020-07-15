@@ -394,8 +394,8 @@ export class State extends Schema {
                         this.finalResults.set(playerA, roleB);
                         this.finalResults.set(playerB, roleA);
 
-                        console.info(`${playerA.name} was a ${roleA.name} and now is ${roleB.name}`);
-                        console.info(`${playerB.name} was a ${roleB.name} and now is ${roleA.name}`);
+                        console.info(`${playerA.name}'s role was ${roleA.name} and is now ${roleB.name}`);
+                        console.info(`${playerB.name}'s role was ${roleB.name} and is now ${roleA.name}`);
                     }
                     break;
                 case "drunk":
@@ -414,7 +414,7 @@ export class State extends Schema {
         [...this.rolePlayers.values()].forEach((player) => {
             const playerHasNoResult = [...this.finalResults.keys()].filter((playerWithResult) => playerWithResult === player).length === 0;
             if (playerHasNoResult) {
-                console.info(`${player.name} had no preexisting final result... setting their role to ${player.role.name}`);
+                console.info(`${player.name}'s role is unchanged and remains ${player.role.name}`);
                 this.finalResults.set(player, player.role)
             }
         });
