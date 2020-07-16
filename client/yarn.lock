@@ -922,10 +922,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bit/rivigo.ui.utils.iffun@^0.0.6":
-  version "0.0.6"
-  resolved "https://node.bit.dev/rivigo.ui.utils.iffun/-/rivigo.ui.utils.iffun-0.0.6.tgz#18b64bb94ea7215665e0aafe11634f7cab8fbd60"
-  integrity sha1-GLZLuU6nIVZl4Kr+EWNPfKuPvWA=
 "@bit/nexxtway.react-rainbow.assistive-text@1.10.0":
   version "1.10.0"
   resolved "https://node.bit.dev/nexxtway.react-rainbow.assistive-text/-/nexxtway.react-rainbow.assistive-text-1.10.0.tgz#9319e76a1f41cc416450b4cf37a6da68374e30d5"

@@ -10,7 +10,8 @@ export default class NightScreen extends React.Component {
   constructor(props) {
     super(props);
 
-    const { players, player, role } = props;
+    const { messageForPlayer, players, player, role } = props;
+
     let maxPlayers = 0;
     let maxCenterCards = 0;
     let peekable = false;
@@ -62,15 +63,16 @@ export default class NightScreen extends React.Component {
         'center1',
         'center2',
       ],
+      choiceButtonText: 'Ready',
       displayMiddleCards: false,
-      initialMessage: null,
       maxCenterCards,
       maxPlayers,
+      nighttimeMessage: messageForPlayer,
       peekable,
       peekOpen: false,
       peekTitle,
-      rolePrompt: '',
       roleDescription: '',
+      rolePrompt: '',
       selectedCards: [],
       selectedPlayers: [],
       selectablePlayers: players.filter(p => p.id !== player.id),
@@ -89,17 +91,15 @@ export default class NightScreen extends React.Component {
   }
 
   componentDidMount() {
-    const { role, messageForPlayer } = this.props;
-
     try {
       const roles = require('../../static/assets/onenight.json');
-      const { prompt, description, nightActionRequired } = roles[role.name];
+      const { prompt, description, nightActionRequired } = roles[this.props.role.name];
       this.setState({
-        rolePrompt: prompt,
-        roleDescription: description,
-        actionRequiredRoleDefault: nightActionRequired,
         actionRequired: nightActionRequired,
-        initialMessage: messageForPlayer,
+        actionRequiredRoleDefault: nightActionRequired,
+        choiceButtonText: nightActionRequired ? 'You must choose' : 'Ready',
+        roleDescription: description,
+        rolePrompt: prompt,
       });
     } catch (e) {
       console.error('Fucked in the night by:', e);
@@ -108,7 +108,7 @@ export default class NightScreen extends React.Component {
 
   selectNone = () => {
     this.setState((s) => ({ ...s, selectedCards: [], selectedPlayers: [], actionRequired: s.actionRequiredRoleDefault }));
-  }
+  };
 
   makeSelection = (selectionLabel, isPlayer) => {
     let { selectedCards, maxCenterCards, selectedPlayers, maxPlayers } = this.state;
@@ -123,8 +123,9 @@ export default class NightScreen extends React.Component {
       selectedCards = updateSelections(maxCenterCards, selectedCards, selectionLabel);
       actionRequired = this.isActionRequired(maxCenterCards, selectedCards);
     }
+    const choiceButtonText = !actionRequired ? 'You must choose' : 'Ready';
 
-    this.setState({ selectedCards, selectedPlayers, actionRequired });
+    this.setState({ selectedCards, selectedPlayers, actionRequired, choiceButtonText });
   };
 
   isActionRequired(maxSelectable, selectionList) {
@@ -145,31 +146,34 @@ export default class NightScreen extends React.Component {
   emphasizeText = (text) => <Text style={styles.emphasis}>{text}</Text>;
 
   render() {
-    const { player, role, handleNightAction } = this.props;
+    const { handleNightAction, player, role } = this.props;
     const {
-      peekable,
-      peekOpen,
-      peekTitle,
-      rolePrompt,
-      roleDescription,
-      selectedCards,
-      selectablePlayers,
-      selectedPlayers,
-      maxPlayers,
-      maxCenterCards,
       actionRequired,
       actionRequiredRoleDefault,
       centerCards,
-      initialMessage
+      choiceButtonText,
+      maxPlayers,
+      maxCenterCards,
+      nighttimeMessage,
+      peekable,
+      peekOpen,
+      peekTitle,
+      roleDescription,
+      rolePrompt,
+      selectedCards,
+      selectablePlayers,
+      selectedPlayers
     } = this.state;
+
+    const waiting = 'Waiting for other players...';
 
     return (
       <View style={styles.container}>
         <Button
-          title="Ready"
+          title={choiceButtonText}
           style={styles.unSelectedButton}
-          onPress={() => handleNightAction(selectedCards, selectedPlayers)}
-          disabled={actionRequired}
+          onPress={() => { this.setState({ choiceButtonText: waiting }); handleNightAction(selectedCards, selectedPlayers)}}
+          disabled={actionRequired || choiceButtonText === waiting}
         />
         <Text style={styles.getStartedText}>
           {player.name}, your role is the {this.emphasizeText(role.name)}, which is on the {this.emphasizeText(role.team)} team.
@@ -185,7 +189,7 @@ export default class NightScreen extends React.Component {
         {peekable && (
           <Peek
             title={peekTitle}
-            message={initialMessage}
+            message={nighttimeMessage}
             isOpen={peekOpen}
             onOpen={this.handleOpenPeek}
             onClose={this.handleClosePeek}
