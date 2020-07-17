@@ -58,7 +58,7 @@ export class MyRoom extends Room {
                 // close the room to new players
                 this.lock();
 
-                messages = this.state.startNighttime();
+                messages = this.state.startPhase("nighttime");
 
                 break;
 
@@ -68,7 +68,7 @@ export class MyRoom extends Room {
                 this.state.setNightChoices(client.sessionId, params.selectedCards, params.selectedPlayers);
 
                 if (this.state.allAreReady()) {
-                    messages = this.state.startDaytime();
+                    messages = this.state.startPhase("daytime");
                 }
 
                 break;

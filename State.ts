@@ -159,7 +159,7 @@ export class State extends Schema {
         );
     }
 
-    clearAllReady() {
+    private clearAllReady() {
         Array.from(this.players._indexes.keys()).forEach((playerID) => (this.players[playerID].ready = false));
     }
 
@@ -181,21 +181,27 @@ export class State extends Schema {
         }
     }
 
-    startNighttime(): Map<Player, string> {
-        this.phase = "nighttime";
+    startPhase(phase: string): Map<Player, string> {
+        this.phase = phase;
 
         this.clearAllReady();
 
-        this.distributeRoles();
+        let phaseMessaging = (playerID: string): string => { return "" };
+        switch (phase) {
+            case "doppelganger":
+            // TODO: implemented in doppelganger-new-role
+            // fall through to distribute roles for now
+            case "nighttime":
+                this.distributeRoles();
+                phaseMessaging = (playerID: string): string => this.nighttimeMessage(playerID);
+                break;
+            case "daytime":
+                this.executeNightActions();
+                phaseMessaging = (playerID: string): string => this.daytimeMessage(playerID);
+                break;
+        }
 
-        const messages = new Map();
-        Array.from(this.players._indexes).forEach(([playerID, _]) => {
-            const player = this.players[playerID];
-            const message = this.getNighttimeMessage(player.role.roleID);
-            messages.set(player, message);
-        });
-
-        return messages;
+        return this.getPlayerMessages(phaseMessaging);
     }
 
     distributeRoles() {
@@ -230,52 +236,6 @@ export class State extends Schema {
         console.debug(`Finished assigning roles to players=${JSON.stringify(this.players)}`);
 
         this.unlock();
-    }
-
-    getNighttimeMessage(roleID: string): string {
-        const role = this.roles[roleID];
-        console.debug(`roleID=${JSON.stringify(role)}`);
-
-        switch (role.name) {
-            case "werewolf":
-            case "mason":
-                const partnerRoleID = getPartnerRoleID(roleID);
-                const partnerRole = this.roles[partnerRoleID];
-                if (!partnerRole.active) {
-                    return `You are the only ${role.name}.`;
-                }
-
-                const partner = this.rolePlayers.get(partnerRole);
-                return partner
-                    ? `The other ${role.name} is ${partner.name}.`
-                    : `The other ${role.name} is in the center.`;
-
-            case "doppelganger":
-                return "TODO";
-
-            case "minion":
-                const werewolfNames = Array.from(this.rolePlayers)
-                    .filter(([role, _]) => role.name === "werewolf")
-                    .map(([_, player]) => player.name);
-                if (werewolfNames.length == 0) {
-                    return `There are no werewolves.`;
-                } else if (werewolfNames.length == 1) {
-                    return `The werewolf is ${werewolfNames[0]}.`;
-                } else {
-                    return `The werewolves are ${werewolfNames}.`;
-                }
-
-            // case "drunk":
-            // case "hunter":
-            // case "insomniac":
-            // case "robber":
-            // case "seer":
-            // case "tanner":
-            // case "troublemaker":
-            // case "villager":
-            default:
-                return "";
-        }
     }
 
     setNightChoices(id: string, selectedCards: Array<string>, selectedPlayers: Array<string>): void {
@@ -316,46 +276,7 @@ export class State extends Schema {
         this.messager.Broadcast(msg);
     }
 
-    // TODO: generalize into startPhase() with actions performed and message retrieved by phase argument
-    startDaytime(): Map<Player, string> {
-        this.phase = "daytime";
-
-        this.clearAllReady();
-
-        try {
-            this.executeNightActions();
-
-            const messages = new Map();
-            [...this.players._indexes].forEach(([playerID, _]) => {
-                const player = this.players[playerID];
-                const message = this.getDaytimeMessage(playerID);
-                messages.set(player, message);
-            });
-
-            return messages;
-        } catch (e) {
-            console.error(`Fucked in exection by:`, e);
-            this.unlock();
-            return new Map();
-        }
-    }
-
-    private sortByWakeOrder(nightChoices: Map<Player, string[]>): Map<Player, string[]> {
-        return new Map([...nightChoices.entries()].sort(([roleA, choicesA], [roleB, choicesB]) => {
-            let a = roleA.role.wakeOrder!;
-            let b = roleB.role.wakeOrder!;
-
-            if (a === -1 && b === -1) return 0;
-            else if (a === -1) return 1;
-            else if (b === -1) return -1;
-
-            if (a === b) return 0;
-            else if (a > b) return 1;
-            else return -1;
-        }));
-    }
-
-    executeNightActions() {
+    private executeNightActions() {
         if (this.finalResults.size > 0) {
             console.error("Results have already been distributed", this.finalResults);
             return;
@@ -424,7 +345,54 @@ export class State extends Schema {
         this.unlock();
     }
 
-    getDaytimeMessage(playerID: string): string {
+    private nighttimeMessage(playerID: string): string {
+        const player = this.players[playerID];
+        const role = player.role;
+        console.debug(`roleID=${JSON.stringify(role)}`);
+
+        switch (role.name) {
+            case "werewolf":
+            case "mason":
+                const partnerRoleID = getPartnerRoleID(role.roleID);
+                const partnerRole = this.roles[partnerRoleID];
+                if (!partnerRole.active) {
+                    return `You are the only ${role.name}.`;
+                }
+
+                const partner = this.rolePlayers.get(partnerRole);
+                return partner
+                    ? `The other ${role.name} is ${partner.name}.`
+                    : `The other ${role.name} is in the center.`;
+
+            case "doppelganger":
+                return "TODO";
+
+            case "minion":
+                const werewolfNames = Array.from(this.rolePlayers)
+                    .filter(([role, _]) => role.name === "werewolf")
+                    .map(([_, player]) => player.name);
+                if (werewolfNames.length == 0) {
+                    return `There are no werewolves.`;
+                } else if (werewolfNames.length == 1) {
+                    return `The werewolf is ${werewolfNames[0]}.`;
+                } else {
+                    return `The werewolves are ${werewolfNames}.`;
+                }
+
+            // case "drunk":
+            // case "hunter":
+            // case "insomniac":
+            // case "robber":
+            // case "seer":
+            // case "tanner":
+            // case "troublemaker":
+            // case "villager":
+            default:
+                return "";
+        }
+    }
+
+    private daytimeMessage(playerID: string): string {
         const role = this.players[playerID].role;
 
         const noRoleActionMessage = `You chose not to perform your ${role.name} action.`;
@@ -469,6 +437,32 @@ export class State extends Schema {
             default:
                 return "";
         }
+    }
+
+    private sortByWakeOrder(nightChoices: Map<Player, string[]>): Map<Player, string[]> {
+        return new Map([...nightChoices.entries()].sort(([roleA, choicesA], [roleB, choicesB]) => {
+            let a = roleA.role.wakeOrder!;
+            let b = roleB.role.wakeOrder!;
+
+            if (a === -1 && b === -1) return 0;
+            else if (a === -1) return 1;
+            else if (b === -1) return -1;
+
+            if (a === b) return 0;
+            else if (a > b) return 1;
+            else return -1;
+        }));
+    }
+
+    private getPlayerMessages(phaseMessaging: (id: string) => string): Map<Player, string> {
+        const messages = new Map();
+        [...this.players._indexes].forEach(([playerID, _]) => {
+            const player = this.players[playerID];
+            const message = phaseMessaging(playerID);
+            messages.set(player, message);
+        });
+
+        return messages;
     }
 
     private getLatestPlayerRole(playerID: string): Role {
