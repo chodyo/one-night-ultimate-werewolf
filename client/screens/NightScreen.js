@@ -123,7 +123,7 @@ export default class NightScreen extends React.Component {
       selectedCards = updateSelections(maxCenterCards, selectedCards, selectionLabel);
       actionRequired = this.isActionRequired(maxCenterCards, selectedCards);
     }
-    const choiceButtonText = !actionRequired ? 'You must choose' : 'Ready';
+    const choiceButtonText = actionRequired ? 'You must choose' : 'Ready';
 
     this.setState({ selectedCards, selectedPlayers, actionRequired, choiceButtonText });
   };
