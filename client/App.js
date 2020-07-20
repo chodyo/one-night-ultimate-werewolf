@@ -29,17 +29,17 @@ export default class App extends React.Component {
     this.room = null;
 
     this.state = {
-      isLoadingComplete: false,
-      initialNavigationState: null,
-      phase: '',
+      centerRoles: null,
       clientPlayer: null,
+      initialNavigationState: null,
+      isLoadingComplete: false,
+      phase: '',
       playerRole: null,
       // allPlayersReady: false,
       players: [],
+      results: '',
       roles: [],
       serverMessage: '',
-      centerRoles: null,
-      results: '',
     };
   }
 
@@ -141,16 +141,12 @@ export default class App extends React.Component {
 
   handleNightAction = (selectedCards, selectedPlayers) => {
     this.room.send({
-      action: 'updateNightChoices',
+      action: 'ready',
       params: {
         selectedCards: selectedCards,
         selectedPlayers: selectedPlayers,
       },
     });
-
-    //Setting state here for now to render the screens
-    //Once this is functional on the server TODO: REMOVE
-    this.setState({ phase: 'daytime' });
   };
 
   handleDoppelAction = (selectedPlayers) => {
@@ -181,15 +177,15 @@ export default class App extends React.Component {
 
   render() {
     const {
+      centerRoles,
+      clientPlayer,
       isLoadingComplete,
       phase,
-      players,
-      clientPlayer,
       playerRole,
+      players,
+      results,
       roles,
       serverMessage,
-      centerRoles,
-      results,
     } = this.state;
 
     const activeRoles = roles.filter(role => role.active);
@@ -255,9 +251,10 @@ export default class App extends React.Component {
             {phase === 'daytime' &&
               <View style={{ alignItems: 'center' }}>
                 <DayScreen
-                  players={players}
-                  player={clientPlayer}
                   handleVoteAction={this.handleVoteAction}
+                  messageForPlayer={serverMessage}
+                  player={clientPlayer}
+                  players={players}
                   results={results}
                 />
               </View>

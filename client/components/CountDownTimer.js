@@ -1,23 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
-import { NightTheme } from "../constants/Colors";
-import iffun from '@bit/rivigo.ui.utils.iffun';
-
-/**
- * @render react
- * @name CountDownTimer
- * @description Sample CountDownTimer Component.
- * @example
- * <CountDownTimer
- * firstText='You have '
- * secondText=' seconds to vote'
- * time = {60} />
- */
+import { Text } from 'react-native';
+import { Styles } from "../constants/Themes";
 
 class CountDownTimer extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             time: null
         };
@@ -25,49 +13,38 @@ class CountDownTimer extends Component {
         this.timeIntervalRef = null;
     }
 
+    componentDidMount() {
+        this.setState(
+          {
+              time: this.props.time
+          },
+          () => {
+              this.timeIntervalRef = setInterval(() => {
+                  if (this.state.time === 0) {
+                      clearInterval(this.timeIntervalRef);
+                      this.setState({
+                          time: this.state.time - 1
+                      });
+                  } else {
+                      this.setState({
+                          time: this.state.time - 1
+                      });
+                  }
+              }, 1000);
+          }
+        );
+    }
+
     render() {
         const { firstText, secondText } = this.props;
         const { time } = this.state;
 
-        return (
-            <View style={styles.getStartedText}>
-                {iffun(
-                    time >= 0,
-                    () => {
-                        return (
-                            <span>
-                                {firstText}
-                                {time}
-                                {secondText}
-                            </span>
-                        );
-                    },
-                    () => iffun(this.props.timeIsOver !== undefined, () => this.props.timeIsOver(), null)
-                )}
-            </View>
-        );
-    }
+        let message = 'Time is up!';
+        if (time >= 0) {
+            message = `${firstText} ${time} ${secondText}`;
+        }
 
-    componentDidMount() {
-        this.setState(
-            {
-                time: this.props.time
-            },
-            () => {
-                this.timeIntervalRef = setInterval(() => {
-                    if (this.state.time === 0) {
-                        clearInterval(this.timeIntervalRef);
-                        this.setState({
-                            time: this.state.time - 1
-                        });
-                    } else {
-                        this.setState({
-                            time: this.state.time - 1
-                        });
-                    }
-                }, 1000);
-            }
-        );
+        return <Text style={Styles.getStartedText}>{message}</Text>;
     }
 }
 
@@ -75,7 +52,6 @@ CountDownTimer.propTypes = {
     firstText: PropTypes.string,
     secondText: PropTypes.string,
     time: PropTypes.number,
-    timeIsOver: PropTypes.func
 };
 
 CountDownTimer.defaultProps = {
@@ -85,11 +61,3 @@ CountDownTimer.defaultProps = {
 };
 
 export default CountDownTimer;
-
-const styles = StyleSheet.create({
-    getStartedText: {
-        fontSize: 30,
-        color: NightTheme.activeText,
-        alignItems: 'center',
-    },
-});

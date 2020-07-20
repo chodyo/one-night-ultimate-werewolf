@@ -18,6 +18,10 @@ export class State extends Schema {
     // center# => role
     centerRoles: Map<string, Role> = new Map();
 
+    private nightChoices: Map<Player, Array<string>> = new Map();
+
+    private finalResults: Map<Player, Role> = new Map();
+
     // ====== Synched Properties ======
 
     // The players that are participating in the round.
@@ -155,7 +159,7 @@ export class State extends Schema {
         );
     }
 
-    clearAllReady() {
+    private clearAllReady() {
         Array.from(this.players._indexes.keys()).forEach((playerID) => (this.players[playerID].ready = false));
     }
 
@@ -177,19 +181,27 @@ export class State extends Schema {
         }
     }
 
-    startNighttime(): Map<Player, string> {
-        this.phase = "nighttime";
+    startPhase(phase: string): Map<Player, string> {
+        this.phase = phase;
 
         this.clearAllReady();
 
-        const messages = new Map();
-        Array.from(this.players._indexes).forEach(([playerID, _]) => {
-            const player = this.players[playerID];
-            const message = this.getNighttimeMessage(player.role.roleID);
-            messages.set(player, message);
-        });
+        let phaseMessaging = (playerID: string): string => { return "" };
+        switch (phase) {
+            case "doppelganger":
+            // TODO: implemented in doppelganger-new-role
+            // fall through to distribute roles for now
+            case "nighttime":
+                this.distributeRoles();
+                phaseMessaging = (playerID: string): string => this.nighttimeMessage(playerID);
+                break;
+            case "daytime":
+                this.executeNightActions();
+                phaseMessaging = (playerID: string): string => this.daytimeMessage(playerID);
+                break;
+        }
 
-        return messages;
+        return this.getPlayerMessages(phaseMessaging);
     }
 
     startDoppelganger(): Map<Player, string> {
@@ -271,8 +283,111 @@ export class State extends Schema {
         this.unlock();
     }
 
-    getNighttimeMessage(roleID: string): string {
-        const role = this.roles[roleID];
+    setNightChoices(id: string, selectedCards: Array<string>, selectedPlayers: Array<string>): void {
+        const player = this.players[id];
+        if (!player) {
+            console.error(`Invalid player=${id}`);
+            return;
+        }
+
+        const roleName = player.role.name;
+
+        let choice = Array<string>();
+        switch (roleName) {
+            case "werewolf":
+                choice = selectedCards;
+                break;
+            case "seer":
+                choice = selectedCards.length > 0 ? selectedCards : selectedPlayers;
+                break;
+            case "robber":
+                choice = selectedPlayers;
+                break;
+            case "troublemaker":
+                choice = selectedPlayers;
+                break;
+            case "drunk":
+                choice = selectedCards;
+                break;
+            default:
+                return;
+        }
+
+        this.nightChoices.set(player, choice);
+
+        // TODO: only for debugging purposes, maybe remove once functional
+        let msg = `Set player ${id}'s choice of "${JSON.stringify(choice)}" for the "${roleName} action."`;
+        console.debug(msg);
+        this.messager.Broadcast(msg);
+    }
+
+    private executeNightActions() {
+        this.lock();
+
+        const nightChoices = this.sortByWakeOrder(this.nightChoices);
+
+        console.debug(`roleChoices are ${JSON.stringify([...nightChoices])}`);
+
+        nightChoices.forEach((choices: Array<string>, player: Player) => {
+            let role = player.role;
+            switch (role.name) {
+                case "robber":
+                    if (choices.length === 1) {
+                        console.debug("Executing Robber night choice...");
+                        const robbedPlayer = this.players[choices[0]];
+
+                        this.finalResults.set(player, robbedPlayer.role);
+                        this.finalResults.set(robbedPlayer, role);
+
+                        console.debug(`${player.name} robbed ${robbedPlayer.name} of ${robbedPlayer.role.name}`);
+                        console.debug(`${robbedPlayer.name} is now ${role.name}`);
+                    }
+                    break;
+                case "troublemaker":
+                    if (choices.length === 2) {
+                        console.debug("Executing Troublemaker night choices...");
+                        const playerA = this.players[choices[0]];
+                        const playerB = this.players[choices[1]];
+
+                        const roleA = this.getLatestPlayerRole(playerA.client.sessionId);
+                        const roleB = this.getLatestPlayerRole(playerB.client.sessionId);
+
+                        this.finalResults.set(playerA, roleB);
+                        this.finalResults.set(playerB, roleA);
+
+                        console.debug(`${playerA.name}'s role was ${roleA.name} and is now ${roleB.name}`);
+                        console.debug(`${playerB.name}'s role was ${roleB.name} and is now ${roleA.name}`);
+                    }
+                    break;
+                case "drunk":
+                    console.debug("Executing Drunk night choice...");
+                    if (choices.length === 1) {
+                        const drunkedRole = this.centerRoles.get(choices[0])!;
+                        this.finalResults.set(player, drunkedRole);
+                        console.debug(`${player.name} drunked into ${drunkedRole.name}`);
+                    } else {
+                        console.error("The drunk died by execution!!")
+                    }
+                    break;
+            }
+        });
+
+        [...this.rolePlayers.values()].forEach((player) => {
+            const playerHasNoResult = [...this.finalResults.keys()].filter((playerWithResult) => playerWithResult === player).length === 0;
+            if (playerHasNoResult) {
+                console.info(`${player.name}'s role is unchanged and remains ${player.role.name}`);
+                this.finalResults.set(player, player.role)
+            }
+        });
+
+        console.debug(`Finished setting finalResults=${JSON.stringify([...this.finalResults])}`);
+
+        this.unlock();
+    }
+
+    private nighttimeMessage(playerID: string): string {
+        const player = this.players[playerID];
+        const role = player.role;
         console.debug(`roleID=${JSON.stringify(role)}`);
 
         switch (role.name) {
@@ -281,7 +396,6 @@ export class State extends Schema {
                 return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
                 return "TODO";
-
             case "minion":
                 const werewolfNames = Array.from(this.rolePlayers)
                     .filter(([role, _]) => role.name === "werewolf")
@@ -293,18 +407,87 @@ export class State extends Schema {
                 } else {
                     return `The werewolves are ${werewolfNames}.`;
                 }
-
-            // case "drunk":
-            // case "hunter":
-            // case "insomniac":
-            // case "robber":
-            // case "seer":
-            // case "tanner":
-            // case "troublemaker":
-            // case "villager":
             default:
                 return "";
         }
+    }
+
+    private daytimeMessage(playerID: string): string {
+        const role = this.players[playerID].role;
+
+        const noRoleActionMessage = `You chose not to perform your ${role.name} action.`;
+        switch (role.name) {
+            case "werewolf":
+                const partnerRoleID = getPartnerRoleID(role.roleID);
+                const partnerRole = this.roles[partnerRoleID];
+                // As long as it's the lone wolf
+                if (!partnerRole.active) {
+                    const lonewolfChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                    if (lonewolfChoice.length === 1) {
+                        return `The ${lonewolfChoice[0]} card is ${this.centerRoles.get(lonewolfChoice[0])!.name}.`;
+                    } else return noRoleActionMessage;
+                } else return "";
+            case "seer":
+                const seerChoices = this.findPlayer<string[]>(playerID, this.nightChoices);
+                if (seerChoices.length === 1) {
+                    let chosenPlayer = this.players[seerChoices[0]];
+                    return `${chosenPlayer.name} is a ${chosenPlayer.role.name}`;
+                } else if (seerChoices.length === 2) {
+                    const card1 = this.centerRoles.get(seerChoices[0])!;
+                    const card2 = this.centerRoles.get(seerChoices[1])!;
+                    return `The ${seerChoices.join(", ")} cards are ${card1.name} and ${card2.name} respectively.`;
+                } else return noRoleActionMessage;
+            case "robber":
+                const robberChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                if (robberChoice.length === 1) {
+                    const robbedRole = this.players[robberChoice[0]];
+                    return `Your new role is ${robbedRole.role.name}`;
+                } else return noRoleActionMessage;
+            case "troublemaker":
+                const troublemakerChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                if (troublemakerChoice.length === 2) {
+                    const playerA = this.players[troublemakerChoice[0]];
+                    const playerB = this.players[troublemakerChoice[1]];
+                    return `You switched ${playerA.name}'s and ${playerB.name}'s roles`;
+                } else return noRoleActionMessage;
+            case "insomniac":
+                const wakingRole = this.findPlayer<Role>(playerID, this.finalResults);
+                return wakingRole.name !== role.name ? `You woke up as a ${wakingRole.name}.` : "You still can't sleep.";
+            default:
+                return "";
+        }
+    }
+
+    // TODO: Look into using this for client roles
+    private sortByWakeOrder(nightChoices: Map<Player, string[]>): Map<Player, string[]> {
+        return new Map([...nightChoices.entries()].sort(([roleA, choicesA], [roleB, choicesB]) => {
+            let a = roleA.role.wakeOrder!;
+            let b = roleB.role.wakeOrder!;
+
+            if (a === -1 && b === -1) return 0;
+            else if (a === -1) return 1;
+            else if (b === -1) return -1;
+
+            if (a === b) return 0;
+            else if (a > b) return 1;
+            else return -1;
+        }));
+    }
+
+    private getPlayerMessages(phaseMessaging: (id: string) => string): Map<Player, string> {
+        const messages = new Map();
+        [...this.players._indexes].forEach(([playerID, _]) => {
+            const player = this.players[playerID];
+            const message = phaseMessaging(playerID);
+            messages.set(player, message);
+        });
+
+        return messages;
+    }
+
+    private getLatestPlayerRole(playerID: string): Role {
+        const changedRole = [...this.finalResults.entries()].filter(([player, T]) => player.client.sessionId === playerID)[0];
+        return changedRole !== undefined && changedRole.length > 0 ? changedRole[1] : this.players[playerID].role;
     }
 
     getPartnerNames(clientID: string, roleName: string): string {
@@ -321,6 +504,10 @@ export class State extends Schema {
             const pluralRoleName = roleName ==="werewolf" ? 'werewolves' : 'minions'
             return `The ${pluralRoleName} are ${partnerNames}.`;
         }
+    }
+
+    private findPlayer<T>(playerID: string, playerMap: Map<Player, T>): T {
+        return [...playerMap.entries()].filter(([player, T]) => player.client.sessionId === playerID)[0][1];
     }
 }
 
