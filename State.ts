@@ -277,35 +277,30 @@ export class State extends Schema {
     }
 
     private executeNightActions() {
-        if (this.finalResults.size > 0) {
-            console.error("Results have already been distributed", this.finalResults);
-            return;
-        }
-
         this.lock();
 
         const nightChoices = this.sortByWakeOrder(this.nightChoices);
 
-        console.info(`roleChoices are ${JSON.stringify([...nightChoices])}`);
+        console.debug(`roleChoices are ${JSON.stringify([...nightChoices])}`);
 
         nightChoices.forEach((choices: Array<string>, player: Player) => {
             let role = player.role;
             switch (role.name) {
                 case "robber":
                     if (choices.length === 1) {
-                        console.info("Executing Robber night choice...");
+                        console.debug("Executing Robber night choice...");
                         const robbedPlayer = this.players[choices[0]];
 
                         this.finalResults.set(player, robbedPlayer.role);
                         this.finalResults.set(robbedPlayer, role);
 
-                        console.info(`${player.name} robbed ${robbedPlayer.name} of ${robbedPlayer.role.name}`);
-                        console.info(`${robbedPlayer.name} is now ${role.name}`);
+                        console.debug(`${player.name} robbed ${robbedPlayer.name} of ${robbedPlayer.role.name}`);
+                        console.debug(`${robbedPlayer.name} is now ${role.name}`);
                     }
                     break;
                 case "troublemaker":
                     if (choices.length === 2) {
-                        console.info("Executing Troublemaker night choices...");
+                        console.debug("Executing Troublemaker night choices...");
                         const playerA = this.players[choices[0]];
                         const playerB = this.players[choices[1]];
 
@@ -315,16 +310,16 @@ export class State extends Schema {
                         this.finalResults.set(playerA, roleB);
                         this.finalResults.set(playerB, roleA);
 
-                        console.info(`${playerA.name}'s role was ${roleA.name} and is now ${roleB.name}`);
-                        console.info(`${playerB.name}'s role was ${roleB.name} and is now ${roleA.name}`);
+                        console.debug(`${playerA.name}'s role was ${roleA.name} and is now ${roleB.name}`);
+                        console.debug(`${playerB.name}'s role was ${roleB.name} and is now ${roleA.name}`);
                     }
                     break;
                 case "drunk":
-                    console.info("Executing Drunk night choice...");
+                    console.debug("Executing Drunk night choice...");
                     if (choices.length === 1) {
                         const drunkedRole = this.centerRoles.get(choices[0])!;
                         this.finalResults.set(player, drunkedRole);
-                        console.info(`${player.name} drunked into ${drunkedRole.name}`);
+                        console.debug(`${player.name} drunked into ${drunkedRole.name}`);
                     } else {
                         console.error("The drunk died by execution!!")
                     }
@@ -363,10 +358,8 @@ export class State extends Schema {
                 return partner
                     ? `The other ${role.name} is ${partner.name}.`
                     : `The other ${role.name} is in the center.`;
-
             case "doppelganger":
                 return "TODO";
-
             case "minion":
                 const werewolfNames = Array.from(this.rolePlayers)
                     .filter(([role, _]) => role.name === "werewolf")
@@ -378,15 +371,6 @@ export class State extends Schema {
                 } else {
                     return `The werewolves are ${werewolfNames}.`;
                 }
-
-            // case "drunk":
-            // case "hunter":
-            // case "insomniac":
-            // case "robber":
-            // case "seer":
-            // case "tanner":
-            // case "troublemaker":
-            // case "villager":
             default:
                 return "";
         }
@@ -402,7 +386,6 @@ export class State extends Schema {
                 const partnerRole = this.roles[partnerRoleID];
                 // As long as it's the lone wolf
                 if (!partnerRole.active) {
-                    console.info("Getting lonewolf message");
                     const lonewolfChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
                     if (lonewolfChoice.length === 1) {
                         return `The ${lonewolfChoice[0]} card is ${this.centerRoles.get(lonewolfChoice[0])!.name}.`;
