@@ -6,7 +6,7 @@ import { updateSelections } from "../assets/GameUtil";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
 
 
-export default class ConfrimRole extends React.Component {
+export default class ConfirmRole extends React.Component {
   constructor(props) {
     super(props);
 

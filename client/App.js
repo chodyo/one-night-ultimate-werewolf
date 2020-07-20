@@ -17,11 +17,11 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const host = window.document.location.host.replace(/:.*/, '');
+    const host = window.document.location.host.replace('/:.*/', '');
     console.debug(host);
     const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
     console.debug(port);
-    const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+    const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
     console.debug(url);
     this.client = new Client(url);
 

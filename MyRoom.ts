@@ -5,41 +5,41 @@ import { State } from "./State";
 import { Player } from "./Player";
 
 export class MyRoom extends Room {
-  // ====== Colyseus Properties ======
+    // ====== Colyseus Properties ======
 
-  maxClients = 13;
+    maxClients = 13;
 
-  // ====== Custom Properties ======
+    // ====== Custom Properties ======
 
-  private messager = new Messager(this);
+    private messager = new Messager(this);
 
-  // ====== Player Action Mapping ======
+    // ====== Player Action Mapping ======
 
-  actionExecs = new Map<Action, ActionFunction>([
-    [actions.setPlayerName, this.setPlayerName],
-    [actions.updateSelectedRole, this.updateSelectedRole],
-    [actions.ready, this.ready],
-  ]);
+    actionExecs = new Map<Action, ActionFunction>([
+        [actions.setPlayerName, this.setPlayerName],
+        [actions.updateSelectedRole, this.updateSelectedRole],
+        [actions.ready, this.ready],
+    ]);
 
-  // ====== Player Actions ======
+    // ====== Player Actions ======
 
-  setPlayerName(client: Client, params: any): void {
-    this.state.updatePlayerName(client.sessionId, params.name);
-  }
-
-  updateSelectedRole(client: Client, params: any): void {
-    this.state.setRoleActive(params.roleID, params.roleEnabled);
-  }
-
-  ready(client: Client, params: any): void {
-    // Useful for dev-testing scenarios with multiple browser tabs, but could be used in game configuration ¯\_(ツ)_/¯
-    if (params.readyAll) {
-      Array.from(this.state.players._indexes.keys()).forEach((playerID) => (this.state.ready(playerID)))
-    } else if (params.doppelgangerChoice !== null) {
-      this.state.distributeDoppelsRole(client.sessionId, params.doppelgangerChoice[0]);
-    } else {
-      this.state.ready(client.sessionId);
+    setPlayerName(client: Client, params: any): void {
+        this.state.updatePlayerName(client.sessionId, params.name);
     }
+
+    updateSelectedRole(client: Client, params: any): void {
+        this.state.setRoleActive(params.roleID, params.roleEnabled);
+    }
+
+    ready(client: Client, params: any): void {
+        // Useful for dev-testing scenarios with multiple browser tabs, but could be used in game configuration ¯\_(ツ)_/¯
+        if (params.readyAll) {
+            Array.from(this.state.players._indexes.keys()).forEach((playerID) => (this.state.ready(playerID)))
+        } else if (params.doppelgangerChoice !== null) {
+            this.state.distributeDoppelsRole(client.sessionId, params.doppelgangerChoice[0]);
+        } else {
+            this.state.ready(client.sessionId);
+        }
 
         let messages: Map<Player, string> = new Map();
         let phaseAction = "role assignment";
@@ -57,19 +57,20 @@ export class MyRoom extends Room {
                     return;
                 }
 
-        // close the room to new players
-        this.lock();
+                // close the room to new players
+                this.lock();
 
                 messages = this.state.startPhase("doppelganger");
 
-        break;
+                break;
 
             case "doppelganger":
                 //Always do doppelganger
                 console.debug("doppel-phase");
+                phaseAction = "doppelganger choice";
 
                 if (this.state.allAreReady()) {
-                    messages = this.state.startNighttime();
+                    messages = this.state.startPhase("nighttime");
                 }
                 break;
             case "nighttime":
@@ -103,37 +104,37 @@ export class MyRoom extends Room {
         });
     }
 
-  // ====== Colyseus Handlers ======
+    // ====== Colyseus Handlers ======
 
-  onCreate(options: any) {
-    console.debug("MyRoom created!", options);
-    this.setState(new State(this.messager));
-  }
-
-  onJoin(client: Client, options: any) {
-    console.debug(`Player ${client.sessionId} joined.`);
-    this.state.addPlayer(client);
-  }
-
-  onMessage(client: Client, data: any) {
-    console.debug("MyRoom received message from", client.sessionId, ":", data);
-
-    let exec = this.actionExecs.get(data.action);
-    if (exec) {
-      exec.bind(this)(client, data.params, this);
-    } else {
-      let msg = `Action ${data.action} not defined.`;
-      console.error(msg);
-      this.messager.Debug(client, msg);
+    onCreate(options: any) {
+        console.debug("MyRoom created!", options);
+        this.setState(new State(this.messager));
     }
-  }
 
-  onLeave(client: Client, consented: boolean) {
-    console.log(`Player ${client.sessionId} left.`);
-    this.state.removePlayer(client.sessionId);
-  }
+    onJoin(client: Client, options: any) {
+        console.debug(`Player ${client.sessionId} joined.`);
+        this.state.addPlayer(client);
+    }
 
-  onDispose() {
-    console.log("Dispose MyRoom.");
-  }
+    onMessage(client: Client, data: any) {
+        console.debug("MyRoom received message from", client.sessionId, ":", data);
+
+        let exec = this.actionExecs.get(data.action);
+        if (exec) {
+            exec.bind(this)(client, data.params, this);
+        } else {
+            let msg = `Action ${data.action} not defined.`;
+            console.error(msg);
+            this.messager.Debug(client, msg);
+        }
+    }
+
+    onLeave(client: Client, consented: boolean) {
+        console.log(`Player ${client.sessionId} left.`);
+        this.state.removePlayer(client.sessionId);
+    }
+
+    onDispose() {
+        console.log("Dispose MyRoom.");
+    }
 }

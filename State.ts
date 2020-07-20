@@ -204,23 +204,6 @@ export class State extends Schema {
         return this.getPlayerMessages(phaseMessaging);
     }
 
-    startDoppelganger(): Map<Player, string> {
-        this.phase = "doppelganger";
-
-        this.clearAllReady();
-
-        this.distributeRoles();
-
-        const messages = new Map();
-        Array.from(this.players._indexes).forEach(([playerID, _]) => {
-            const player = this.players[playerID];
-            const message = this.getNighttimeMessage(player.role.roleID);
-            messages.set(player, message);
-        });
-
-        return messages;
-    }
-
     distributeRoles() {
         if (this.rolePlayers.size > 0) {
             console.error("Roles have already been distributed", this.rolePlayers);
