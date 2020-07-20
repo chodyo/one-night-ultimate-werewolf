@@ -922,10 +922,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bit/rivigo.ui.utils.iffun@^0.0.6":
-  version "0.0.6"
-  resolved "https://node.bit.dev/rivigo.ui.utils.iffun/-/rivigo.ui.utils.iffun-0.0.6.tgz#18b64bb94ea7215665e0aafe11634f7cab8fbd60"
-  integrity sha1-GLZLuU6nIVZl4Kr+EWNPfKuPvWA=
 "@bit/nexxtway.react-rainbow.assistive-text@1.10.0":
   version "1.10.0"
   resolved "https://node.bit.dev/nexxtway.react-rainbow.assistive-text/-/nexxtway.react-rainbow.assistive-text-1.10.0.tgz#9319e76a1f41cc416450b4cf37a6da68374e30d5"
@@ -1007,6 +1003,11 @@
   version "1.10.0"
   resolved "https://node.bit.dev/nexxtway.react-rainbow.types/-/nexxtway.react-rainbow.types-1.10.0.tgz#e08706a0dbc6c029ba7f2a37e50f52285155b1ad"
   integrity sha1-4IcGoNvGwCm6fyo35Q9SKFFVsa0=
+
+"@bit/rivigo.ui.utils.iffun@^0.0.6":
+  version "0.0.6"
+  resolved "https://node.bit.dev/rivigo.ui.utils.iffun/-/rivigo.ui.utils.iffun-0.0.6.tgz#18b64bb94ea7215665e0aafe11634f7cab8fbd60"
+  integrity sha1-GLZLuU6nIVZl4Kr+EWNPfKuPvWA=
 
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
@@ -4770,9 +4771,9 @@ lodash.throttle@^4.1.1:
   integrity sha1-wj6RtxAkKscMN/HhzaknTMOb8vQ=
 
 lodash@^4.17.11, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.3.0, lodash@^4.5.0, lodash@^4.6.0:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 log-symbols@^2.2.0:
   version "2.2.0"
