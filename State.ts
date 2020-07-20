@@ -422,6 +422,7 @@ export class State extends Schema {
         }
     }
 
+    // TODO: Look into using this for client roles
     private sortByWakeOrder(nightChoices: Map<Player, string[]>): Map<Player, string[]> {
         return new Map([...nightChoices.entries()].sort(([roleA, choicesA], [roleB, choicesB]) => {
             let a = roleA.role.wakeOrder!;
