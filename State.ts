@@ -253,7 +253,7 @@ export class State extends Schema {
         //Get the Doppelganger's choice to prepare for new role assignment
         const doppelgangedRole = this.players[chosenPlayersClientID].role;
 
-        let roleID = getPartnerRoleID(doppelgangedRole.roleID)
+        let roleID = getPartnerRoleID(doppelgangedRole.roleID);
         let newRole = new Role(
             roleID,
             doppelgangedRole.name,
