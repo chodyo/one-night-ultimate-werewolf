@@ -196,7 +196,7 @@ export class State extends Schema {
         switch (phase) {
             case "doppelganger":
                 this.distributeRoles();
-                // fall through to distribute roles for now
+            // fall through to distribute roles for now
             case "nighttime":
                 phaseMessaging = (playerID: string): string => this.nighttimeMessage(playerID);
                 break;
@@ -247,9 +247,7 @@ export class State extends Schema {
 
         this.lock();
 
-        //Get the Doppelganger to prepare for role Assignment
-        const doppelganger = Array.from(this.players._indexes.keys())
-            .filter((playerID) => this.players[playerID].roleName === 'doppelganger');
+        const doppelsRoleWakeOrder = 1;
         //Get the Doppelganger's choice to prepare for new role assignment
         const doppelgangedRole = this.players[chosenPlayersClientID].role;
 
@@ -258,8 +256,9 @@ export class State extends Schema {
             roleID,
             doppelgangedRole.name,
             doppelgangedRole.team,
-            doppelgangedRole.wakeOrder
+            doppelsRoleWakeOrder
         );
+        newRole.doppelganger = true;
 
         //The role assignment
         const player = this.players[clientID];
@@ -323,11 +322,12 @@ export class State extends Schema {
                     if (choices.length === 1) {
                         console.debug("Executing Robber night choice...");
                         const robbedPlayer = this.players[choices[0]];
+                        const robbedRole = this.getLatestPlayerRole(choices[0]);
 
-                        this.finalResults.set(player, robbedPlayer.role);
+                        this.finalResults.set(player, robbedRole);
                         this.finalResults.set(robbedPlayer, role);
 
-                        console.debug(`${player.name} robbed ${robbedPlayer.name} of ${robbedPlayer.role.name}`);
+                        console.debug(`${player.name} robbed into ${robbedRole.name}`);
                         console.debug(`${robbedPlayer.name} is now ${role.name}`);
                     }
                     break;
@@ -351,8 +351,13 @@ export class State extends Schema {
                     console.debug("Executing Drunk night choice...");
                     if (choices.length === 1) {
                         const drunkedRole = this.centerRoles.get(choices[0])!;
+                        
+                        //set the center card choice to players current role 
+                        this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.client.sessionId)); 
+
                         this.finalResults.set(player, drunkedRole);
                         console.debug(`${player.name} drunked into ${drunkedRole.name}`);
+
                     } else {
                         console.error("The drunk died by execution!!")
                     }
@@ -417,7 +422,10 @@ export class State extends Schema {
                 const seerChoices = this.findPlayer<string[]>(playerID, this.nightChoices);
                 if (seerChoices.length === 1) {
                     let chosenPlayer = this.players[seerChoices[0]];
-                    return `${chosenPlayer.name} is a ${chosenPlayer.role.name}`;
+                    //if("doppel-drunk" or "doppel-robber"){OGseer should see drunkedRole or RobbedRole}
+                    const seeredRole = chosenPlayer.role.doppelganger ? this.getLatestPlayerRole(seerChoices[0]) : chosenPlayer.role
+                    const chosenPlayerRoleName = seeredRole.doppelganger ? "doppelganger" : seeredRole.name;
+                    return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
                     const card1 = this.centerRoles.get(seerChoices[0])!;
                     const card2 = this.centerRoles.get(seerChoices[1])!;
@@ -426,8 +434,9 @@ export class State extends Schema {
             case "robber":
                 const robberChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
                 if (robberChoice.length === 1) {
-                    const robbedRole = this.players[robberChoice[0]];
-                    return `Your new role is ${robbedRole.role.name}`;
+                    const robbedRole = role.doppelganger ? this.players[robberChoice[0]].role : this.getLatestPlayerRole(robberChoice[0]);
+                    const robbedRoleName = robbedRole.doppelganger ? "doppelganger" : robbedRole.name;
+                    return `Your new role is ${robbedRoleName}`;
                 } else return noRoleActionMessage;
             case "troublemaker":
                 const troublemakerChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
@@ -438,7 +447,8 @@ export class State extends Schema {
                 } else return noRoleActionMessage;
             case "insomniac":
                 const wakingRole = this.findPlayer<Role>(playerID, this.finalResults);
-                return wakingRole.name !== role.name ? `You woke up as a ${wakingRole.name}.` : "You still can't sleep.";
+                const wakingRoleName = wakingRole.doppelganger ? "doppelganger" : wakingRole.name;
+                return `You woke up as a ${wakingRoleName}.`;
             default:
                 return "";
         }
@@ -487,7 +497,7 @@ export class State extends Schema {
         } else if (partnerNames.length == 1) {
             return `You are the only ${roleName}.`;
         } else {
-            const pluralRoleName = roleName ==="werewolf" ? 'werewolves' : 'minions'
+            const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'minions'
             return `The ${pluralRoleName} are ${partnerNames}.`;
         }
     }
