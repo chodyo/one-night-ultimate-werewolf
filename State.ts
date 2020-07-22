@@ -153,6 +153,12 @@ export class State extends Schema {
         this.players[playerID].ready = true;
     }
 
+    doppelgangerIsActive(): Boolean {
+        return (
+            Array.from(this.players._indexes.keys()).filter((playerID) => this.players[playerID].role.name === "doppelganger").length === 1
+        );
+    }
+
     allAreReady(): boolean {
         return (
             Array.from(this.players._indexes.keys()).filter((playerID) => !this.players[playerID].ready).length === 0
@@ -189,10 +195,9 @@ export class State extends Schema {
         let phaseMessaging = (playerID: string): string => { return "" };
         switch (phase) {
             case "doppelganger":
-            // TODO: implemented in doppelganger-new-role
-            // fall through to distribute roles for now
-            case "nighttime":
                 this.distributeRoles();
+                // fall through to distribute roles for now
+            case "nighttime":
                 phaseMessaging = (playerID: string): string => this.nighttimeMessage(playerID);
                 break;
             case "daytime":
@@ -401,10 +406,8 @@ export class State extends Schema {
         const noRoleActionMessage = `You chose not to perform your ${role.name} action.`;
         switch (role.name) {
             case "werewolf":
-                const partnerRoleID = getPartnerRoleID(role.roleID);
-                const partnerRole = this.roles[partnerRoleID];
-                // As long as it's the lone wolf
-                if (!partnerRole.active) {
+                const isLonewolf = [...this.rolePlayers].filter(([role, _]) => role.name === "werewolf").length === 1;
+                if (isLonewolf) {
                     const lonewolfChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
                     if (lonewolfChoice.length === 1) {
                         return `The ${lonewolfChoice[0]} card is ${this.centerRoles.get(lonewolfChoice[0])!.name}.`;

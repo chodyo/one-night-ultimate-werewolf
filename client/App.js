@@ -17,11 +17,11 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    const host = window.document.location.host.replace('/:.*/', '');
+    const host = window.document.location.host.replace(/:.*/, '');
     console.debug(host);
-    const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
+    const port = process.env.NODE_ENV !== 'production' ? '2567' : window.document.location.port;
     console.debug(port);
-    const url = window.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
+    const url = window.document.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
     console.debug(url);
     this.client = new Client(url);
 
@@ -125,7 +125,7 @@ export default class App extends React.Component {
     this.room.send(request);
   };
 
-  markAsReady = () => {
+  markAsReady = (readyAll) => {
     const { state: { players }, sessionId } = this.room;
 
     let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
@@ -134,7 +134,7 @@ export default class App extends React.Component {
     this.room.send({
       action: 'ready',
       params: {
-        readyAll: true
+        readyAll
       }
     });
   };
@@ -162,7 +162,7 @@ export default class App extends React.Component {
 
   handleVoteAction = (selectedPlayers) => {
     this.room.send({
-      action: 'updateVoteChoices',
+      action: 'ready',
       params: {
         selectedPlayers: selectedPlayers,
       },
@@ -216,7 +216,7 @@ export default class App extends React.Component {
                 <Button
                   title={buttonText}
                   style={styles.unSelectedButton}
-                  onPress={() => this.markAsReady()}
+                  onPress={() => this.markAsReady(true)}
                   // disabled after player clicks
                   // disabled if there aren't exactly 3 more roles than players in game
                   disabled={requiredRoles !== activeRoles.length || clientPlayer.ready}
@@ -231,7 +231,7 @@ export default class App extends React.Component {
                   players={players}
                   player={clientPlayer}
                   handleSelection={this.handleDoppelAction}
-                  markAsReady={this.markAsReady}
+                  markAsReady={() => this.markAsReady(false)}
                   results={results}
                 />
               </View>

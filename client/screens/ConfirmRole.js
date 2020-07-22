@@ -5,7 +5,6 @@ import CountDownTimer from '../components/CountDownTimer';
 import { updateSelections } from "../assets/GameUtil";
 import PlayerSelectionAction from '../components/PlayerSelectionAction';
 
-
 export default class ConfirmRole extends React.Component {
   constructor(props) {
     super(props);
@@ -18,26 +17,9 @@ export default class ConfirmRole extends React.Component {
       actionRequiredRoleDefault: true,
       actionRequired: true,
       selectedPlayers: [],
-      buttonText: 'Ready'
+      buttonText: 'Ready',
+      buttonDisabled: false,
     };
-  }
-
-  componentDidMount() {
-    const { role, messageForPlayer } = this.props;
-
-    try {
-      const roles = require('../../static/assets/onenight.json');
-      const { prompt, description, nightActionRequired } = roles[role.name];
-      this.setState({
-        rolePrompt: prompt,
-        roleDescription: description,
-        actionRequiredRoleDefault: nightActionRequired,
-        actionRequired: nightActionRequired,
-        initialMessage: messageForPlayer,
-      });
-    } catch (e) {
-      console.error('Fucked in the confirmation by:', e);
-    }
   }
 
   makeSelection = (selectionLabel) => {
@@ -71,12 +53,8 @@ export default class ConfirmRole extends React.Component {
   };
 
   render() {
-    const { players, player, role, handleSelection, markAsReady } = this.props;
-    const {
-      selectedPlayers,
-      actionRequiredRoleDefault,
-      centerCards,
-    } = this.state;
+    const { players, player, handleSelection, markAsReady } = this.props;
+    const { buttonText, selectedPlayers } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
 
@@ -89,7 +67,6 @@ export default class ConfirmRole extends React.Component {
           firstText='You have '
           secondText=' seconds to ready.'
           time={15}
-          timeIsOver={() => markAsReady()}
         />
       </>
     );
@@ -97,11 +74,12 @@ export default class ConfirmRole extends React.Component {
     return (
       <View>
         <Button
-          title={'Ready'}
+          title={buttonText}
           style={Styles.unSelectedButton}
+          disabled={buttonText !== 'Ready'}
           onPress={() => {
-            player.role.name === 'doppelganger' ?
-              handleSelection(selectedPlayers) : markAsReady;
+            player.role.name === 'doppelganger' ? handleSelection(selectedPlayers) : markAsReady();
+            this.setState({ buttonText: 'Waiting for other players' })
           }}
         />
         {player.role.name === 'doppelganger' ? (
