@@ -6,11 +6,11 @@
   "proxy": "http://localhost:2567",
   "main": "lib/index.js",
   "scripts": {
-    "start": "ts-node index.ts",
-    "watch": "ts-node-dev index.ts",
+    "start": "yarn ts-node server/src/index.ts",
+    "watch": "yarn ts-node-dev server/src/index.ts",
     "client": "yarn --cwd client run start",
     "dev": "concurrently --kill-others-on-fail \"yarn run watch\" \"yarn run client\"",
-    "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
+    "loadtest": "colyseus-loadtest server/loadtest/example.ts --room my_room --numClients 2",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -30,11 +30,15 @@
   "dependencies": {
     "@colyseus/monitor": "^0.11.0",
     "@colyseus/social": "^0.10.2",
+    "@types/mocha": "^8.0.2",
+    "chai": "^4.2.0",
     "colyseus": "^0.12.0",
-    "cors": "^2.8.5",
-    "express-jwt": "^6.0.0",
     "concurrently": "^5.1.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
-    "nodemon": "^2.0.2"
+    "express-jwt": "^6.0.0",
+    "mocha": "^8.1.1",
+    "nodemon": "^2.0.2",
+    "sinon": "^9.0.3"
   }
 }
