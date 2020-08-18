@@ -92,7 +92,7 @@ export default class NightScreen extends React.Component {
 
   componentDidMount() {
     try {
-      const roles = require('../../static/assets/onenight.json');
+      const roles = require('../../server/src/static/assets/onenight.json');
       const { prompt, description, nightActionRequired } = roles[this.props.role.name];
       this.setState({
         actionRequired: nightActionRequired,

@@ -86,10 +86,10 @@ export class State extends Schema {
         this.locked = false;
     }
 
-    addPlayer(client: Client) {
+    addPlayer(sessionId: string) {
         this.lock();
 
-        this.players[client.sessionId] = new Player(client);
+        this.players[sessionId] = new Player(sessionId);
 
         this.unlock();
     }
@@ -353,7 +353,7 @@ export class State extends Schema {
                         const drunkedRole = this.centerRoles.get(choices[0])!;
                         
                         //set the center card choice to players current role 
-                        this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.client.sessionId)); 
+                        this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.sessionId));
 
                         this.finalResults.set(player, drunkedRole);
                         console.debug(`${player.name} drunked into ${drunkedRole.name}`);
@@ -482,7 +482,7 @@ export class State extends Schema {
     }
 
     private getLatestPlayerRole(playerID: string): Role {
-        const changedRole = [...this.finalResults.entries()].filter(([player, T]) => player.client.sessionId === playerID)[0];
+        const changedRole = [...this.finalResults.entries()].filter(([player, T]) => player.sessionId === playerID)[0];
         return changedRole !== undefined && changedRole.length > 0 ? changedRole[1] : this.players[playerID].role;
     }
 
@@ -503,7 +503,7 @@ export class State extends Schema {
     }
 
     private findPlayer<T>(playerID: string, playerMap: Map<Player, T>): T {
-        return [...playerMap.entries()].filter(([player, T]) => player.client.sessionId === playerID)[0][1];
+        return [...playerMap.entries()].filter(([player, T]) => player.sessionId === playerID)[0][1];
     }
 }
 
