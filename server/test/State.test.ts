@@ -1,15 +1,15 @@
 import { State } from "../src/State";
 import { Messager } from "../src/Message";
 import { Player } from "../src/Player";
-import { mock, when } from "ts-mockito";
-import { Client } from "colyseus";
+import { Role } from "../src/Role";
+import { mock } from "ts-mockito";
 
 const chai = require("chai");
 const expect = chai.expect;
 
 describe("State", () => {
   let state: State;
-  const messager = mock(Messager)
+  const messager = mock(Messager);
 
   beforeEach(() => {
     state = new State(messager);
@@ -31,72 +31,239 @@ describe("State", () => {
   });
 
   describe("executeNightActions", () => {
-    let sessionId1 = "client1";
-    let sessionId2 = "client2";
-    let sessionId3 = "client3";
-    let sessionId4 = "client4";
+    const doppelgangerId = "doppelganger0";
+    const werewolfId = "werewolf0";
+    const seerId = "seer0";
+    const robberId = "robber0";
+    const troublemakerId = "troublemaker0";
+    const drunkId = "drunk0";
+    const insomniacId = "insomniac0";
 
-    // const doppelgangerPlayer = new Player(sessionId1);
-    // const robberPlayer = new Player(sessionId2);
-    // const troublemakerPlayer = new Player(sessionId3);
-    // const drunkPlayer = new Player(sessionId4);
+    const playerId1 = "Tilli";
+    const playerId2 = "Julia";
+    const playerId3 = "Cody";
+    const playerId4 = "Jared";
+
+    const center0 = "center0";
+    const center1 = "center1";
+    const center2 = "center2";
+
+    let doppelgangerRole: Role;
+    let robberRole: Role;
+    let troublemakerRole: Role;
+    let drunkRole: Role;
 
     let doppelgangerPlayer: Player;
     let robberPlayer: Player;
     let troublemakerPlayer: Player;
     let drunkPlayer: Player;
 
+    // Setup state with roles/players sufficient for each scenario
     beforeEach(() => {
-      state.addPlayer(sessionId1);
-      state.updatePlayerName(sessionId1, "player1");
-      state.addPlayer(sessionId2);
-      state.addPlayer(sessionId3);
-      state.addPlayer(sessionId4);
+      // Mimics prep phase
+      state.addPlayer(playerId1);
+      state.addPlayer(playerId2);
+      state.addPlayer(playerId3);
+      state.addPlayer(playerId4);
 
-      doppelgangerPlayer = state.players[sessionId1];
-      robberPlayer = state.players[sessionId2];
-      troublemakerPlayer = state.players[sessionId3];
-      drunkPlayer = state.players[sessionId4];
+      state.updatePlayerName(playerId1, playerId1);
+      state.updatePlayerName(playerId2, playerId2);
+      state.updatePlayerName(playerId3, playerId3);
+      state.updatePlayerName(playerId4, playerId4);
 
-      state.setRoleActive("doppelganger0", true);
-      state.setRoleActive("werewolf0", true);
-      state.setRoleActive("seer0", true);
-      state.setRoleActive("robber0", true);
-      state.setRoleActive("troublemaker0", true);
-      state.setRoleActive("drunk0", true);
-      state.setRoleActive("insomniac0", true);
+      state.setRoleActive(doppelgangerId, true);
+      state.setRoleActive(werewolfId, true);
+      state.setRoleActive(seerId, true);
+      state.setRoleActive(robberId, true);
+      state.setRoleActive(troublemakerId, true);
+      state.setRoleActive(drunkId, true);
+      state.setRoleActive(insomniacId, true);
+      //--- ends prep
+
+      doppelgangerRole = state.roles[doppelgangerId];
+      robberRole = state.roles[robberId];
+      troublemakerRole = state.roles[troublemakerId];
+      drunkRole = state.roles[drunkId];
+
+      // Mimics state.distributeRoles() without randomization
+      doppelgangerPlayer = state.players[playerId1];
+      robberPlayer = state.players[playerId2];
+      troublemakerPlayer = state.players[playerId3];
+      drunkPlayer = state.players[playerId4];
+
+      doppelgangerPlayer.role = doppelgangerRole;
+      robberPlayer.role = robberRole;
+      troublemakerPlayer.role = troublemakerRole;
+      drunkPlayer.role = drunkRole;
+
+      state.rolePlayers.set(doppelgangerRole, doppelgangerPlayer);
+      state.rolePlayers.set(robberRole, robberPlayer);
+      state.rolePlayers.set(troublemakerRole, troublemakerPlayer);
+      state.rolePlayers.set(drunkRole, drunkPlayer);
+
+      state.centerRoles.set(center0, state.roles[werewolfId])
+      state.centerRoles.set(center1, state.roles[seerId])
+      state.centerRoles.set(center2, state.roles[insomniacId])
+      //--- ends state.distributeRoles()
     });
 
-    describe("doppelganger choice", () => {
+    describe("on doppelganger choice", () => {
       describe("as robber", () => {
-        it("should switch roles with selected player", () => {});
+        it("should switch roles with selected player", () => {
+          state.distributeDoppelsRole(playerId1, playerId2);
+
+          expect(doppelgangerPlayer.role.name).to.equal("robber");
+          expect(doppelgangerPlayer.role.doppelganger).to.be.true;
+
+          state.setNightChoices(playerId1, [], [playerId4]);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([player, role]) => {
+            switch (player.sessionId) {
+              case playerId1:
+                expect(role.name, `${player.name} should be doppelganger-robbed into drunk`).to.equal("drunk");
+                break;
+              case playerId4:
+                expect(role.doppelganger, `${player.name} should be the doppelganger-robber`).to.be.true;
+                expect(role.name, `${player.name} should be the doppelganger-robber`).to.equal("robber");
+                break;
+              default:
+                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+            }
+          });
+        });
       });
 
       describe("as troublemaker", () => {
-        it("should switch the roles of the chosen players", () => {});
+        it("should switch the roles of the chosen players", () => {
+          state.distributeDoppelsRole(playerId1, playerId3);
+
+          expect(doppelgangerPlayer.role.name).to.equal("troublemaker");
+          expect(doppelgangerPlayer.role.doppelganger).to.be.true;
+
+          state.setNightChoices(playerId1, [], [playerId3, playerId4]);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([player, role]) => {
+            switch (player.sessionId) {
+              case playerId3:
+                expect(role.name, `${player.name} should be doppelganger-troublemade into drunk`).to.equal("drunk");
+                break;
+              case playerId4:
+                expect(role.name, `${player.name} should be doppelganger-troublemade into troublemaker`).to.equal("troublemaker");
+                break;
+              default:
+                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+            }
+          });
+        });
       });
 
       describe("as drunk", () => {
-        it("should switch roles with the chosen center card", () => {});
+        it("should switch roles with the chosen center card", () => {
+          state.distributeDoppelsRole(playerId1, playerId4);
+
+          expect(doppelgangerPlayer.role.name).to.equal("drunk");
+          expect(doppelgangerPlayer.role.doppelganger).to.be.true;
+
+          state.setNightChoices(playerId1, [center1], []);
+
+          state.startPhase("daytime");
+
+          [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
+            if (centerLabel === center1) {
+              expect(role.name).to.equal("drunk");
+              expect(role.doppelganger).to.be.true;
+            } else {
+              expect(role.name).to.satisfy(() => {
+                return role.name === "werewolf" || role.name === "insomniac";
+              }, `${centerLabel} should remain unchanged as either werewolf or insomniac`);
+            }
+          });
+
+          [...state["finalResults"].entries()].forEach(([player, role]) => {
+            switch (player.sessionId) {
+              case playerId1:
+                expect(role.name, `${player.name} should be doppelganger-drunked into seer`).to.equal("seer");
+                break;
+              default:
+                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+            }
+          });
+        });
       });
     });
 
-    describe("robber choice", () => {
+    describe("on robber choice", () => {
       it("should switch roles with selected player", () => {
-        expect(state.players[sessionId1].name).to.equal("player1");
-        // (state as any).nightChoices;
-        // state["nightChoices"];
-        // // @ts-ignore
-        // state.nightChoices;
+        state.setNightChoices(playerId2, [], [playerId1]);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId1:
+              expect(role.name, `${player.name} should be the robber`).to.equal("robber");
+              break;
+            case playerId2:
+              expect(role.name, `${player.name} should be robbed into doppelganger`).to.equal("doppelganger");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
       });
     });
 
-    describe("troublemaker choices", () => {
-      it("should switch the roles of the chosen players", () => {});
+    describe("on troublemaker choices", () => {
+      it("should switch the roles of the chosen players", () => {
+        state.setNightChoices(playerId3, [], [playerId2, playerId4]);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId2:
+              expect(role.name, `${player.name} should be troublemade the drunk`).to.equal("drunk");
+              break;
+            case playerId4:
+              expect(role.name, `${player.name} should be troublemade the robber`).to.equal("robber");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
     });
 
-    describe("drunk choice", () => {
-      it("should switch roles with the chosen center card", () => {});
+    describe("on drunk choice", () => {
+      it("should switch roles with the chosen center card", () => {
+        state.setNightChoices(playerId4, [center0], []);
+
+        state.startPhase("daytime");
+
+        [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
+          if (centerLabel === center0) {
+            expect(role.name).to.equal("drunk");
+          } else {
+            expect(role.name).to.satisfy(() => {
+              return role.name === "seer" || role.name === "insomniac";
+            }, `${centerLabel} should remain unchanged as either seer or insomniac`);
+          }
+        });
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId4:
+              expect(role.name, `${player.name} should have drunked into the werewolfId`).to.equal("werewolf");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
     });
   });
 });
