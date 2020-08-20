@@ -1,8 +1,7 @@
-import { Client } from "colyseus";
 import { Schema, MapSchema, type } from "@colyseus/schema";
 import { Messager } from "./Message";
 import { Player } from "./Player";
-import { RoleName, Role, roleNames, roles } from "./Role";
+import { Role, roleNames, roles } from "./Role";
 
 export class State extends Schema {
     // Utilized when the server needs to assign roles without the state receiving updates.
@@ -337,8 +336,8 @@ export class State extends Schema {
                         const playerA = this.players[choices[0]];
                         const playerB = this.players[choices[1]];
 
-                        const roleA = this.getLatestPlayerRole(playerA.client.sessionId);
-                        const roleB = this.getLatestPlayerRole(playerB.client.sessionId);
+                        const roleA = this.getLatestPlayerRole(playerA.sessionId);
+                        const roleB = this.getLatestPlayerRole(playerB.sessionId);
 
                         this.finalResults.set(playerA, roleB);
                         this.finalResults.set(playerB, roleA);

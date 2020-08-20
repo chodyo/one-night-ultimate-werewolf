@@ -39,6 +39,6 @@
     "express-jwt": "^6.0.0",
     "mocha": "^8.1.1",
     "nodemon": "^2.0.2",
-    "sinon": "^9.0.3"
+    "ts-mockito": "^2.6.1"
   }
 }
