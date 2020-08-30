@@ -122,11 +122,11 @@ describe("State", () => {
           [...state["finalResults"].entries()].forEach(([player, role]) => {
             switch (player.sessionId) {
               case playerId1:
-                expect(role.name, `${player.name} should be doppelganger-robbed into drunk`).to.equal("drunk");
+                expect(role.name, `${player.name} should be doppel-robbed into drunk`).to.equal("drunk");
                 break;
               case playerId4:
-                expect(role.doppelganger, `${player.name} should be the doppelganger-robber`).to.be.true;
-                expect(role.name, `${player.name} should be the doppelganger-robber`).to.equal("robber");
+                expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
+                expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
                 break;
               default:
                 expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
@@ -149,10 +149,10 @@ describe("State", () => {
           [...state["finalResults"].entries()].forEach(([player, role]) => {
             switch (player.sessionId) {
               case playerId3:
-                expect(role.name, `${player.name} should be doppelganger-troublemade into drunk`).to.equal("drunk");
+                expect(role.name, `${player.name} should be doppel-troublemade into drunk`).to.equal("drunk");
                 break;
               case playerId4:
-                expect(role.name, `${player.name} should be doppelganger-troublemade into troublemaker`).to.equal("troublemaker");
+                expect(role.name, `${player.name} should be doppel-troublemade into troublemaker`).to.equal("troublemaker");
                 break;
               default:
                 expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
@@ -186,7 +186,7 @@ describe("State", () => {
           [...state["finalResults"].entries()].forEach(([player, role]) => {
             switch (player.sessionId) {
               case playerId1:
-                expect(role.name, `${player.name} should be doppelganger-drunked into seer`).to.equal("seer");
+                expect(role.name, `${player.name} should be doppel-drunked into seer`).to.equal("seer");
                 break;
               default:
                 expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
