@@ -260,6 +260,27 @@ describe("State", () => {
           }
         });
       });
+
+      it("should reverse robber choice", () => {
+        // given robber chose doppelganger...
+        state.setNightChoices(playerId2, [], [playerId1]);
+        state.setNightChoices(playerId3, [], [playerId1, playerId2]);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId1:
+              expect(role.name, `${player.name} was robbed but should be troublemade back to doppelganger`).to.equal("doppelganger");
+              break;
+            case playerId2:
+              expect(role.name, `${player.name} robbed into doppelganger but should be troublemade back to robber`).to.equal("robber");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
     });
 
     describe("on drunk choice", () => {
