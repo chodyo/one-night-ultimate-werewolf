@@ -215,6 +215,30 @@ describe("State", () => {
           }
         });
       });
+
+      it("should be robber when doppel-robber and robber chose each other", () => {
+        // given doppelganger chose the robber player and robbed the robber...
+        state.distributeDoppelsRole(playerId1, playerId2);
+        state.setNightChoices(playerId1, [], [playerId2]);
+
+        state.setNightChoices(playerId2, [], [playerId1]);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId1:
+              expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
+              expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
+              break;
+            case playerId2:
+              expect(role.name, `${player.name} should be robbed into robber`).to.equal("robber");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
     });
 
     describe("on troublemaker choices", () => {
@@ -240,6 +264,7 @@ describe("State", () => {
       it("and one choice was robbed", () => {
         // given robber chose doppelganger...
         state.setNightChoices(playerId2, [], [playerId1]);
+
         state.setNightChoices(playerId3, [], [playerId1, playerId4]);
 
         state.startPhase("daytime");
@@ -264,6 +289,7 @@ describe("State", () => {
       it("should reverse robber choice", () => {
         // given robber chose doppelganger...
         state.setNightChoices(playerId2, [], [playerId1]);
+
         state.setNightChoices(playerId3, [], [playerId1, playerId2]);
 
         state.startPhase("daytime");
