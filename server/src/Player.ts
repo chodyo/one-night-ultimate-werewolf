@@ -12,12 +12,13 @@ export class Player extends Schema {
     @type("boolean")
     ready: boolean = false;
 
-    client: Client;
+    @type("string")
+    sessionId: string;
 
-    constructor(client: Client) {
+    constructor(sessionId: string) {
         super();
 
-        this.client = client;
+        this.sessionId = sessionId;
     }
 
     setName(name: string) {

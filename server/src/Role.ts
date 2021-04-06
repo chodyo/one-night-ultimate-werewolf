@@ -24,6 +24,9 @@ export class Role extends Schema {
     @type("number")
     wakeOrder?: number;
 
+    @type("boolean")
+    doppelganger: boolean = false;
+
     constructor(roleID?: string, name?: RoleName, team?: string, wakeOrder?: number) {
         super();
 

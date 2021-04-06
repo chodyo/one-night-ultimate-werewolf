@@ -6,7 +6,7 @@ A version of One Night Online Gameplay with Colyseus, Node, React Native App, an
 
 Install project dependencies.
 ```
-`yarn install`
+`yarn install` || `yarn`
 ```
 
 ## Structure
@@ -20,6 +20,7 @@ Install project dependencies.
         - `yarn start client`: runs `yarn --cwd client run start` which runs the start in client/package.json in order to start up the client.
         - `yarn dev`: runs `yarn run watch` and `yarn run client` which starts up the server, and the client.
         - `yarn run loadtest`: runs the [`@colyseus/loadtest`](https://github.com/colyseus/colyseus-loadtest/) tool for testing the connection, using the `loadtest/example.ts` script.
+        - `yarn test`: runs unit tests [`./server/test/*.test.ts`](https://medium.com/@RupaniChirag/writing-unit-tests-in-typescript-d4719b8a0a40) for Server side actions `/server/test/*.test.ts` script.
     - `dependencies`:
         - `@colyseus/monitor`
         - `@colyseus/social`
@@ -42,6 +43,9 @@ Install project dependencies.
 - `yarn install`
 - For development run: `yarn run dev`. This starts and watches a node (index.ts) and starts up the expo development App.
 - ToDo: Create a production script
+
+## Testing One Night Werewolf
+- For testing run: `yarn test`. This starts the unit test for server.
 
 ## License
 

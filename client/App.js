@@ -9,6 +9,7 @@ import RoleSelection from "./components/RoleSelection";
 import { ScrollView } from "react-native-gesture-handler";
 import NightScreen from "./screens/NightScreen";
 import DayScreen from "./screens/DayScreen";
+import ConfirmRole from "./screens/ConfirmRole";
 
 import { sortRolesByWakeOrder } from "./assets/GameUtil";
 
@@ -18,9 +19,9 @@ export default class App extends React.Component {
 
     const host = window.document.location.host.replace(/:.*/, '');
     console.debug(host);
-    const port = process.env.NODE_ENV !== 'production' ? '2567' : window.location.port;
+    const port = process.env.NODE_ENV !== 'production' ? '2567' : window.document.location.port;
     console.debug(port);
-    const url = window.location.protocol.replace('http', 'ws') + "//" + host + (port ? ':' + port : '');
+    const url = window.document.location.protocol.replace('http', 'ws') + '//' + host + (port ? ':' + port : '');
     console.debug(url);
     this.client = new Client(url);
 
@@ -28,17 +29,17 @@ export default class App extends React.Component {
     this.room = null;
 
     this.state = {
-      isLoadingComplete: false,
-      initialNavigationState: null,
-      phase: '',
+      centerRoles: null,
       clientPlayer: null,
+      initialNavigationState: null,
+      isLoadingComplete: false,
+      phase: '',
       playerRole: null,
       // allPlayersReady: false,
       players: [],
+      results: '',
       roles: [],
       serverMessage: '',
-      centerRoles: null,
-      results: '',
     };
   }
 
@@ -124,7 +125,7 @@ export default class App extends React.Component {
     this.room.send(request);
   };
 
-  markAsReady = () => {
+  markAsReady = (readyAll) => {
     const { state: { players }, sessionId } = this.room;
 
     let playerName = players[sessionId].name.length === 0 ? sessionId : players[sessionId].name;
@@ -133,28 +134,35 @@ export default class App extends React.Component {
     this.room.send({
       action: 'ready',
       params: {
-        readyAll: true
+        readyAll
       }
     });
   };
 
   handleNightAction = (selectedCards, selectedPlayers) => {
     this.room.send({
-      action: 'updateNightChoices',
+      action: 'ready',
       params: {
         selectedCards: selectedCards,
         selectedPlayers: selectedPlayers,
       },
     });
+  };
 
-    //Setting state here for now to render the screens
-    //Once this is functional on the server TODO: REMOVE
-    this.setState({ phase: 'daytime' });
+  handleDoppelAction = (selectedPlayers) => {
+    this.room.send({
+      action: 'ready',
+      params: {
+        doppelgangerChoice: selectedPlayers,
+      },
+    });
+
+    console.debug(`${this.clientPlayer} chose ${selectedPlayers[0]} and is now that role`)
   };
 
   handleVoteAction = (selectedPlayers) => {
     this.room.send({
-      action: 'updateVoteChoices',
+      action: 'ready',
       params: {
         selectedPlayers: selectedPlayers,
       },
@@ -169,15 +177,15 @@ export default class App extends React.Component {
 
   render() {
     const {
+      centerRoles,
+      clientPlayer,
       isLoadingComplete,
       phase,
-      players,
-      clientPlayer,
       playerRole,
+      players,
+      results,
       roles,
       serverMessage,
-      centerRoles,
-      results,
     } = this.state;
 
     const activeRoles = roles.filter(role => role.active);
@@ -208,13 +216,24 @@ export default class App extends React.Component {
                 <Button
                   title={buttonText}
                   style={styles.unSelectedButton}
-                  onPress={() => this.markAsReady()}
+                  onPress={() => this.markAsReady(true)}
                   // disabled after player clicks
                   // disabled if there aren't exactly 3 more roles than players in game
                   disabled={requiredRoles !== activeRoles.length || clientPlayer.ready}
                 />
                 <HomeScreen room={this.room} players={players} />
                 <RoleSelection roles={roles} onRoleChoice={this.handleRoleChoice} />
+              </View>
+            }
+            {phase === 'doppelganger' &&
+              <View style={{ alignItems: 'center' }}>
+                <ConfirmRole
+                  players={players}
+                  player={clientPlayer}
+                  handleSelection={this.handleDoppelAction}
+                  markAsReady={() => this.markAsReady(false)}
+                  results={results}
+                />
               </View>
             }
             {phase === 'nighttime' &&
@@ -232,9 +251,10 @@ export default class App extends React.Component {
             {phase === 'daytime' &&
               <View style={{ alignItems: 'center' }}>
                 <DayScreen
-                  players={players}
-                  player={clientPlayer}
                   handleVoteAction={this.handleVoteAction}
+                  messageForPlayer={serverMessage}
+                  player={clientPlayer}
+                  players={players}
                   results={results}
                 />
               </View>
