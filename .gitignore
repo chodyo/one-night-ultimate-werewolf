@@ -111,3 +111,5 @@ dist
 client/.expo/*
 client/web-build/
 
+#Visual Studio files
+launch.json
