@@ -237,7 +237,7 @@ export class State extends Schema {
             this.centerRoles.set("center" + i, this.roles[roleID]);
         });
 
-        console.debug(`Finished assigning roles to players=${JSON.stringify(this.players)}`);
+        console.debug(`Finished assigning roles to players=${JSON.stringify(this.players, null, 2)}`);
 
         this.unlock();
     }
@@ -312,7 +312,7 @@ export class State extends Schema {
 
         const nightChoices = this.sortByWakeOrder(this.nightChoices);
 
-        console.debug(`roleChoices are ${JSON.stringify([...nightChoices])}`);
+        console.debug(`roleChoices are ${JSON.stringify([...nightChoices], null, 2)}`);
 
         nightChoices.forEach((choices: Array<string>, player: Player) => {
             let role = player.role;
@@ -322,12 +322,13 @@ export class State extends Schema {
                         console.debug("Executing Robber night choice...");
                         const robbedPlayer = this.players[choices[0]];
                         const robbedRole = this.getLatestPlayerRole(choices[0]);
+                        const currentRole = this.getLatestPlayerRole(player.sessionId);
 
                         this.finalResults.set(player, robbedRole);
-                        this.finalResults.set(robbedPlayer, role);
+                        this.finalResults.set(robbedPlayer, currentRole);
 
-                        console.debug(`${player.name} robbed into ${robbedRole.name}`);
-                        console.debug(`${robbedPlayer.name} is now ${role.name}`);
+                        console.debug(`${player.name} robbed into ${robbedRole.roleID}`);
+                        console.debug(`${robbedPlayer.name} is now ${currentRole.roleID}`);
                     }
                     break;
                 case "troublemaker":
@@ -351,7 +352,7 @@ export class State extends Schema {
                     if (choices.length === 1) {
                         const drunkedRole = this.centerRoles.get(choices[0])!;
                         
-                        //set the center card choice to players current role 
+                        //set the center card choice to players current role
                         this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.sessionId));
 
                         this.finalResults.set(player, drunkedRole);
@@ -372,7 +373,7 @@ export class State extends Schema {
             }
         });
 
-        console.debug(`Finished setting finalResults=${JSON.stringify([...this.finalResults])}`);
+        console.debug(`Finished setting finalResults=${JSON.stringify([...this.finalResults], null, 2)}`);
 
         this.unlock();
     }
