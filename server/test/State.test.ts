@@ -120,13 +120,17 @@ describe("State", () => {
           state.startPhase("daytime");
 
           [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+            const playerID = player.sessionId
+
+            switch (playerID) {
               case playerId1:
                 expect(role.name, `${player.name} should be doppel-robbed into drunk`).to.equal("drunk");
+                // expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should indicate drunk`).to.equal("Your new role is drunk");
                 break;
               case playerId4:
                 expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
                 expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
+                expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should be blank`).to.be.empty;
                 break;
               default:
                 expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
@@ -143,6 +147,7 @@ describe("State", () => {
           expect(doppelgangerPlayer.role.doppelganger).to.be.true;
 
           state.setNightChoices(playerId1, [], [playerId3, playerId4]);
+          state.setNightChoices(playerId3, [], []);
 
           state.startPhase("daytime");
 
@@ -150,9 +155,11 @@ describe("State", () => {
             switch (player.sessionId) {
               case playerId3:
                 expect(role.name, `${player.name} should be doppel-troublemade into drunk`).to.equal("drunk");
+                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal('You chose not to perform your troublemaker action.');
                 break;
               case playerId4:
                 expect(role.name, `${player.name} should be doppel-troublemade into troublemaker`).to.equal("troublemaker");
+                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.be.empty;
                 break;
               default:
                 expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
