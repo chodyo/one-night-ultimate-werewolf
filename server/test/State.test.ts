@@ -266,8 +266,6 @@ describe("State", () => {
         state.setNightChoices(playerId4, [center2], [])
         
         state.startPhase("daytime");
-        expect(state.players[playerId1].role.name).to.equal("robber");
-        expect(state.players[playerId2].role.name).to.equal("robber");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
           switch (player.sessionId) {
@@ -287,6 +285,17 @@ describe("State", () => {
               break;
             default:
               expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+
+        [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
+          if (centerLabel === center2) {
+            expect(role.doppelganger).to.be.true;
+            expect(role.name).to.equal("robber");
+          } else {
+            expect(role.name).to.satisfy(() => {
+              return role.name === "seer" || role.name === "werewolf";
+            }, `${centerLabel} should remain unchanged as either seer or insomniac`);
           }
         });
       });
