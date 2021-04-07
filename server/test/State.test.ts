@@ -125,7 +125,7 @@ describe("State", () => {
             switch (playerID) {
               case playerId1:
                 expect(role.name, `${player.name} should be doppel-robbed into drunk`).to.equal("drunk");
-                // expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should indicate drunk`).to.equal("Your new role is drunk");
+                expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should indicate drunk`).to.equal("Your new role is drunk");
                 break;
               case playerId4:
                 expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
@@ -173,6 +173,7 @@ describe("State", () => {
           state.distributeDoppelsRole(playerId1, playerId4);
 
           expect(doppelgangerPlayer.role.name).to.equal("drunk");
+          expect(doppelgangerPlayer.role.roleID).to.equal("drunk1");
           expect(doppelgangerPlayer.role.doppelganger).to.be.true;
 
           state.setNightChoices(playerId1, [center1], []);
@@ -182,6 +183,7 @@ describe("State", () => {
           [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
             if (centerLabel === center1) {
               expect(role.name).to.equal("drunk");
+              expect(role.roleID).to.equal("drunk1");
               expect(role.doppelganger).to.be.true;
             } else {
               expect(role.name).to.satisfy(() => {
@@ -194,9 +196,10 @@ describe("State", () => {
             switch (player.sessionId) {
               case playerId1:
                 expect(role.name, `${player.name} should be doppel-drunked into seer`).to.equal("seer");
+                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.be.empty;
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name);
             }
           });
         });
@@ -205,6 +208,8 @@ describe("State", () => {
 
     describe("on robber choice", () => {
       it("should switch roles with selected player", () => {
+        state.distributeDoppelsRole(playerId1, playerId4);
+
         state.setNightChoices(playerId2, [], [playerId1]);
 
         state.startPhase("daytime");
@@ -213,9 +218,34 @@ describe("State", () => {
           switch (player.sessionId) {
             case playerId1:
               expect(role.name, `${player.name} should be the robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be empty`).to.be.empty;
               break;
             case playerId2:
+              expect(role.doppelganger).to.be.true;
               expect(role.name, `${player.name} should be robbed into doppelganger`).to.equal("doppelganger");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal("Your new role is doppelganger");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
+
+      it("should switch roles with selected player who is the troublemaker", () => {
+        state.setNightChoices(playerId2, [], [playerId3]);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case playerId3:
+              expect(role.name, `${player.name} should be the robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.be.empty;
+              break;
+            case playerId2:
+              expect(role.name, `${player.name} should be robbed into doppelganger`).to.equal("troublemaker");
+              //TODO finalResults needs to return the robbed role.
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal("Your new role is troublemaker");
               break;
             default:
               expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
@@ -226,8 +256,10 @@ describe("State", () => {
       it("should be robber when doppel-robber and robber chose each other", () => {
         // given doppelganger chose the robber player and robbed the robber...
         state.distributeDoppelsRole(playerId1, playerId2);
-        state.setNightChoices(playerId1, [], [playerId2]);
 
+        //doppel-robber robs Julia-Robber
+        state.setNightChoices(playerId1, [], [playerId2]);
+        //Julia-Robber robs doppel-robber
         state.setNightChoices(playerId2, [], [playerId1]);
 
         state.startPhase("daytime");
@@ -235,11 +267,15 @@ describe("State", () => {
         [...state["finalResults"].entries()].forEach(([player, role]) => {
           switch (player.sessionId) {
             case playerId1:
+              //doppel-robber
               expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
               expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal("Your new role is robber");
               break;
             case playerId2:
+              //robber
               expect(role.name, `${player.name} should be robbed into robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal("Your new role is robber");
               break;
             default:
               expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
