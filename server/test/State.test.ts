@@ -11,6 +11,38 @@ describe("State", () => {
   let state: State;
   const messager = mock(Messager);
 
+  const doppelgangerId = "doppelganger0";
+  const werewolfId = "werewolf0";
+  const seerId = "seer0";
+  const robberId = "robber0";
+  const troublemakerId = "troublemaker0";
+  const drunkId = "drunk0";
+  const insomniacId = "insomniac0";
+
+  const center0 = "center0";
+  const center1 = "center1";
+  const center2 = "center2";
+
+  const center0CardRole = "villager0";
+  const center1CardRole = "villager1";
+  const center2CardRole = "villager2";
+
+  let doppelgangerRole: Role;
+  let robberRole: Role;
+  let troublemakerRole: Role;
+  let drunkRole: Role;
+  let werewolfRole: Role;
+  let seerRole: Role;
+  let insomniacRole: Role;
+
+  let doppelgangerPlayer: Player;
+  let robberPlayer: Player;
+  let troublemakerPlayer: Player;
+  let drunkPlayer: Player;
+  let werewolfPlayer: Player;
+  let seerPlayer: Player;
+  let insomniacPlayer: Player;
+
   beforeEach(() => {
     state = new State(messager);
   });
@@ -29,16 +61,73 @@ describe("State", () => {
       expect(state.roles["mason0"].active).to.be.false
     });
   });
+  
+  describe("distributeRoles", () => {
+    const picard = "Jean-Luc";
+    const ryker = "William";
+    const troi = "Deanna";
+    const data = "Data";
+
+    beforeEach(() => {
+      // Mimics prep phase
+      state.addPlayer(picard);
+      state.addPlayer(ryker);
+      state.addPlayer(troi);
+      state.addPlayer(data);
+
+      state.updatePlayerName(picard, picard);
+      state.updatePlayerName(ryker, ryker);
+      state.updatePlayerName(troi, troi);
+      state.updatePlayerName(data, data);
+
+      state.setRoleActive(doppelgangerId, true);
+      state.setRoleActive(werewolfId, true);
+      state.setRoleActive(seerId, true);
+      state.setRoleActive(robberId, true);
+      state.setRoleActive(troublemakerId, true);
+      state.setRoleActive(drunkId, true);
+      state.setRoleActive(insomniacId, true);
+
+      doppelgangerRole = state.roles[doppelgangerId];
+      robberRole = state.roles[robberId];
+      troublemakerRole = state.roles[troublemakerId];
+      drunkRole = state.roles[drunkId];
+      werewolfRole = state.roles[werewolfId];
+      seerRole = state.roles[seerId];
+      insomniacRole = state.roles[insomniacId];
+      //--- ends prep
+    });
+
+    it("shouldn't distribute when rolePlayers is empty", () => {
+      state.rolePlayers.set(doppelgangerRole, doppelgangerPlayer);
+      state.rolePlayers.set(robberRole, robberPlayer);
+      state.rolePlayers.set(troublemakerRole, troublemakerPlayer);
+      state.rolePlayers.set(drunkRole, drunkPlayer);
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+      state.rolePlayers.set(seerRole, seerPlayer);
+      state.rolePlayers.set(insomniacRole, insomniacPlayer);
+
+      expect(state.distributeRoles()).to.not.throw;
+    });
+    
+    it("should distribute roles", () => {
+      state.distributeRoles();
+      
+      expect(state.players[picard].role).to.not.be.null;
+      expect(state.players[ryker].role).to.not.be.null;
+      expect(state.players[troi].role).to.not.be.null;
+
+      [...state.rolePlayers.entries()].forEach(([_, player]) => {
+        expect(player.name).to.equal("biscuits");
+      });
+
+      [...state.centerRoles.entries()].forEach(([_, role]) => {
+        expect(role).to.not.be.null;
+      });
+    });
+  });
 
   describe("executeNightActions", () => {
-    const doppelgangerId = "doppelganger0";
-    const werewolfId = "werewolf0";
-    const seerId = "seer0";
-    const robberId = "robber0";
-    const troublemakerId = "troublemaker0";
-    const drunkId = "drunk0";
-    const insomniacId = "insomniac0";
-
     const picard_doppel = "Jean-Luc";
     const ryker_robber = "William";
     const troi_troublemaker = "Deanna";
@@ -46,30 +135,6 @@ describe("State", () => {
     const forge_seer = "Geordi";
     const crusher_insomniac = "Beverly";
     const data_drunk = "Data";
-
-    const center0 = "center0";
-    const center1 = "center1";
-    const center2 = "center2";
-
-    const center0CardRole = "villager0";
-    const center1CardRole = "villager1";
-    const center2CardRole = "villager2";
-
-    let doppelgangerRole: Role;
-    let robberRole: Role;
-    let troublemakerRole: Role;
-    let drunkRole: Role;
-    let werewolfRole: Role;
-    let seerRole: Role;
-    let insomniacRole: Role;
-
-    let doppelgangerPlayer: Player;
-    let robberPlayer: Player;
-    let troublemakerPlayer: Player;
-    let drunkPlayer: Player;
-    let werewolfPlayer: Player;
-    let seerPlayer: Player;
-    let insomniacPlayer: Player;
 
     // Setup state with roles/players sufficient for each scenario
     beforeEach(() => {
