@@ -726,4 +726,128 @@ describe("State", () => {
     });
 
   });
+
+  describe("nighttime", () => {
+    const mason0 = "mason0";
+    const mason1 = "mason1";
+    const minionId = "minion0";
+    // const werewolf1 = "werewolf1";
+
+    const picard_doppel = "Jean-Luc";
+    const ryker_robber = "William";
+    const troi_minion = "Deanna";
+    const worf_werewolf = "Worf";
+    const forge_mason = "Geordi";
+    const crusher_mason = "Beverly";
+    // const data_werewolf = "Data";
+
+    let minionRole: Role;
+    let mason0Role: Role;
+    let mason1Role: Role;
+    // let werewolf1Role: Role;
+
+    // Setup state with roles/players sufficient for each scenario
+    beforeEach(() => {
+      // Mimics prep phase
+      state.addPlayer(picard_doppel);
+      state.addPlayer(ryker_robber);
+      state.addPlayer(troi_minion);
+      state.addPlayer(worf_werewolf);
+      state.addPlayer(forge_mason);
+      state.addPlayer(crusher_mason);
+      // state.addPlayer(data_werewolf);
+
+      state.updatePlayerName(picard_doppel, picard_doppel);
+      state.updatePlayerName(ryker_robber, ryker_robber);
+      state.updatePlayerName(troi_minion, troi_minion);
+      state.updatePlayerName(worf_werewolf, worf_werewolf);
+      state.updatePlayerName(forge_mason, forge_mason);
+      state.updatePlayerName(crusher_mason, crusher_mason);
+      // state.updatePlayerName(data_werewolf, data_werewolf);
+
+      state.setRoleActive(doppelgangerId, true);
+      state.setRoleActive(werewolfId, true);
+      // state.setRoleActive(werewolf1, true);
+      state.setRoleActive(minionId, true);
+      state.setRoleActive(mason0, true);
+      state.setRoleActive(mason1, true);
+      state.setRoleActive(robberId, true);
+      state.setRoleActive("villager0", true);
+      state.setRoleActive("villager1", true);
+      state.setRoleActive("villager2", true);
+      //--- ends prep
+
+      let minionPlayer: Player;
+      let mason0Player: Player;
+      let mason1Player: Player;
+      // let werewolf1Player: Player;
+
+      doppelgangerRole = state.roles[doppelgangerId];
+      robberRole = state.roles[robberId];
+      minionRole = state.roles[minionId];
+      mason0Role = state.roles[mason0];
+      mason1Role = state.roles[mason1];
+      werewolfRole = state.roles[werewolfId];
+      // werewolf1Role = state.roles[werewolf1];
+
+      // Mimics state.distributeRoles() without randomization
+      doppelgangerPlayer = state.players[picard_doppel];
+      robberPlayer = state.players[ryker_robber];
+      minionPlayer = state.players[troi_minion];
+      mason0Player = state.players[forge_mason];
+      mason1Player = state.players[crusher_mason];
+      werewolfPlayer = state.players[worf_werewolf];
+      // werewolf1Player = state.players[data_werewolf];
+
+      doppelgangerPlayer.role = doppelgangerRole;
+      robberPlayer.role = robberRole;
+      minionPlayer.role = minionRole;
+      mason0Player.role = mason0Role;
+      werewolfPlayer.role = werewolfRole;
+      mason1Player.role = mason1Role;
+      // werewolf1Player.role = werewolf1Role;
+
+      state.rolePlayers.set(doppelgangerRole, doppelgangerPlayer);
+      state.rolePlayers.set(robberRole, robberPlayer);
+      state.rolePlayers.set(minionRole, minionPlayer);
+      state.rolePlayers.set(mason0Role, mason0Player);
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+      state.rolePlayers.set(mason1Role, mason1Player);
+      // state.rolePlayers.set(werewolf1Role, werewolf1Player);
+
+      state.centerRoles.set(center0, state.roles["villager0"])
+      state.centerRoles.set(center1, state.roles["villager1"])
+      state.centerRoles.set(center2, state.roles["villager2"])
+      //--- ends state.distributeRoles()
+    });
+
+    describe("for doppelganger message", () => {
+      it("should have robber messaging", () => {
+        state.distributeDoppelsRole(picard_doppel, ryker_robber);
+
+        expect(doppelgangerPlayer.role.name).to.equal("robber");
+        expect(doppelgangerPlayer.role.doppelganger).to.be.true;
+
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](picard_doppel)).to.equal(`You are the ${robberRole.name}`);
+      });
+    });
+
+    describe("for werewolf message", () => {
+      it("should have you as only werewolf", () => {
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`You are the only ${werewolfRole.name}.`);
+      });
+
+      it("should have all human werewolves", () => {
+        state.distributeDoppelsRole(picard_doppel, worf_werewolf);
+
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`The werewolves are ${worf_werewolf},${picard_doppel}.`);
+      });
+    });
+  });
 });

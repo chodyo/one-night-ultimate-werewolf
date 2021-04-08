@@ -389,12 +389,14 @@ export class State extends Schema {
         const role = player.role;
         console.debug(`roleID=${JSON.stringify(role)}`);
 
-        switch (role.name) {
+        let roleName = role.doppelganger ? "doppelganger" : role.name;
+        switch (roleName) {
             case "werewolf":
+                return this.getPartnerNames(role.ID, role.name);
             case "mason":
                 return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
-                return `You are the${this.getLatestPlayerRole(playerID).roleID}`;
+                return `You are the ${this.getLatestPlayerRole(playerID).name}`;
             case "minion":
                 const werewolfNames = Array.from(this.rolePlayers)
                     .filter(([role, _]) => role.name === "werewolf")
@@ -506,7 +508,7 @@ export class State extends Schema {
         } else if (partnerNames.length == 1) {
             return `You are the only ${roleName}.`;
         } else {
-            const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'minions'
+            const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'masons'
             return `The ${pluralRoleName} are ${partnerNames}.`;
         }
     }
