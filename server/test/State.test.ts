@@ -727,7 +727,7 @@ describe("State", () => {
 
   });
 
-  describe("nighttime", () => {
+  describe("nighttimeMessage", () => {
     const mason0 = "mason0";
     const mason1 = "mason1";
     const minionId = "minion0";
@@ -820,16 +820,16 @@ describe("State", () => {
       //--- ends state.distributeRoles()
     });
 
-    describe("for not a werewolf, mason, minion or doppelganger", () => {
-      it("should have empty nigttime messaging", () => {
+    describe("not werewolf, mason, minion or doppelganger", () => {
+      it("should be empty", () => {
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](ryker_robber)).to.be.empty;
       });
     });
     
-    describe("for doppelganger message", () => {
-      it("should have robber messaging", () => {
+    describe("doppelganger", () => {
+      it("should show role as robber", () => {
         state.distributeDoppelsRole(picard_doppel, ryker_robber);
 
         expect(doppelgangerPlayer.role.name).to.equal("robber");
@@ -841,15 +841,15 @@ describe("State", () => {
       });
     });
 
-    describe("for werewolf message", () => {
-      it("should have you as only werewolf", () => {
+    describe("werewolf", () => {
+      it("should be lonewolf", () => {
       state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`You are the only ${werewolfRole.name}.`);
       });
 
-      it("should have all human werewolves", () => {
+      it("should show all werewolves", () => {
       state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
@@ -859,7 +859,7 @@ describe("State", () => {
       });
     });
 
-    describe("for minion message", () => {
+    describe("minion", () => {
       it("should show no werewolves", () => {
         state.rolePlayers.set(robberRole, werewolfPlayer);
 
@@ -877,7 +877,7 @@ describe("State", () => {
         expect(state["nighttimeMessage"](troi_minion)).to.equal(`The werewolf is ${werewolfPlayer.name}.`);
       });
 
-      it("should show all human werewolves", () => {
+      it("should show all werewolves", () => {
       state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
