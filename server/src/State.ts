@@ -433,8 +433,8 @@ export class State extends Schema {
                 if (seerChoices.length === 1) {
                     let chosenPlayer = this.players[seerChoices[0]];
                     //if("doppel-drunk" or "doppel-robber"){OGseer should see drunkedRole or RobbedRole}
-                    const seeredRole = chosenPlayer.role.doppelganger ? this.getLatestPlayerRole(seerChoices[0]) : chosenPlayer.role
-                    const chosenPlayerRoleName = seeredRole.doppelganger ? "doppelganger" : seeredRole.name;
+                    const seeredRole = chosenPlayer.role.doppelganger ? chosenPlayer.role : this.getLatestPlayerRole(seerChoices[0]);
+                    const chosenPlayerRoleName = seeredRole.name;
                     return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
                     const card1 = this.centerRoles.get(seerChoices[0])!;

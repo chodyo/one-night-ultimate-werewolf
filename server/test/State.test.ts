@@ -538,5 +538,84 @@ describe("State", () => {
         });
       });
     });
+
+    describe("on seer choices", () => {
+      it("should display chosen player's role", () => {
+        const choice = ryker_robber;
+        state.setNightChoices(forge_seer, [], [choice]);
+
+        state.startPhase("daytime");
+        
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case forge_seer:
+              expect(role.name, `${player.name} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${robberPlayer.role.name}`);
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name);
+          }
+        });
+      });
+      
+      it("should display doppelganger when choosing doppelPlayer", () => {
+        const choice = picard_doppel;
+        state.distributeDoppelsRole(picard_doppel, data_drunk);
+        state.setNightChoices(forge_seer, [], [choice]);
+        state.setNightChoices(picard_doppel, [center1], []);
+
+        state.startPhase("daytime");
+        
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case forge_seer:
+              expect(role.name, `${player.name} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
+              break;
+            case picard_doppel:
+              expect(role.name, `${player.name} should be villager`).to.equal("villager");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
+      
+      it("should display chosen center cards' role", () => {
+        const choice = [center0, center2]
+        state.setNightChoices(forge_seer, choice, []);
+
+        state.startPhase("daytime");
+        
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case forge_seer:
+              expect(role.name, `${player.name} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`The ${choice.join(", ")} cards are villager and villager respectively.`);
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
+      
+      it("should display chosen center cards' role", () => {
+        state.setNightChoices(forge_seer, [], []);
+
+        state.startPhase("daytime");
+        
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case forge_seer:
+              expect(role.name, `${player.name} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal('You chose not to perform your seer action.');
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
+    });
   });
 });
