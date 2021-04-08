@@ -820,6 +820,14 @@ describe("State", () => {
       //--- ends state.distributeRoles()
     });
 
+    describe("for not a werewolf, mason, minion or doppelganger", () => {
+      it("should have empty nigttime messaging", () => {
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](ryker_robber)).to.be.empty;
+      });
+    });
+    
     describe("for doppelganger message", () => {
       it("should have robber messaging", () => {
         state.distributeDoppelsRole(picard_doppel, ryker_robber);
