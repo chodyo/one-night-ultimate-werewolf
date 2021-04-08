@@ -811,7 +811,6 @@ describe("State", () => {
       state.rolePlayers.set(robberRole, robberPlayer);
       state.rolePlayers.set(minionRole, minionPlayer);
       state.rolePlayers.set(mason0Role, mason0Player);
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
       state.rolePlayers.set(mason1Role, mason1Player);
       // state.rolePlayers.set(werewolf1Role, werewolf1Player);
 
@@ -836,17 +835,47 @@ describe("State", () => {
 
     describe("for werewolf message", () => {
       it("should have you as only werewolf", () => {
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`You are the only ${werewolfRole.name}.`);
       });
 
       it("should have all human werewolves", () => {
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
         state.startPhase("nighttime");
 
-        expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`The werewolves are ${worf_werewolf},${picard_doppel}.`);
+        expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`The werewolves are ${worf_werewolf}, ${picard_doppel}.`);
+      });
+    });
+
+    describe("for minion message", () => {
+      it("should show no werewolves", () => {
+        state.rolePlayers.set(robberRole, werewolfPlayer);
+
+        state.centerRoles.set(center0, werewolfRole)
+
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](troi_minion)).to.equal(`There are no werewolves.`);
+      });
+
+      it("should show single werewolf", () => {
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](troi_minion)).to.equal(`The werewolf is ${werewolfPlayer.name}.`);
+      });
+
+      it("should show all human werewolves", () => {
+      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.distributeDoppelsRole(picard_doppel, worf_werewolf);
+
+        state.startPhase("nighttime");
+
+        expect(state["nighttimeMessage"](troi_minion)).to.equal(`The werewolves are ${worf_werewolf}, ${picard_doppel}.`);
       });
     });
   });

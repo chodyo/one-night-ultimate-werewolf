@@ -392,7 +392,6 @@ export class State extends Schema {
         let roleName = role.doppelganger ? "doppelganger" : role.name;
         switch (roleName) {
             case "werewolf":
-                return this.getPartnerNames(role.ID, role.name);
             case "mason":
                 return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
@@ -406,7 +405,7 @@ export class State extends Schema {
                 } else if (werewolfNames.length == 1) {
                     return `The werewolf is ${werewolfNames[0]}.`;
                 } else {
-                    return `The werewolves are ${werewolfNames}.`;
+                    return `The werewolves are ${werewolfNames.join(', ')}.`;
                 }
             default:
                 return "";
@@ -509,7 +508,7 @@ export class State extends Schema {
             return `You are the only ${roleName}.`;
         } else {
             const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'masons'
-            return `The ${pluralRoleName} are ${partnerNames}.`;
+            return `The ${pluralRoleName} are ${partnerNames.join(', ')}.`;
         }
     }
 
