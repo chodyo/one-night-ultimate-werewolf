@@ -50,7 +50,7 @@ describe("State", () => {
     const center0 = "center0";
     const center1 = "center1";
     const center2 = "center2";
-    
+
     const center0CardRole = "villager0";
     const center1CardRole = "villager1";
     const center2CardRole = "villager2";
@@ -289,14 +289,14 @@ describe("State", () => {
         // given doppelganger chose the robber player and robbed the robber...
         state.distributeDoppelsRole(picard_doppel, ryker_robber);
         expect(state.players[picard_doppel].role.name).to.equal("robber");
-        
+
         //doppel-robber robs into DRUNK
         state.setNightChoices(picard_doppel, [], [data_drunk]);
         //Julia-Robber robs doppel-robber
         state.setNightChoices(ryker_robber, [], [picard_doppel]);
         //Drunkerd drunks into center2
         state.setNightChoices(data_drunk, [center2], [])
-        
+
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
@@ -484,7 +484,7 @@ describe("State", () => {
       it("should display chosen center card's role", () => {
         const choice = center2
         state.setNightChoices(worf_werewolf, [choice], []);
-        
+
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
@@ -515,7 +515,7 @@ describe("State", () => {
           }
         });
       });
-      
+
       it("should not have a night action or message when !loneWolf", () => {
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
         state.setNightChoices(worf_werewolf, [], []);
@@ -545,7 +545,7 @@ describe("State", () => {
         state.setNightChoices(forge_seer, [], [choice]);
 
         state.startPhase("daytime");
-        
+
         [...state["finalResults"].entries()].forEach(([player, role]) => {
           switch (player.sessionId) {
             case forge_seer:
@@ -557,37 +557,62 @@ describe("State", () => {
           }
         });
       });
-      
-      it("should display doppelganger when choosing doppelPlayer", () => {
-        const choice = picard_doppel;
-        state.distributeDoppelsRole(picard_doppel, data_drunk);
-        state.setNightChoices(forge_seer, [], [choice]);
-        state.setNightChoices(picard_doppel, [center1], []);
 
-        state.startPhase("daytime");
-        
-        [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
-            case forge_seer:
-              expect(role.name, `${player.name} should be seer`).to.equal("seer");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
-              break;
-            case picard_doppel:
-              expect(role.name, `${player.name} should be villager`).to.equal("villager");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
-              break;
-            default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
-          }
+      describe("on choosing doppelPlayer", () => {
+        it("should display doppelganger as doppelganger", () => {
+          const choice = picard_doppel;
+          state.distributeDoppelsRole(picard_doppel, crusher_insomniac);
+          state.setNightChoices(forge_seer, [], [choice]);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([player, role]) => {
+            switch (player.sessionId) {
+              case forge_seer:
+                expect(role.name, `${player.name} should be seer`).to.equal("seer");
+                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
+                break;
+              case picard_doppel:
+                expect(role.name, `${player.name} should be villager`).to.equal("insomniac");
+                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
+                break;
+              default:
+                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+            }
+          });
+
+          it("should display doppelganger (drunk) as the center card chosen", () => {
+            const choice = picard_doppel;
+            state.distributeDoppelsRole(picard_doppel, data_drunk);
+            state.setNightChoices(picard_doppel, [center1], []);
+            state.setNightChoices(forge_seer, [], [choice]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([player, role]) => {
+              switch (player.sessionId) {
+                case forge_seer:
+                  expect(role.name, `${player.name} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a villager`);
+                  break;
+                case picard_doppel:
+                  expect(role.name, `${player.name} should be villager`).to.equal("villager");
+                  expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                  break;
+                default:
+                  expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              }
+            });
+          });
         });
       });
-      
+
       it("should display chosen center cards' role", () => {
         const choice = [center0, center2]
         state.setNightChoices(forge_seer, choice, []);
 
         state.startPhase("daytime");
-        
+
         [...state["finalResults"].entries()].forEach(([player, role]) => {
           switch (player.sessionId) {
             case forge_seer:
@@ -599,12 +624,12 @@ describe("State", () => {
           }
         });
       });
-      
+
       it("should display chosen center cards' role", () => {
         state.setNightChoices(forge_seer, [], []);
 
         state.startPhase("daytime");
-        
+
         [...state["finalResults"].entries()].forEach(([player, role]) => {
           switch (player.sessionId) {
             case forge_seer:
