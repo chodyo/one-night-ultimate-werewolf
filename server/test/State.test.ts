@@ -478,6 +478,23 @@ describe("State", () => {
           }
         });
       });
+      
+      it("should executioner the drunk if they don't choose", () => {
+        state.setNightChoices(data_drunk, [], []);
+
+        state.startPhase("daytime");
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case data_drunk:
+              expect(role.name, `${player.name} should have drunked into villager`).to.equal("drunk");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
     });
 
     describe("on werewolf choice", () => {
@@ -642,5 +659,6 @@ describe("State", () => {
         });
       });
     });
+
   });
 });
