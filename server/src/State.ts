@@ -37,10 +37,16 @@ export class State extends Schema {
      *
      * Most phases move to the next phase after a timer runs out, or the game can move to the next phase early if all players mark ready or finish actions.
      *
-     * prep: Players are joining and choosing the roles that will participate in the round.
-     * doppelganger: An optional phase when the doppelganger is in the game, which allows the doppelganger to choose their role.
-     * nighttime: Werewolf, minion, and mason players find out who their teammates are. Action roles can submit their action.
-     * daytime: Some players receive additional messages about nighttime results, such as robber and insomniac learning their new role. Players begin discussing who the werewolves are and can lock or unlock their votes.
+     * prep: Players are joining and choosing the roles that will be active in the round.
+     * doppelganger: An optional phase when the doppelganger is in the game, which allows the doppelganger to choose their role. Other players will see a "loading moon phases" message. 
+     *      If the timer runs out a random selection will be made so play can continue. 
+     *      If the doppelganger is a non-player (in the center) then players will see a "loading moon phases" for a random amount of time (in between 5-10 seconds) so as not to give away that the doppelganger is in the center.
+     * nighttime: Werewolf, minion, and mason players find out who their teammates are. 
+     *      Action roles can submit their action.
+     * daytime: Players who were woken to perform a night action will receive messages about nighttime choices and/or results, 
+     *      such as robber and insomniac learning their new role. 
+     *  TODO: Add discussionTime
+     * discussiontime: Players discuss amongst themselves who they believe the werewolves are and can lock or unlock their votes for their choice of player.
      * results: All votes are in, the roles are revealed and the winner is displayed. (This could possibly be the same screen as the "prep" phase, allowing new roles to be selected for the next game.)
      */
     @type("string")
@@ -383,12 +389,13 @@ export class State extends Schema {
         const role = player.role;
         console.debug(`roleID=${JSON.stringify(role)}`);
 
-        switch (role.name) {
+        let roleName = role.doppelganger ? "doppelganger" : role.name;
+        switch (roleName) {
             case "werewolf":
             case "mason":
                 return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
-                return "TODO";
+                return `You are the ${this.getLatestPlayerRole(playerID).name}`;
             case "minion":
                 const werewolfNames = Array.from(this.rolePlayers)
                     .filter(([role, _]) => role.name === "werewolf")
@@ -398,7 +405,7 @@ export class State extends Schema {
                 } else if (werewolfNames.length == 1) {
                     return `The werewolf is ${werewolfNames[0]}.`;
                 } else {
-                    return `The werewolves are ${werewolfNames}.`;
+                    return `The werewolves are ${werewolfNames.join(', ')}.`;
                 }
             default:
                 return "";
@@ -406,7 +413,11 @@ export class State extends Schema {
     }
 
     private daytimeMessage(playerID: string): string {
-        const role = this.players[playerID].role;
+        const player = this.players[playerID];
+        //Should there be a daytime Message for drunk, i.e. "You drank into center1"
+        const role = player.role;
+
+        console.debug(`${player.name}'s role ${JSON.stringify(role, null, 2)}`)
 
         const noRoleActionMessage = `You chose not to perform your ${role.name} action.`;
         switch (role.name) {
@@ -423,8 +434,7 @@ export class State extends Schema {
                 if (seerChoices.length === 1) {
                     let chosenPlayer = this.players[seerChoices[0]];
                     //if("doppel-drunk" or "doppel-robber"){OGseer should see drunkedRole or RobbedRole}
-                    const seeredRole = chosenPlayer.role.doppelganger ? this.getLatestPlayerRole(seerChoices[0]) : chosenPlayer.role
-                    const chosenPlayerRoleName = seeredRole.doppelganger ? "doppelganger" : seeredRole.name;
+                    const chosenPlayerRoleName = chosenPlayer.role.doppelganger ? this.getLatestPlayerRole(seerChoices[0]).name : chosenPlayer.role.name;
                     return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
                     const card1 = this.centerRoles.get(seerChoices[0])!;
@@ -434,7 +444,7 @@ export class State extends Schema {
             case "robber":
                 const robberChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
                 if (robberChoice.length === 1) {
-                    const robbedRole = role.doppelganger ? this.players[robberChoice[0]].role : this.getLatestPlayerRole(robberChoice[0]);
+                    const robbedRole = role.doppelganger ? this.players[robberChoice[0]].role : this.getLatestPlayerRole(playerID);
                     const robbedRoleName = robbedRole.doppelganger ? "doppelganger" : robbedRole.name;
                     return `Your new role is ${robbedRoleName}`;
                 } else return noRoleActionMessage;
@@ -497,8 +507,8 @@ export class State extends Schema {
         } else if (partnerNames.length == 1) {
             return `You are the only ${roleName}.`;
         } else {
-            const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'minions'
-            return `The ${pluralRoleName} are ${partnerNames}.`;
+            const pluralRoleName = roleName === "werewolf" ? 'werewolves' : 'masons'
+            return `The ${pluralRoleName} are ${partnerNames.join(', ')}.`;
         }
     }
 
