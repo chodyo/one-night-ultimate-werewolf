@@ -17,6 +17,7 @@ export default class DayScreen extends React.Component {
       daytimeMessage: messageForPlayer,
       peekOpen: false,
       selectedPlayers: [],
+      voteRequired: true,
     };
 
     this.handleOpenPeek = this.handleOpenPeek.bind(this);
@@ -32,11 +33,12 @@ export default class DayScreen extends React.Component {
   }
 
   makeSelection = (selectionLabel) => {
-    let { selectedPlayers } = this.state;
+    let { selectedPlayers, voteRequired } = this.state;
 
     selectedPlayers = updateSelections(1, selectedPlayers, selectionLabel);
-
-    this.setState({ selectedPlayers });
+    voteRequired = selectedPlayers.length < 1;
+    
+    this.setState({ selectedPlayers, voteRequired });
   };
 
   updateButtonText = () => {
@@ -45,7 +47,7 @@ export default class DayScreen extends React.Component {
 
   render() {
     const { handleVoteAction, player, players, results } = this.props;
-    const { buttonText, daytimeMessage, peekOpen, selectedPlayers } = this.state;
+    const { buttonText, daytimeMessage, peekOpen, selectedPlayers, voteRequired } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
 
@@ -70,9 +72,10 @@ export default class DayScreen extends React.Component {
           title={buttonText}
           style={Styles.unSelectedButton}
           onPress={() => {
-            console.debug(`You voted to kill: ${selectedPlayers}`);
+            console.debug(`You voted for: ${selectedPlayers}`);
             handleVoteAction(selectedPlayers);
           }}
+          disabled={voteRequired}
         />
         <CountDownTimer
           style={Styles.activeText}
