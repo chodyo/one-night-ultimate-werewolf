@@ -544,6 +544,36 @@ describe("State", () => {
         });
       });
       
+      it("should switch roles with the chosen center card, and nobody should see center card as drunk", () => {
+        state.setNightChoices(data_drunk, [center0], []);
+        state.setNightChoices(worf_werewolf, [center0], []);
+
+        state.startPhase("daytime");
+
+        [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
+          if (centerLabel === center0) {
+            expect(role.name).to.equal("drunk");
+          } else {
+            expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
+          }
+        });
+
+        [...state["finalResults"].entries()].forEach(([player, role]) => {
+          switch (player.sessionId) {
+            case data_drunk:
+              expect(role.name, `${player.name} should have drunked into villager`).to.equal("villager");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              break;
+            case worf_werewolf:
+              expect(role.name, `${player.name} should still be a werewolf`).to.equal("werewolf");
+              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.equal("The center0 card is villager.");
+              break;
+            default:
+              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+          }
+        });
+      });
+      
       it("should executioner the drunk if they don't choose", () => {
         state.setNightChoices(data_drunk, [], []);
 
