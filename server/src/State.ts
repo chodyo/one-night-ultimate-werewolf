@@ -19,7 +19,7 @@ export class State extends Schema {
 
     private nightChoices: Map<Player, Array<string>> = new Map();
 
-    private finalResults: Map<Player, Role> = new Map();
+    private finalResults: Map<string, Role> = new Map();
 
     // ====== Synched Properties ======
 
@@ -327,11 +327,11 @@ export class State extends Schema {
                     if (choices.length === 1) {
                         console.debug("Executing Robber night choice...");
                         const robbedPlayer = this.players[choices[0]];
-                        const robbedRole = this.getLatestPlayerRole(choices[0]);
-                        const currentRole = this.getLatestPlayerRole(player.sessionId);
+                        const robbedRole = this.getLatestRole(choices[0]);
+                        const currentRole = this.getLatestRole(player.sessionId);
 
-                        this.finalResults.set(player, robbedRole);
-                        this.finalResults.set(robbedPlayer, currentRole);
+                        this.finalResults.set(player.sessionId, robbedRole);
+                        this.finalResults.set(robbedPlayer.sessionId, currentRole);
 
                         console.debug(`${player.name} robbed into ${robbedRole.roleID}`);
                         console.debug(`${robbedPlayer.name} is now ${currentRole.roleID}`);
@@ -343,11 +343,11 @@ export class State extends Schema {
                         const playerA = this.players[choices[0]];
                         const playerB = this.players[choices[1]];
 
-                        const roleA = this.getLatestPlayerRole(playerA.sessionId);
-                        const roleB = this.getLatestPlayerRole(playerB.sessionId);
+                        const roleA = this.getLatestRole(playerA.sessionId);
+                        const roleB = this.getLatestRole(playerB.sessionId);
 
-                        this.finalResults.set(playerA, roleB);
-                        this.finalResults.set(playerB, roleA);
+                        this.finalResults.set(playerA.sessionId, roleB);
+                        this.finalResults.set(playerB.sessionId, roleA);
 
                         console.debug(`${playerA.name}'s role was ${roleA.name} and is now ${roleB.name}`);
                         console.debug(`${playerB.name}'s role was ${roleB.name} and is now ${roleA.name}`);
@@ -356,12 +356,12 @@ export class State extends Schema {
                 case "drunk":
                     console.debug("Executing Drunk night choice...");
                     if (choices.length === 1) {
-                        const drunkedRole = this.centerRoles.get(choices[0])!;
+                        const drunkedRole = this.getLatestRole(choices[0])!;
                         
                         //set the center card choice to players current role
-                        this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.sessionId));
+                        this.finalResults.set(choices[0], this.getLatestRole(player.sessionId));
 
-                        this.finalResults.set(player, drunkedRole);
+                        this.finalResults.set(player.sessionId, drunkedRole);
                         console.debug(`${player.name} drunked into ${drunkedRole.name}`);
 
                     } else {
@@ -372,10 +372,10 @@ export class State extends Schema {
         });
 
         [...this.rolePlayers.values()].forEach((player) => {
-            const playerHasNoResult = [...this.finalResults.keys()].filter((playerWithResult) => playerWithResult === player).length === 0;
+            const playerHasNoResult = [...this.finalResults.keys()].filter((playerWithResult) => playerWithResult === player.sessionId).length === 0;
             if (playerHasNoResult) {
                 console.info(`${player.name}'s role is unchanged and remains ${player.role.name}`);
-                this.finalResults.set(player, player.role)
+                this.finalResults.set(player.sessionId, player.role)
             }
         });
 
@@ -395,7 +395,7 @@ export class State extends Schema {
             case "mason":
                 return this.getPartnerNames(role.ID, role.name);
             case "doppelganger":
-                return `You are the ${this.getLatestPlayerRole(playerID).name}`;
+                return `You are the ${this.getLatestRole(playerID).name}`;
             case "minion":
                 const werewolfNames = Array.from(this.rolePlayers)
                     .filter(([role, _]) => role.name === "werewolf")
@@ -424,32 +424,39 @@ export class State extends Schema {
             case "werewolf":
                 const isLonewolf = [...this.rolePlayers].filter(([role, _]) => role.name === "werewolf").length === 1;
                 if (isLonewolf) {
-                    const lonewolfChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                    const lonewolfChoice = this.findInPlayers<string[]>(playerID, this.nightChoices);
                     if (lonewolfChoice.length === 1) {
-                        return `The ${lonewolfChoice[0]} card is ${this.centerRoles.get(lonewolfChoice[0])!.name}.`;
+                      let centerRoleName = role.doppelganger ? this.getLatestRole(lonewolfChoice[0])!.name : this.centerRoles.get(lonewolfChoice[0])!.name;
+                      return `The ${lonewolfChoice[0]} card is ${centerRoleName}.`;
                     } else return noRoleActionMessage;
                 } else return "";
             case "seer":
-                const seerChoices = this.findPlayer<string[]>(playerID, this.nightChoices);
+                const seerChoices = this.findInPlayers<string[]>(playerID, this.nightChoices);
                 if (seerChoices.length === 1) {
                     let chosenPlayer = this.players[seerChoices[0]];
                     //if("doppel-drunk" or "doppel-robber"){OGseer should see drunkedRole or RobbedRole}
-                    const chosenPlayerRoleName = chosenPlayer.role.doppelganger ? this.getLatestPlayerRole(seerChoices[0]).name : chosenPlayer.role.name;
+                    const chosenPlayerRoleName = chosenPlayer.role.doppelganger ? this.getLatestRole(seerChoices[0]).name : chosenPlayer.role.name;
                     return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
-                    const card1 = this.centerRoles.get(seerChoices[0])!;
-                    const card2 = this.centerRoles.get(seerChoices[1])!;
+                    // if there's a doppel-drunk {
+                    // if (seerChoices[0].startsWith())
+                    //     check that the final center roles aren't doppelganged
+                    // }
+                    let chosenCard1 = this.centerRoles.get(seerChoices[0])!;
+                    let chosenCard2 = this.centerRoles.get(seerChoices[1])!;
+                    const card1 = chosenCard1.doppelganger ? this.getLatestRole(seerChoices[0]) : chosenCard1;
+                    const card2 = chosenCard2.doppelganger ? this.getLatestRole(seerChoices[1]) : chosenCard2;
                     return `The ${seerChoices.join(", ")} cards are ${card1.name} and ${card2.name} respectively.`;
                 } else return noRoleActionMessage;
             case "robber":
-                const robberChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                const robberChoice = this.findInPlayers<string[]>(playerID, this.nightChoices);
                 if (robberChoice.length === 1) {
-                    const robbedRole = role.doppelganger ? this.players[robberChoice[0]].role : this.getLatestPlayerRole(playerID);
+                    const robbedRole = role.doppelganger ? this.players[robberChoice[0]].role : this.getLatestRole(playerID);
                     const robbedRoleName = robbedRole.doppelganger ? "doppelganger" : robbedRole.name;
                     return `Your new role is ${robbedRoleName}`;
                 } else return noRoleActionMessage;
             case "troublemaker":
-                const troublemakerChoice = this.findPlayer<string[]>(playerID, this.nightChoices);
+                const troublemakerChoice = this.findInPlayers<string[]>(playerID, this.nightChoices);
                 if (troublemakerChoice.length === 2) {
                     const playerA = this.players[troublemakerChoice[0]];
                     const playerB = this.players[troublemakerChoice[1]];
@@ -491,9 +498,12 @@ export class State extends Schema {
         return messages;
     }
 
-    private getLatestPlayerRole(playerID: string): Role {
-        const changedRole = [...this.finalResults.entries()].filter(([player, T]) => player.sessionId === playerID)[0];
-        return changedRole !== undefined && changedRole.length > 0 ? changedRole[1] : this.players[playerID].role;
+    private getLatestRole(key: string): Role {
+        const changedRole = [...this.finalResults.entries()].find(([resultKey, T]) => resultKey === key);
+
+        const unchangedRole = key.startsWith('center') ? this.centerRoles.get(key) : this.players[key].role;
+
+        return changedRole !== undefined && changedRole.length > 0 ? changedRole[1] : unchangedRole;
     }
 
     getPartnerNames(clientID: string, roleName: string): string {
@@ -512,7 +522,11 @@ export class State extends Schema {
         }
     }
 
-    private findPlayer<T>(playerID: string, playerMap: Map<Player, T>): T {
+    private findPlayer<T>(playerID: string, playerMap: Map<string, T>): T {
+        return [...playerMap.entries()].find(([key, T]) => key === playerID)![1];
+    }
+
+    private findInPlayers<T>(playerID: string, playerMap: Map<Player, T>): T {
         return [...playerMap.entries()].filter(([player, T]) => player.sessionId === playerID)[0][1];
     }
 }
