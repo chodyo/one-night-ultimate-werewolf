@@ -1,8 +1,8 @@
-import { State } from "../src/State";
-import { Messager } from "../src/Message";
-import { Player } from "../src/Player";
-import { Role } from "../src/Role";
-import { mock } from "ts-mockito";
+import {State} from "../src/State";
+import {Messager} from "../src/Message";
+import {Player} from "../src/Player";
+import {Role} from "../src/Role";
+import {mock} from "ts-mockito";
 
 const chai = require("chai");
 const expect = chai.expect;
@@ -61,7 +61,7 @@ describe("State", () => {
       expect(state.roles["mason0"].active).to.be.false
     });
   });
-  
+
   describe("distributeRoles", () => {
     const picard = "Jean-Luc";
     const ryker = "William";
@@ -109,10 +109,10 @@ describe("State", () => {
 
       expect(state.distributeRoles()).to.not.throw;
     });
-    
+
     it("should distribute roles", () => {
       state.distributeRoles();
-      
+
       expect(state.players[picard].role).to.not.be.null;
       expect(state.players[ryker].role).to.not.be.null;
       expect(state.players[troi].role).to.not.be.null;
@@ -219,20 +219,20 @@ describe("State", () => {
           state.startPhase("daytime");
 
           [...state["finalResults"].entries()].forEach(([player, role]) => {
-            const playerID = player.sessionId
+            const playerID = player
 
             switch (playerID) {
               case picard_doppel:
-                expect(role.name, `${player.name} should be doppel-robbed into drunk`).to.equal("drunk");
-                expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should indicate drunk`).to.equal("Your new role is drunk");
+                expect(role.name, `${player} should be doppel-robbed into drunk`).to.equal("drunk");
+                expect(state["daytimeMessage"](playerID), `${player}'s daytime message should indicate drunk`).to.equal("Your new role is drunk");
                 break;
               case data_drunk:
-                expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
-                expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
-                expect(state["daytimeMessage"](playerID), `${player.name}'s daytime message should be blank`).to.be.empty;
+                expect(role.doppelganger, `${player} should be the doppel-robber`).to.be.true;
+                expect(role.name, `${player} should be the doppel-robber`).to.equal("robber");
+                expect(state["daytimeMessage"](playerID), `${player}'s daytime message should be blank`).to.be.empty;
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
         });
@@ -251,17 +251,17 @@ describe("State", () => {
           state.startPhase("daytime");
 
           [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+            switch (player) {
               case troi_troublemaker:
-                expect(role.name, `${player.name} should be doppel-troublemade into drunk`).to.equal("drunk");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal('You chose not to perform your troublemaker action.');
+                expect(role.name, `${player} should be doppel-troublemade into drunk`).to.equal("drunk");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate no choice`).to.equal('You chose not to perform your troublemaker action.');
                 break;
               case data_drunk:
-                expect(role.name, `${player.name} should be doppel-troublemade into troublemaker`).to.equal("troublemaker");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.be.empty;
+                expect(role.name, `${player} should be doppel-troublemade into troublemaker`).to.equal("troublemaker");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate no choice`).to.be.empty;
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
         });
@@ -279,25 +279,19 @@ describe("State", () => {
 
           state.startPhase("daytime");
 
-          [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-            if (centerLabel === center1) {
-              //expect finalCenterRoles
-              // expect(role.name).to.equal("drunk");
-              // expect(role.roleID).to.equal("drunk1");
-              // expect(role.doppelganger).to.be.true;
-            } else {
-              expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
-            }
-          });
-
-          [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+          [...state["finalResults"].entries()].forEach(([key, role]) => {
+            switch (key) {
               case picard_doppel:
-                expect(role.name, `${player.name} should be doppel-drunked into ${center1} card`).to.equal("villager");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.be.empty;
+                expect(role.name, `${key} should be doppel-drunked into ${center1} card`).to.equal("villager");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should indicate no choice`).to.be.empty;
+                break;
+              case center1:
+                expect(role.name).to.equal("drunk");
+                expect(role.roleID).to.equal("drunk1");
+                expect(role.doppelganger).to.be.true;
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name);
+                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name);
             }
           });
         });
@@ -313,18 +307,18 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case picard_doppel:
-              expect(role.name, `${player.name} should be the robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be empty`).to.be.empty;
+              expect(role.name, `${player} should be the robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be empty`).to.be.empty;
               break;
             case ryker_robber:
               expect(role.doppelganger).to.be.true;
-              expect(role.name, `${player.name} should be robbed into doppel-drunk`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate they are now the doppelganger`).to.equal("Your new role is doppelganger");
+              expect(role.name, `${player} should be robbed into doppel-drunk`).to.equal("drunk");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate they are now the doppelganger`).to.equal("Your new role is doppelganger");
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -336,17 +330,17 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case ryker_robber:
-              expect(role.name, `${player.name} should be robbed into doppelganger`).to.equal("troublemaker");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate the robbed role`).to.equal("Your new role is troublemaker");
+              expect(role.name, `${player} should be robbed into doppelganger`).to.equal("troublemaker");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate the robbed role`).to.equal("Your new role is troublemaker");
               break;
             case troi_troublemaker:
-              expect(role.name, `${player.name} should be the robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate no choice`).to.equal("You chose not to perform your troublemaker action.");
+              expect(role.name, `${player} should be the robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate no choice`).to.equal("You chose not to perform your troublemaker action.");
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -365,34 +359,32 @@ describe("State", () => {
 
         state.startPhase("daytime");
 
-        [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+        [...state["finalResults"].entries()].forEach(([key, role]) => {
+          switch (key) {
             case picard_doppel:
               //doppel-robber
-              expect(role.name, `${player.name} should be robbed into drunk`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate robbed role`).to.equal("Your new role is drunk");
+              expect(role.name, `${key} should be robbed into drunk`).to.equal("robber");
+              expect(state["daytimeMessage"](key), `${key}'s daytime message should indicate robbed role`).to.equal("Your new role is drunk");
               break;
             case ryker_robber:
               //robber
-              expect(role.name, `${player.name} should be robbed into robber`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate robbed role`).to.equal("Your new role is drunk");
+              expect(role.name, `${key} should be robbed into robber`).to.equal("drunk");
+              expect(state["daytimeMessage"](key), `${key}'s daytime message should indicate robbed role`).to.equal("Your new role is drunk");
               break;
             case data_drunk:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal("villager")
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${key}'s role shouldn't have changed!`).to.equal("villager")
+              expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
+              break;
+            case center2:
+              expect(role.doppelganger).to.be.true;
+              expect(role.name).to.equal("robber");
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
-          }
-        });
-
-        [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-          if (centerLabel === center2) {
-            // expect finalCenterRoles
-            // expect(role.doppelganger).to.be.true;
-            // expect(role.name).to.equal("robber");
-          } else {
-            expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
+              // if (key.startsWith('center')) {
+              expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
+              // } else {
+              //   expect(role.name).to.equal("villager", `${key} should remain unchanged as villager`);
+              // }
           }
         });
       });
@@ -409,20 +401,20 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case picard_doppel:
               //doppel-robber
-              expect(role.doppelganger, `${player.name} should be the doppel-robber`).to.be.true;
-              expect(role.name, `${player.name} should be the doppel-robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate robbed role`).to.equal("Your new role is robber");
+              expect(role.doppelganger, `${player} should be the doppel-robber`).to.be.true;
+              expect(role.name, `${player} should be the doppel-robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate robbed role`).to.equal("Your new role is robber");
               break;
             case ryker_robber:
               //robber
-              expect(role.name, `${player.name} should be robbed into robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should indicate robbed role`).to.equal("Your new role is robber");
+              expect(role.name, `${player} should be robbed into robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should indicate robbed role`).to.equal("Your new role is robber");
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -436,20 +428,20 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case ryker_robber:
-              expect(role.name, `${player.name} should be troublemade into drunk`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal("You chose not to perform your robber action.");
+              expect(role.name, `${player} should be troublemade into drunk`).to.equal("drunk");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You chose not to perform your robber action.");
               break;
             case troi_troublemaker:
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`You switched ${ryker_robber}'s and ${data_drunk}'s roles`);
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`You switched ${ryker_robber}'s and ${data_drunk}'s roles`);
               break;
             case data_drunk:
-              expect(role.name, `${player.name} should be troublemade into robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player} should be troublemade into robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -463,24 +455,24 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case ryker_robber:
-              expect(role.name, `${player.name} should be robbed into doppelganger`).to.equal("doppelganger");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal("Your new role is doppelganger");
+              expect(role.name, `${player} should be robbed into doppelganger`).to.equal("doppelganger");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("Your new role is doppelganger");
               break;
             case picard_doppel:
-              expect(role.name, `${player.name} should be troublemade into drunk`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player} should be troublemade into drunk`).to.equal("drunk");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             case troi_troublemaker:
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`You switched ${picard_doppel}'s and ${data_drunk}'s roles`);
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`You switched ${picard_doppel}'s and ${data_drunk}'s roles`);
               break;
             case data_drunk:
-              expect(role.name, `${player.name} should be troublemade into robber`).to.equal("robber");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player} should be troublemade into robber`).to.equal("robber");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -497,24 +489,24 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case picard_doppel:
-              expect(role.name, `${player.name} was robbed but should be troublemade back to doppelganger`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player} was robbed but should be troublemade back to doppelganger`).to.equal("drunk");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             case ryker_robber:
-              expect(role.name, `${player.name} robbed into doppelganger but should be troublemade back to robber`).to.equal("robber");
-              // expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal("Your new role is doppelganger");
+              expect(role.name, `${player} robbed into doppelganger but should be troublemade back to robber`).to.equal("robber");
+              // expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("Your new role is doppelganger");
               break;
             case troi_troublemaker:
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`You switched ${picard_doppel}'s and ${ryker_robber}'s roles`);
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`You switched ${picard_doppel}'s and ${ryker_robber}'s roles`);
               break;
             case data_drunk:
-              expect(role.name, `${player.name}'s role should be`).to.equal("villager")
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player}'s role should be`).to.equal("villager")
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -526,23 +518,17 @@ describe("State", () => {
 
         state.startPhase("daytime");
 
-        [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-          if (centerLabel === center0) {
-            // expect finalCenterRoles
-            // expect(role.name).to.equal("drunk");
-          } else {
-            expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
-          }
-        });
-
-        [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+        [...state["finalResults"].entries()].forEach(([key, role]) => {
+          switch (key) {
             case data_drunk:
-              expect(role.name, `${player.name} should have drunked into villager`).to.equal("villager");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${key} should have drunked into villager`).to.equal("villager");
+              expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
+              break;
+            case center0:
+              expect(role.name).to.equal("drunk");
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -554,31 +540,24 @@ describe("State", () => {
 
           state.startPhase("daytime");
 
-          [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-            if (centerLabel === center0) {
-              // expect finalCenterRoles
-              // expect(role.name).to.equal("drunk");
-            } else {
-              expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
-            }
-          });
-
           [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+            switch (player) {
               case data_drunk:
-                expect(role.name, `${player.name} should have drunked into villager`).to.equal("villager");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                expect(role.name, `${player} should have drunked into villager`).to.equal("villager");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
                 break;
               case worf_werewolf:
-                expect(role.name, `${player.name} should still be a werewolf`).to.equal("werewolf");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.equal("The center0 card is villager.");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.equal("The center0 card is villager.");
+                break;
+              case center0:
+                expect(role.name).to.equal("drunk");
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
         });
-        
+
         it("when lonewolf views the center card that was drank, and doppel-drank", () => {
           state.distributeDoppelsRole(picard_doppel, data_drunk);
           state.setNightChoices(picard_doppel, [center0], []);
@@ -587,31 +566,25 @@ describe("State", () => {
 
           state.startPhase("daytime");
 
-          [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-            if (centerLabel === center0) {
-              // expect finalCenterRoles
-              // expect(role.name).to.equal("drunk");
-            } else {
-              expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
-            }
-          });
-
-          [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+          [...state["finalResults"].entries()].forEach(([key, role]) => {
+            switch (key) {
               case picard_doppel:
-                expect(role.name, `${player.name} should have drunked into villager`).to.equal("villager");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                expect(role.name, `${key} should have drunked into villager`).to.equal("villager");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
                 break;
               case data_drunk:
-                expect(role.name, `${player.name} should have drunked into doppelganger`).to.equal("doppelganger");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                // expect(role.doppelganger).to.be.true;
+                expect(role.roleID, `${key} should have drunked into doppelganger`).to.equal("drunk1");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
                 break;
               case worf_werewolf:
-                expect(role.name, `${player.name} should still be a werewolf`).to.equal("werewolf");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.equal("The center0 card is villager.");
+                expect(role.name, `${key} should still be a werewolf`).to.equal("werewolf");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal("The center0 card is villager.");
                 break;
+              case center0:
+                expect(role.name).to.equal("drunk")
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
         });
@@ -622,45 +595,69 @@ describe("State", () => {
 
           state.startPhase("daytime");
 
-          [...state.centerRoles.entries()].forEach(([centerLabel, role]) => {
-            if (centerLabel === center0) {
-              // expect finalCenterRoles
-              // expect(role.name).to.equal("drunk");
-            } else {
-              expect(role.name).to.equal("villager", `${centerLabel} should remain unchanged as villager`);
-            }
-          });
-
-          [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+          [...state["finalResults"].entries()].forEach(([key, role]) => {
+            switch (key) {
               case data_drunk:
-                expect(role.name, `${player.name} should have drunked into villager`).to.equal("villager");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                expect(role.name, `${key} should have drunked into villager`).to.equal("villager");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
                 break;
               case forge_seer:
-                expect(role.name, `${player.name} should still be a seer`).to.equal("seer");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.equal("The center0, center1 cards are villager and villager respectively.");
+                expect(role.name, `${key} should still be a seer`).to.equal("seer");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal("The center0, center1 cards are villager and villager respectively.");
                 break;
+              case center0:
+                expect(role.name).to.equal("drunk", `${key} should be drunk`);
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
         });
-       });
-      
+
+        it("when seer views the center card that was drank, and doppel-drank", () => {
+          state.distributeDoppelsRole(picard_doppel, data_drunk);
+          state.setNightChoices(picard_doppel, [center0], []);
+          state.setNightChoices(data_drunk, [center0], []);
+          state.setNightChoices(forge_seer, [center0, center1], []);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([key, role]) => {
+            switch (key) {
+              case picard_doppel:
+                expect(role.name, `${key} should have drunked into villager`).to.equal("villager");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
+                break;
+              case data_drunk:
+                expect(role.doppelganger).to.be.true;
+                expect(role.roleID, `${key} should have drunked into doppelganger`).to.equal("drunk1");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.empty;
+                break;
+              case forge_seer:
+                expect(role.name, `${key} should still be a seer`).to.equal("seer");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal("The center0, center1 cards are doppelganger and villager respectively.");
+                break;
+              case center0:
+                expect(role.name).to.equal("drunk", `${key} should be drunk`);
+              default:
+                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
+            }
+          });
+        });
+      });
+
       it("should executioner the drunk if they don't choose", () => {
         state.setNightChoices(data_drunk, [], []);
 
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case data_drunk:
-              expect(role.name, `${player.name} should have drunked into villager`).to.equal("drunk");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player} should have drunked into villager`).to.equal("drunk");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -674,13 +671,13 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case worf_werewolf:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`The ${choice} card is villager.`);
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`The ${choice} card is villager.`);
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -691,13 +688,13 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case worf_werewolf:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal('You chose not to perform your werewolf action.');
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal('You chose not to perform your werewolf action.');
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -709,17 +706,17 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case picard_doppel:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal('werewolf')
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal('werewolf')
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             case worf_werewolf:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -733,13 +730,13 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case forge_seer:
-              expect(role.name, `${player.name} should be seer`).to.equal("seer");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${robberPlayer.role.name}`);
+              expect(role.name, `${player} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a ${robberPlayer.role.name}`);
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name);
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name);
           }
         });
       });
@@ -753,17 +750,17 @@ describe("State", () => {
           state.startPhase("daytime");
 
           [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player.sessionId) {
+            switch (player) {
               case forge_seer:
-                expect(role.name, `${player.name} should be seer`).to.equal("seer");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
+                expect(role.name, `${player} should be seer`).to.equal("seer");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
                 break;
               case picard_doppel:
-                expect(role.name, `${player.name} should be villager`).to.equal("insomniac");
-                expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
+                expect(role.name, `${player} should be villager`).to.equal("insomniac");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
                 break;
               default:
-                expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
             }
           });
 
@@ -776,17 +773,70 @@ describe("State", () => {
             state.startPhase("daytime");
 
             [...state["finalResults"].entries()].forEach(([player, role]) => {
-              switch (player.sessionId) {
+              switch (player) {
                 case forge_seer:
-                  expect(role.name, `${player.name} should be seer`).to.equal("seer");
-                  expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`${choice} is a villager`);
+                  expect(role.name, `${player} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a villager`);
                   break;
                 case picard_doppel:
-                  expect(role.name, `${player.name} should be villager`).to.equal("villager");
-                  expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.be.empty;
+                  expect(role.name, `${player} should be villager`).to.equal("villager");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
                   break;
                 default:
-                  expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              }
+            });
+          });
+        });
+
+        it("should display doppelganger as robber when doppel-robber", () => {
+          state.distributeDoppelsRole(picard_doppel, ryker_robber);
+          state.setNightChoices(picard_doppel, [], [ryker_robber]);
+          state.setNightChoices(forge_seer, [], [picard_doppel]);
+          state.setNightChoices(ryker_robber, [], [picard_doppel]);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([player, role]) => {
+            switch (player) {
+              case forge_seer:
+                expect(role.name, `${player} should be seer`).to.equal("seer");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${picard_doppel} is a robber`);
+                break;
+              case picard_doppel:
+                expect(role.doppelganger).to.be.true;
+                expect(role.roleID, `${player} should be doppelganger`).to.equal("robber1");
+                // expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
+                break;
+              case ryker_robber:
+                // expect(role.name, `${player} should be villager`).to.equal("insomniac");
+                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.not.be.empty;
+                break;
+              default:
+                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+            }
+          });
+
+          it("should display doppelganger (drunk) as the center card chosen", () => {
+            const choice = picard_doppel;
+            state.distributeDoppelsRole(picard_doppel, data_drunk);
+            state.setNightChoices(picard_doppel, [center1], []);
+            state.setNightChoices(forge_seer, [], [choice]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([player, role]) => {
+              switch (player) {
+                case forge_seer:
+                  expect(role.name, `${player} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a villager`);
+                  break;
+                case picard_doppel:
+                  expect(role.name, `${player} should be villager`).to.equal("villager");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
+                  break;
+                default:
+                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
               }
             });
           });
@@ -800,13 +850,13 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case forge_seer:
-              expect(role.name, `${player.name} should be seer`).to.equal("seer");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal(`The ${choice.join(", ")} cards are villager and villager respectively.`);
+              expect(role.name, `${player} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`The ${choice.join(", ")} cards are villager and villager respectively.`);
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -817,13 +867,13 @@ describe("State", () => {
         state.startPhase("daytime");
 
         [...state["finalResults"].entries()].forEach(([player, role]) => {
-          switch (player.sessionId) {
+          switch (player) {
             case forge_seer:
-              expect(role.name, `${player.name} should be seer`).to.equal("seer");
-              expect(state["daytimeMessage"](player.sessionId), `${player.name}'s daytime message should be`).to.equal('You chose not to perform your seer action.');
+              expect(role.name, `${player} should be seer`).to.equal("seer");
+              expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal('You chose not to perform your seer action.');
               break;
             default:
-              expect(role.name, `${player.name}'s role shouldn't have changed!`).to.equal(player.role.name)
+              expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
           }
         });
       });
@@ -931,7 +981,7 @@ describe("State", () => {
         expect(state["nighttimeMessage"](ryker_robber)).to.be.empty;
       });
     });
-    
+
     describe("doppelganger", () => {
       it("should show role as robber", () => {
         state.distributeDoppelsRole(picard_doppel, ryker_robber);
@@ -947,14 +997,14 @@ describe("State", () => {
 
     describe("werewolf", () => {
       it("should be lonewolf", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`You are the only ${werewolfRole.name}.`);
       });
 
       it("should show all werewolves", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
         state.startPhase("nighttime");
@@ -975,14 +1025,14 @@ describe("State", () => {
       });
 
       it("should show single werewolf", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](troi_minion)).to.equal(`The werewolf is ${werewolfPlayer.name}.`);
       });
 
       it("should show all werewolves", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
         state.startPhase("nighttime");
@@ -1101,14 +1151,14 @@ describe("State", () => {
 
     describe("for werewolf message", () => {
       it("should have you as only werewolf", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](worf_werewolf)).to.equal(`You are the only ${werewolfRole.name}.`);
       });
 
       it("should have all human werewolves", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
         state.startPhase("nighttime");
@@ -1129,14 +1179,14 @@ describe("State", () => {
       });
 
       it("should show single werewolf", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.startPhase("nighttime");
 
         expect(state["nighttimeMessage"](troi_minion)).to.equal(`The werewolf is ${werewolfPlayer.name}.`);
       });
 
       it("should show all human werewolves", () => {
-      state.rolePlayers.set(werewolfRole, werewolfPlayer);
+        state.rolePlayers.set(werewolfRole, werewolfPlayer);
         state.distributeDoppelsRole(picard_doppel, worf_werewolf);
 
         state.startPhase("nighttime");
