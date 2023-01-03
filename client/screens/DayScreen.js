@@ -4,7 +4,7 @@ import PlayerSelectionAction from '../components/PlayerSelectionAction';
 import CountDownTimer from '../components/CountDownTimer';
 import { updateSelections } from "../assets/GameUtil";
 import Peek from "../components/Peek";
-import {Styles} from "../constants/Themes";
+import { Styles } from "../constants/Themes";
 
 export default class DayScreen extends React.Component {
   constructor(props) {
@@ -17,6 +17,7 @@ export default class DayScreen extends React.Component {
       daytimeMessage: messageForPlayer,
       peekOpen: false,
       selectedPlayers: [],
+      timeIsOver: false,
       voteRequired: true,
     };
 
@@ -37,7 +38,7 @@ export default class DayScreen extends React.Component {
 
     selectedPlayers = updateSelections(1, selectedPlayers, selectionLabel);
     voteRequired = selectedPlayers.length < 1;
-    
+
     this.setState({ selectedPlayers, voteRequired });
   };
 
@@ -45,11 +46,16 @@ export default class DayScreen extends React.Component {
     this.setState({ buttonText: 'Time is up!' });
   };
 
+  updateTimeIsOver = () => {
+    this.setState({ timeIsOver: true });
+  };
+
   render() {
     const { handleVoteAction, player, players, results } = this.props;
-    const { buttonText, daytimeMessage, peekOpen, selectedPlayers, voteRequired } = this.state;
+    const { buttonText, daytimeMessage, peekOpen, selectedPlayers, timeIsOver, voteRequired } = this.state;
 
     const selectablePlayers = players.filter(p => p.id !== player.id);
+
 
     const vote = (
       //Display the list of players to vote for ONCE ALL PLAYERS ARE READY
@@ -63,25 +69,30 @@ export default class DayScreen extends React.Component {
             onClose={this.handleClosePeek}
           />
         )}
-        <PlayerSelectionAction
-          players={selectablePlayers}
-          onSelection={this.makeSelection}
-          selected={selectedPlayers}
-        />
-        <Button
-          title={buttonText}
-          style={Styles.unSelectedButton}
-          onPress={() => {
-            console.debug(`You voted for: ${selectedPlayers}`);
-            handleVoteAction(selectedPlayers);
-          }}
-          disabled={voteRequired}
-        />
+        {timeIsOver && (
+          <>
+            <PlayerSelectionAction
+              players={selectablePlayers}
+              onSelection={this.makeSelection}
+              selected={selectedPlayers}
+            />
+            <Button
+              title={buttonText}
+              style={Styles.unSelectedButton}
+              onPress={() => {
+                console.debug(`You voted for: ${selectedPlayers}`);
+                handleVoteAction(selectedPlayers);
+              }}
+              disabled={voteRequired}
+            />
+          </>
+        )}
         <CountDownTimer
           style={Styles.activeText}
           firstText='You have '
-          secondText=' seconds to vote.'
-          time={20}
+          secondText=" seconds to vote."
+          time={8}
+          timeIsOver={this.updateTimeIsOver}
         />
       </>
     );
@@ -95,9 +106,9 @@ export default class DayScreen extends React.Component {
       <View>
         {results !== '' ? (
           <Text style={Styles.getStartedText}>Results: {results} was killed!</Text>
-          ) : (
-            vote
-          )
+        ) : (
+          vote
+        )
         }
       </View>
     );

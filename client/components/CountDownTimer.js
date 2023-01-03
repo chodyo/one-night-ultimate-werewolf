@@ -22,9 +22,7 @@ class CountDownTimer extends Component {
               this.timeIntervalRef = setInterval(() => {
                   if (this.state.time === 0) {
                       clearInterval(this.timeIntervalRef);
-                      this.setState({
-                          time: this.state.time - 1
-                      });
+                      this.props.timeIsOver();
                   } else {
                       this.setState({
                           time: this.state.time - 1
@@ -36,14 +34,14 @@ class CountDownTimer extends Component {
     }
 
     render() {
-        const { firstText, secondText } = this.props;
+        const { firstText, secondText, timeIsOver } = this.props;
         const { time } = this.state;
 
         let message = 'Time is up!';
         if (time >= 0) {
             message = `${firstText} ${time} ${secondText}`;
         }
-
+        
         return <Text style={Styles.getStartedText}>{message}</Text>;
     }
 }
@@ -52,6 +50,7 @@ CountDownTimer.propTypes = {
     firstText: PropTypes.string,
     secondText: PropTypes.string,
     time: PropTypes.number,
+    timeIsOver: PropTypes.func.isRequired,
 };
 
 CountDownTimer.defaultProps = {

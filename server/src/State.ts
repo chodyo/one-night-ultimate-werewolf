@@ -16,9 +16,11 @@ export class State extends Schema {
 
     // center# => role
     centerRoles: Map<string, Role> = new Map();
-
+    
+    private finalCenterRoles: Map<string, Role> = new Map();
+    
     private nightChoices: Map<Player, Array<string>> = new Map();
-
+    
     private finalResults: Map<Player, Role> = new Map();
 
     // ====== Synched Properties ======
@@ -359,7 +361,7 @@ export class State extends Schema {
                         const drunkedRole = this.centerRoles.get(choices[0])!;
                         
                         //set the center card choice to players current role
-                        this.centerRoles.set(choices[0], this.getLatestPlayerRole(player.sessionId));
+                        this.finalCenterRoles.set(choices[0], this.getLatestPlayerRole(player.sessionId));
 
                         this.finalResults.set(player, drunkedRole);
                         console.debug(`${player.name} drunked into ${drunkedRole.name}`);

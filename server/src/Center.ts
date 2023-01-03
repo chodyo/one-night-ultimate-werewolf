@@ -2,7 +2,7 @@ import { Room, Client } from "colyseus";
 import { Schema, MapSchema, ArraySchema, type } from "@colyseus/schema";
 import { RoleName, Role, roleNames, roles } from "./Role";
 
-export class Player extends Schema {
+export class Center extends Schema {
     @type("string")
     name: string = "";
 
@@ -14,9 +14,6 @@ export class Player extends Schema {
 
     @type("string")
     sessionId: string;
-
-    @type("number")
-    voteCount: number = 0;
 
     constructor(sessionId: string) {
         super();
