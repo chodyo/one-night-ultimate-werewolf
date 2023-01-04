@@ -643,6 +643,7 @@ describe("State", () => {
             }
           });
         });
+
       });
 
       it("should executioner the drunk if they don't choose", () => {
@@ -839,6 +840,27 @@ describe("State", () => {
                   expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
               }
             });
+          });
+        });
+      });
+
+      describe("should reveal choice as doppelganger on doppel-swapped card", () => {
+        it.only("when seer views the doppel-robbed player's card", () => {
+          state.distributeDoppelsRole(picard_doppel, ryker_robber);
+          state.setNightChoices(picard_doppel, [], [ryker_robber]);
+          state.setNightChoices(ryker_robber, [], [data_drunk]);
+          state.setNightChoices(forge_seer, [], [ryker_robber]);
+
+          state.startPhase("daytime");
+
+          [...state["finalResults"].entries()].forEach(([key, role]) => {
+            switch (key) {
+              case forge_seer:
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal(`William is a doppelganger`);
+                break;
+              default:
+                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
+            }
           });
         });
       });
