@@ -331,8 +331,7 @@ export class State extends Schema {
                         const currentRole = this.getLatestRole(player.sessionId);
 
                         if (role.doppelganger) {
-                            currentRole.doppelswapped = true
-                            robbedRole.name = "doppelganger";
+                            robbedRole.doppelswapped = true
                         }
 
                         this.finalResults.set(player.sessionId, robbedRole);
@@ -447,21 +446,18 @@ export class State extends Schema {
                 if (seerChoices.length === 1) {
                     let chosenPlayer = this.players[seerChoices[0]];
                     //if("doppel-drunk" or "doppel-robber"){OGseer should see drunkedRole or RobbedRole}
-                    const chosenPlayerRoleName = chosenPlayer.role.doppelganger ? this.getLatestRole(seerChoices[0]).name : chosenPlayer.role.name;
+
+                    const chosenPlayerRoleName = chosenPlayer.role.doppelswapped ? "doppelganger" : chosenPlayer.role.name;
+                    
                     return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
                     let chosenCard1 = this.centerRoles.get(seerChoices[0])!;
                     let chosenCard2 = this.centerRoles.get(seerChoices[1])!;                    
-                    const card1 = chosenCard1.doppelganger ? this.getLatestRole(seerChoices[0]) : chosenCard1;
-                    const card2 = chosenCard2.doppelganger ? this.getLatestRole(seerChoices[1]) : chosenCard2;  
                     
-                    if (chosenCard1.doppelswapped) {
-                        card1.name = "doppelganger";
-                    }
-                    if (chosenCard2.doppelswapped) {
-                        card2.name = "doppelganger";
-                    }
-                    return `The ${seerChoices.join(", ")} cards are ${card1.name} and ${card2.name} respectively.`;
+                    const card1Name = chosenCard1.doppelswapped ? "doppelganger" : chosenCard1.name;
+                    const card2Name = chosenCard2.doppelswapped ? "doppelganger" : chosenCard2.name;  
+                    
+                    return `The ${seerChoices.join(", ")} cards are ${card1Name} and ${card2Name} respectively.`;
                 } else return noRoleActionMessage;
             case "robber":
                 const robberChoice = this.findInPlayers<string[]>(playerID, this.nightChoices);
