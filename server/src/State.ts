@@ -271,7 +271,7 @@ export class State extends Schema {
         player.role = newRole;
         console.debug('Setting role for doppelganger');
         this.rolePlayers.set(newRole, player);
-
+        //setNightChoices
         this.unlock();
     }
 
@@ -357,7 +357,14 @@ export class State extends Schema {
                     console.debug("Executing Drunk night choice...");
                     if (choices.length === 1) {
                         const drunkedRole = this.getLatestRole(choices[0])!;
-                        
+                        if (role.doppelganger) {
+                            role.doppelswapped = true
+                            //flag the center card as doppelswapped
+                            this.centerRoles.set(choices[0], role)
+                        }
+
+                        drunkedRole.name = drunkedRole.doppelganger ? "doppelganger" : drunkedRole.name;
+
                         //set the center card choice to players current role
                         this.finalResults.set(choices[0], this.getLatestRole(player.sessionId));
 
@@ -438,14 +445,17 @@ export class State extends Schema {
                     const chosenPlayerRoleName = chosenPlayer.role.doppelganger ? this.getLatestRole(seerChoices[0]).name : chosenPlayer.role.name;
                     return `${chosenPlayer.name} is a ${chosenPlayerRoleName}`;
                 } else if (seerChoices.length === 2) {
-                    // if there's a doppel-drunk {
-                    // if (seerChoices[0].startsWith())
-                    //     check that the final center roles aren't doppelganged
-                    // }
                     let chosenCard1 = this.centerRoles.get(seerChoices[0])!;
-                    let chosenCard2 = this.centerRoles.get(seerChoices[1])!;
+                    let chosenCard2 = this.centerRoles.get(seerChoices[1])!;                    
                     const card1 = chosenCard1.doppelganger ? this.getLatestRole(seerChoices[0]) : chosenCard1;
-                    const card2 = chosenCard2.doppelganger ? this.getLatestRole(seerChoices[1]) : chosenCard2;
+                    const card2 = chosenCard2.doppelganger ? this.getLatestRole(seerChoices[1]) : chosenCard2;  
+                    
+                    if (chosenCard1.doppelswapped) {
+                        card1.name = "doppelganger";
+                    }
+                    if (chosenCard2.doppelswapped) {
+                        card2.name = "doppelganger";
+                    }
                     return `The ${seerChoices.join(", ")} cards are ${card1.name} and ${card2.name} respectively.`;
                 } else return noRoleActionMessage;
             case "robber":
@@ -500,8 +510,10 @@ export class State extends Schema {
 
     private getLatestRole(key: string): Role {
         const changedRole = [...this.finalResults.entries()].find(([resultKey, T]) => resultKey === key);
+        console.log("changedRole " + JSON.stringify(changedRole))
 
         const unchangedRole = key.startsWith('center') ? this.centerRoles.get(key) : this.players[key].role;
+        console.log("unchangedRole " + JSON.stringify(unchangedRole))
 
         return changedRole !== undefined && changedRole.length > 0 ? changedRole[1] : unchangedRole;
     }
@@ -528,7 +540,7 @@ export class State extends Schema {
 
     private findInPlayers<T>(playerID: string, playerMap: Map<Player, T>): T {
         return [...playerMap.entries()].filter(([player, T]) => player.sessionId === playerID)[0][1];
-    }
+    }    
 }
 
 function getPartnerRoleID(roleID: string): string {
