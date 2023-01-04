@@ -579,7 +579,7 @@ describe("State", () => {
                 break;
               case worf_werewolf:
                 expect(role.name, `${key} should still be a werewolf`).to.equal("werewolf");
-                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal("The center0 card is villager.");
+                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal("The center0 card is doppelganger.");
                 break;
               case center0:
                 expect(role.name).to.equal("drunk")
