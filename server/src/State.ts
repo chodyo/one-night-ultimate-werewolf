@@ -330,6 +330,11 @@ export class State extends Schema {
                         const robbedRole = this.getLatestRole(choices[0]);
                         const currentRole = this.getLatestRole(player.sessionId);
 
+                        if (role.doppelganger) {
+                            currentRole.doppelswapped = true
+                            robbedRole.name = "doppelganger";
+                        }
+
                         this.finalResults.set(player.sessionId, robbedRole);
                         this.finalResults.set(robbedPlayer.sessionId, currentRole);
 
