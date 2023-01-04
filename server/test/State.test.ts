@@ -845,7 +845,7 @@ describe("State", () => {
       });
 
       describe("should reveal choice as doppelganger on doppel-swapped card", () => {
-        it.only("when seer views the doppel-robbed player's card", () => {
+        it("when seer views the doppel-robbed player's card", () => {
           state.distributeDoppelsRole(picard_doppel, ryker_robber);
           state.setNightChoices(picard_doppel, [], [ryker_robber]);
           state.setNightChoices(ryker_robber, [], [data_drunk]);
