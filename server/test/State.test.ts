@@ -883,7 +883,7 @@ describe("State", () => {
         });
       });
 
-      it("should display chosen center cards' role", () => {
+      it("should display 'chose not to see'", () => {
         state.setNightChoices(forge_seer, [], []);
 
         state.startPhase("daytime");
