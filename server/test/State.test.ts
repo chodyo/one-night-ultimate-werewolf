@@ -206,6 +206,109 @@ describe("State", () => {
       //--- ends state.distributeRoles()
     });
 
+    describe("on a players choice of doppelganger", () => {
+      describe("when seer choice", () => {
+        describe("is doppelPlayer", () => {
+          it("should display doppelganger as themself if non-swapping doppel-role", () => {
+            const choice = picard_doppel;
+            state.distributeDoppelsRole(picard_doppel, crusher_insomniac);
+            state.setNightChoices(forge_seer, [], [choice]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([player, role]) => {
+              switch (player) {
+                case forge_seer:
+                  expect(role.name, `${player} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
+                  break;
+                case picard_doppel:
+                  expect(role.name, `${player} should be villager`).to.equal("insomniac");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
+                  break;
+                default:
+                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              }
+            });
+          });
+
+          it("should display doppelganger as robber when doppel-robbed", () => {
+            state.distributeDoppelsRole(picard_doppel, ryker_robber);
+            state.setNightChoices(picard_doppel, [], [ryker_robber]);
+            state.setNightChoices(forge_seer, [], [picard_doppel]);
+            state.setNightChoices(ryker_robber, [], [picard_doppel]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([player, role]) => {
+              switch (player) {
+                case forge_seer:
+                  expect(role.name, `${player} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${picard_doppel} is a robber`);
+                  break;
+                case picard_doppel:
+                  expect(role.doppelganger).to.be.true;
+                  expect(role.roleID, `${player} should be doppelganger`).to.equal("robber1");
+                  // expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
+                  break;
+                case ryker_robber:
+                  // expect(role.name, `${player} should be villager`).to.equal("insomniac");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.not.be.empty;
+                  break;
+                default:
+                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              }
+            });
+          });
+        });
+
+        describe("should reveal choice as doppelganger on doppel-swapped card", () => {
+          it("when seer views the doppel-robbed player's card", () => {
+            state.distributeDoppelsRole(picard_doppel, ryker_robber);
+            state.setNightChoices(picard_doppel, [], [ryker_robber]);
+            state.setNightChoices(ryker_robber, [], [data_drunk]);
+            state.setNightChoices(forge_seer, [], [ryker_robber]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([key, role]) => {
+              switch (key) {
+                case forge_seer:
+                  expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal(`William is a doppelganger`);
+                  break;
+                default:
+                  expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
+              }
+            });
+          });
+
+          it("should display doppelganger (drunk) as the center card chosen", () => {
+            const choice = picard_doppel;
+            state.distributeDoppelsRole(picard_doppel, data_drunk);
+            state.setNightChoices(picard_doppel, [center1], []);
+            state.setNightChoices(forge_seer, [], [choice]);
+
+            state.startPhase("daytime");
+
+            [...state["finalResults"].entries()].forEach(([player, role]) => {
+              switch (player) {
+                case forge_seer:
+                  expect(role.name, `${player} should be seer`).to.equal("seer");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a villager`);
+                  break;
+                case picard_doppel:
+                  expect(role.name, `${player} should be villager`).to.equal("villager");
+                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
+                  break;
+                default:
+                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
+              }
+            });
+          });
+        });
+      });
+    });
+
     describe("on doppelganger choice", () => {
       describe("as robber", () => {
         it("should switch roles with selected player", () => {
@@ -739,129 +842,6 @@ describe("State", () => {
             default:
               expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name);
           }
-        });
-      });
-
-      describe("on choosing doppelPlayer", () => {
-        it("should display doppelganger as doppelganger", () => {
-          const choice = picard_doppel;
-          state.distributeDoppelsRole(picard_doppel, crusher_insomniac);
-          state.setNightChoices(forge_seer, [], [choice]);
-
-          state.startPhase("daytime");
-
-          [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player) {
-              case forge_seer:
-                expect(role.name, `${player} should be seer`).to.equal("seer");
-                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a ${doppelgangerPlayer.role.name}`);
-                break;
-              case picard_doppel:
-                expect(role.name, `${player} should be villager`).to.equal("insomniac");
-                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
-                break;
-              default:
-                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
-            }
-          });
-
-          it("should display doppelganger (drunk) as the center card chosen", () => {
-            const choice = picard_doppel;
-            state.distributeDoppelsRole(picard_doppel, data_drunk);
-            state.setNightChoices(picard_doppel, [center1], []);
-            state.setNightChoices(forge_seer, [], [choice]);
-
-            state.startPhase("daytime");
-
-            [...state["finalResults"].entries()].forEach(([player, role]) => {
-              switch (player) {
-                case forge_seer:
-                  expect(role.name, `${player} should be seer`).to.equal("seer");
-                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a villager`);
-                  break;
-                case picard_doppel:
-                  expect(role.name, `${player} should be villager`).to.equal("villager");
-                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
-                  break;
-                default:
-                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
-              }
-            });
-          });
-        });
-
-        it("should display doppelganger as robber when doppel-robber", () => {
-          state.distributeDoppelsRole(picard_doppel, ryker_robber);
-          state.setNightChoices(picard_doppel, [], [ryker_robber]);
-          state.setNightChoices(forge_seer, [], [picard_doppel]);
-          state.setNightChoices(ryker_robber, [], [picard_doppel]);
-
-          state.startPhase("daytime");
-
-          [...state["finalResults"].entries()].forEach(([player, role]) => {
-            switch (player) {
-              case forge_seer:
-                expect(role.name, `${player} should be seer`).to.equal("seer");
-                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${picard_doppel} is a robber`);
-                break;
-              case picard_doppel:
-                expect(role.doppelganger).to.be.true;
-                expect(role.roleID, `${player} should be doppelganger`).to.equal("robber1");
-                // expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal("You woke up as a doppelganger.");
-                break;
-              case ryker_robber:
-                // expect(role.name, `${player} should be villager`).to.equal("insomniac");
-                expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.not.be.empty;
-                break;
-              default:
-                expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
-            }
-          });
-
-          it("should display doppelganger (drunk) as the center card chosen", () => {
-            const choice = picard_doppel;
-            state.distributeDoppelsRole(picard_doppel, data_drunk);
-            state.setNightChoices(picard_doppel, [center1], []);
-            state.setNightChoices(forge_seer, [], [choice]);
-
-            state.startPhase("daytime");
-
-            [...state["finalResults"].entries()].forEach(([player, role]) => {
-              switch (player) {
-                case forge_seer:
-                  expect(role.name, `${player} should be seer`).to.equal("seer");
-                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.equal(`${choice} is a villager`);
-                  break;
-                case picard_doppel:
-                  expect(role.name, `${player} should be villager`).to.equal("villager");
-                  expect(state["daytimeMessage"](player), `${player}'s daytime message should be`).to.be.empty;
-                  break;
-                default:
-                  expect(role.name, `${player}'s role shouldn't have changed!`).to.equal(role.name)
-              }
-            });
-          });
-        });
-      });
-
-      describe("should reveal choice as doppelganger on doppel-swapped card", () => {
-        it("when seer views the doppel-robbed player's card", () => {
-          state.distributeDoppelsRole(picard_doppel, ryker_robber);
-          state.setNightChoices(picard_doppel, [], [ryker_robber]);
-          state.setNightChoices(ryker_robber, [], [data_drunk]);
-          state.setNightChoices(forge_seer, [], [ryker_robber]);
-
-          state.startPhase("daytime");
-
-          [...state["finalResults"].entries()].forEach(([key, role]) => {
-            switch (key) {
-              case forge_seer:
-                expect(state["daytimeMessage"](key), `${key}'s daytime message should be`).to.be.equal(`William is a doppelganger`);
-                break;
-              default:
-                expect(role.name, `${key}'s role shouldn't have changed!`).to.equal(role.name)
-            }
-          });
         });
       });
 
